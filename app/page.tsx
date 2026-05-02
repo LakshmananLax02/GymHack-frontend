@@ -1,9 +1,16 @@
 import Image from "next/image";
 
+import Carousel from './Components/Carousel'
+
+import HomeProducts from './Components/HomeProducts'
+
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center font-sans">
-     
-    </div>
+    <>
+
+     <Carousel/>
+
+     <HomeProducts/>
+    </>
   );
 }

@@ -1,27 +1,17 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    "./app/**/*.{js,jsx}",
-    "./pages/**/*.{js,jsx}",
-    "./components/**/*.{js,jsx}",
-    "./src/**/*.{js,jsx}",
+    "./app/**/*.{js,ts,jsx,tsx}",
+    "./components/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
-      colors: {
-        gymPink: "#c23d6a", 
-        gymBeige: "#f0ece2",
-      },
-      animation: {
-        'marquee': 'marquee 25s linear infinite',
-      },
-      keyframes: {
-        marquee: {
-          '0%': { transform: 'translateX(0%)' },
-          '100%': { transform: 'translateX(-50%)' },
-        },
+      fontFamily: {
+        // This allows you to use 'font-primary' and 'font-secondary'
+        primary: ['var(--font-oswald)', 'sans-serif'],
+        secondary: ['var(--font-overpass)', 'sans-serif'],
       },
     },
   },
   plugins: [],
-}
+};

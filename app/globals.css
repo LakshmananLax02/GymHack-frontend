@@ -1,4 +1,4 @@
-@import "tailwindcss";
+/* @import "tailwindcss"; */
 
 /* :root {
   --background: #ffffff;
@@ -18,9 +18,30 @@
     --foreground: #ededed;
   }
 } */
-
+/* 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+} */
+
+
+@import "tailwindcss";
+
+@theme {
+  /* Register your custom font variables here */
+  --font-primary: var(--font-oswald), ui-sans-serif, system-ui;
+  --font-secondary: var(--font-overpass), ui-sans-serif, system-ui;
+}
+
+:root {
+  --background: #fdf5e6; /* The cream color from your design */
+  --foreground: #171717;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  /* Apply the secondary font as the default for the body */
+  font-family: var(--font-overpass), Arial, sans-serif;
 }

@@ -1,17 +1,20 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Oswald, Overpass } from 'next/font/google';
 import "./globals.css";
 import Navbar from './Components/Navbar';
+import Footer from './Components/Footer'
 
-// 1. Define the fonts at the top level
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const oswald = Oswald({
+  subsets: ['latin'],
+  variable: '--font-oswald',
+  weight: ['400', '700'], // Add weights you need
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+// Secondary text font
+const overpass = Overpass({
+  subsets: ['latin'],
+  variable: '--font-overpass',
+  weight: ['400', '500', '600'],
 });
 
 export const metadata: Metadata = {
@@ -28,11 +31,13 @@ export default function RootLayout({
     <html
       lang="en"
       // 2. These variables now exist and can be used here
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${oswald.variable} ${overpass.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <Navbar />
         {children}
+        <Footer/>
+
       </body>
     </html>
   );

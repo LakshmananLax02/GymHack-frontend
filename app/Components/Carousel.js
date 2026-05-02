@@ -22,11 +22,11 @@ export default function Hero() {
 
         {/* Hero Content */}
         <div className="relative z-10 max-w-[900px] mx-auto">
-          <h1 className="text-2xl md:text-3xl lg:text-5xl font-black text-white uppercase tracking-tighter leading-[0.9] mb-6">
-            Stronger Workouts Start <br className="hidden md:block" /> with Better Fuel
+          <h1 className="text-2xl font-primary md:text-3xl lg:text-5xl font-black text-white uppercase mb-6">
+            Stronger Workouts Start <br className="hidden font-primary md:block" /> with Better Fuel
           </h1>
           
-          <p className="text-gray-200 text-lg md:text-xl font-medium mb-10 max-w-[600px] mx-auto">
+          <p className="text-gray-200 text-lg font-secondary md:text-xl font-medium mb-10 max-w-[600px] mx-auto">
             Refuel your body with clean, powerful nutrition after every workout.
           </p>
 
@@ -46,37 +46,37 @@ export default function Hero() {
           
           {/* Stat 1: Happy Customers */}
           <div className="flex items-center gap-4 lg:justify-center lg:border-r border-black/10">
-            <Users className="text-[#3a5a40] w-10 h-10 md:w-12 md:h-12" strokeWidth={1.5} />
+            <Users className="text-[#3a5a40] w-15 h-15 md:w-15 md:h-15" strokeWidth={1.5} />
             <div>
-              <p className="text-2xl md:text-4xl font-black text-gray-900 leading-none">50K+</p>
-              <p className="text-sm md:text-base font-bold text-gray-600">Happy Customers</p>
+              <p className="text-2xl text-[#3a5a40] font-secondary md:text-3xl font-black leading-none">50K+</p>
+              <p className="text-sm font-secondary md:text-base font-bold text-[#3a5a40]">Happy Customers</p>
             </div>
           </div>
 
           {/* Stat 2: Bowls Enjoyed */}
           <div className="flex items-center gap-4 lg:justify-center lg:border-r border-black/10">
-            <Salad className="text-[#3a5a40] w-10 h-10 md:w-12 md:h-12" strokeWidth={1.5} />
+            <Salad className="text-[#3a5a40] w-15 h-15 md:w-15 md:h-15" strokeWidth={1.5} />
             <div>
-              <p className="text-2xl md:text-4xl font-black text-gray-900 leading-none">2M+</p>
-              <p className="text-sm md:text-base font-bold text-gray-600">Bowls Enjoyed</p>
+              <p  className="font-secondary text-2xl md:text-3xl font-black text-[#3a5a40] leading-none">2M+</p>
+              <p className="font-secondary text-sm md:text-base font-bold text-[#3a5a40]">Bowls Enjoyed</p>
             </div>
           </div>
 
           {/* Stat 3: Customer Rating */}
           <div className="flex items-center gap-4 lg:justify-center lg:border-r border-black/10">
-            <Star className="text-[#3a5a40] w-10 h-10 md:w-12 md:h-12" strokeWidth={1.5} />
+            <Star className="text-[#3a5a40] w-15 h-15 md:w-15 md:h-15" strokeWidth={1.5} />
             <div>
-              <p className="text-2xl md:text-4xl font-black text-gray-900 leading-none">4.8/5</p>
-              <p className="text-sm md:text-base font-bold text-gray-600">Customer Rating</p>
+              <p className="font-secondary text-2xl md:text-3xl font-black text-[#3a5a40] leading-none">4.8/5</p>
+              <p className="font-secondary text-sm md:text-base font-bold text-[#3a5a40]">Customer Rating</p>
             </div>
           </div>
 
           {/* Stat 4: Clean & Safe */}
           <div className="flex items-center gap-4 lg:justify-center">
-            <ShieldCheck className="text-[#3a5a40] w-10 h-10 md:w-12 md:h-12" strokeWidth={1.5} />
+            <ShieldCheck className="text-[#3a5a40] w-15 h-15 md:w-15 md:h-15" strokeWidth={1.5} />
             <div>
-              <p className="text-2xl md:text-4xl font-black text-gray-900 leading-none">100%</p>
-              <p className="text-sm md:text-base font-bold text-gray-600">Clean & Safe</p>
+              <p className="font-secondary text-2xl md:text-3xl font-black text-[#3a5a40] leading-none">100%</p>
+              <p className="font-secondary text-sm md:text-base font-bold text-[#3a5a40]">Clean & Safe</p>
             </div>
           </div>
 

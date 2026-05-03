@@ -1,7 +1,8 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect} from 'react';
 import { ArrowLeft, ArrowRight, ShoppingCart } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 const bestSellingProducts = [
   { id: 1, name: 'John Varvatos Star USA Contrast Stitch Jacket', price: 250, image: '/images/oatsimg.jpg' },
@@ -39,12 +40,15 @@ export default function OurTopSelling() {
       <div className="max-w-[1200px] mx-auto px-7">
         
         {/* Header Section */}
-        <div className="flex items-center justify-center gap-3 mb-12">
-          <div className="w-5 h-5 bg-[#c23d6a] rounded-full" />
-          <h2 className="text-4xl font-primary font-black text-black">
-            Our top selling products
-          </h2>
-        </div>
+     <div className="flex flex-row items-center justify-center gap-3 mb-12 w-full px-4">
+  {/* The Dot */}
+  <div className="w-4 h-4 md:w-5 md:h-5 bg-[#c23d6a] rounded-full shrink-0" />
+  
+  {/* The Heading */}
+  <h2 className="text-3xl md:text-4xl font-primary font-bold text-black text-center leading-tight">
+    Our top selling products
+  </h2>
+</div>
 
         <div className="relative group">
           {/* Navigation Arrows - Circular Pink Style */}
@@ -108,9 +112,11 @@ export default function OurTopSelling() {
 
         {/* Bottom Shop All Button */}
         <div className="mt-12 text-center">
+          <Link href='/products'>
           <button className="px-8 py-3 bg-[#c23d6a] text-white rounded-full font-secondary font-bold text-base flex items-center gap-2 mx-auto hover:scale-105 hover:bg-[#f2eadf] hover:text-black hover:border-black border-transparent border transition-transform">
             Shop all <ShoppingCart size={18} />
           </button>
+          </Link>
         </div>
       </div>
     </section>

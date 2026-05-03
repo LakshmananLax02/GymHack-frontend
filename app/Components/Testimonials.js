@@ -47,7 +47,7 @@ const testimonialData = [
 
 export default function Testimonials() {
   return (
-    <section className="bg-[#f2ead3] py-20 px-6 overflow-hidden">
+    <section className="bg-[#f2ead3] py-10 px-6 overflow-hidden">
       <div className="max-w-[1200px] mx-auto">
         
         {/* Section Header */}
@@ -96,7 +96,7 @@ export default function Testimonials() {
 
                   {/* Author Info */}
                   <div>
-                    <h5 className="font-primary text-xl font-bold uppercase tracking-wide">
+                    <h5 className="font-primary text-xl font-bold tracking-wide">
                       {item.name}
                     </h5>
                     <p className="font-secondary text-gray-400 text-sm">

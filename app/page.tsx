@@ -10,6 +10,10 @@ import TopSelling from './Components/HomeTopSelling'
 
 import HomeGoodNutrition from './Components/HomeGoodNutrition'
 
+import HoverImages from './Components/HomeHoverImages'
+
+import Philosophy from './Components/HomePhilosophy'
+
 import Testimonials from './Components/Testimonials'
 
 export default function Home() {
@@ -25,6 +29,10 @@ export default function Home() {
      <TopSelling/>
 
      <HomeGoodNutrition/>
+
+     <HoverImages/>
+
+     <Philosophy/>
 
      <Testimonials/>
     </>

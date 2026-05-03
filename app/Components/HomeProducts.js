@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, ArrowRight, ShoppingCart } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 const allProducts = [
   { id: 1, category: 'OATS', name: 'Premium Rolled Oats - High Protein', price: 180, image: '/images/oatsimg.jpg' },
@@ -77,15 +78,15 @@ export default function HomeProducts() {
           <button 
             onClick={() => handleTabChange('OATS')}
             className={`px-6 md:px-12 font-secondary py-2 rounded-full border-2 font-bold text-sm md:text-lg uppercase tracking-widest transition-all duration-300 ${
-              activeTab === 'OATS' ? 'border-black text-black bg-white' : 'border-transparent bg-gray-100 text-gray-400'
+              activeTab === 'OATS' ? 'bg-[#f0ece2] border text-black' : 'border bg-gray-100 text-gray-400'
             }`}
           >
             OATS
           </button>
           <button 
             onClick={() => handleTabChange('Muesli')}
-            className={`px-6 md:px-12 font-secondary py-2 rounded-full border-2 font-bold text-sm md:text-lg uppercase tracking-widest transition-all duration-300 ${
-              activeTab === 'Muesli' ? 'bg-[#f0ece2] border-[#f0ece2] text-black' : 'border-transparent bg-gray-100 text-gray-400'
+            className={`px-6 md:px-12 font-secondary py-2 rounded-full border-2 font-bold text-sm md:text-lg tracking-widest transition-all duration-300 ${
+              activeTab === 'Muesli' ? 'bg-[#f0ece2] border text-black' : 'border bg-gray-100 text-gray-400'
             }`}
           >
             Muesli
@@ -155,9 +156,11 @@ export default function HomeProducts() {
 
         {/* --- BOTTOM SECTION (Shop All Button) --- */}
         <div className="flex justify-center mt-8 md:mt-10">
+          <Link href='/products'>
           <button className="font-secondary flex items-center gap-3 px-10 py-4 bg-[#c23d6a] text-white rounded-full font-bold text-lg md:text-xl shadow-lg hover:bg-[#f2eadf] hover:text-black hover:border-black border-transparent border hover:scale-105 active:scale-95 transition-all duration-300">
             Shop all <ShoppingCart className="w-5 h-5 md:w-6 md:h-6" />
           </button>
+          </Link>
         </div>
 
       </div>

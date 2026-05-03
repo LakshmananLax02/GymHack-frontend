@@ -6,7 +6,7 @@ export default function Hero() {
   return (
     <section className="relative w-full">
       {/* --- Main Hero Section --- */}
-      <div className="relative h-[600px] md:h-[700px] lg:h-[800px] w-full flex flex-col items-center justify-center text-center px-4 overflow-hidden">
+      <div className="relative h-[500px] md:h-[500px] lg:h-[500px] w-full flex flex-col items-center justify-center text-center px-4 overflow-hidden">
         
         {/* Background Image & Overlay */}
         <div 
@@ -31,7 +31,7 @@ export default function Hero() {
           </p>
 
           <Link 
-            href="/shop" 
+            href="/products" 
             className="inline-flex items-center gap-2 bg-[#c23d6a] text-white px-8 py-4 rounded-full text-lg font-bold hover:bg-[#f0ece2] hover:text-black transition-all hover:scale-105 active:scale-95 shadow-xl shadow-pink-900/20"
           >
             Explore all products

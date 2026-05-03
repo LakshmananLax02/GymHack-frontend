@@ -7,8 +7,8 @@ import { usePathname } from 'next/navigation';
 import { Search, ChevronRight, Menu, X, ChevronDown } from 'lucide-react';
 
 const products = [
-  { name: 'Oats',   imageUrl: '/images/oatshoverimg.png',   link: '/products/oats' },
-  { name: 'Muesli', imageUrl: '/images/meuslihoverimg1.png',  link: '/products/muesli' },
+  { name: 'Oats',   imageUrl: '/images/oatshoverimg.png',   link: '/products' },
+  { name: 'Muesli', imageUrl: '/images/meuslihoverimg1.png',  link: '/products' },
 ];
 
 const TICKER_ITEMS = [
@@ -36,7 +36,7 @@ export default function Navbar() {
       <div className="bg-[#f0ece2] py-2 overflow-hidden border-b border-black/5">
         <div
           className="flex whitespace-nowrap"
-          style={{ animation: 'ticker 28s linear infinite' }}
+          style={{ animation: 'ticker 10s linear infinite' }}
         >
           {[0, 1].map((copy) => (
             <div key={copy} className="flex shrink-0">
@@ -64,20 +64,25 @@ export default function Navbar() {
       <header className="sticky top-0 z-50 bg-white shadow-sm">
         <div className="max-w-[1440px] mx-auto px-4 md:px-10 h-20 flex items-center justify-between">
 
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-3">
-            <div className="w-14 h-14 bg-[#c23d6a] rounded-full flex items-center justify-center p-1">
-              <span className="text-white font-black text-[9px] leading-tight text-center uppercase">
-                Gym<br />Hack
-              </span>
-            </div>
-            <span className="hidden lg:block text-2xl font-black tracking-tighter">
-              GYM HACK
-            </span>
-          </Link>
+         {/* Logo */}
+<Link href="/" className="flex items-center gap-3 group">
+  <div className="w-17 h-17 bg-[#c23d6a] rounded-full flex items-center justify-center overflow-hidden relative p-2 shadow-sm transition-transform group-hover:scale-105">
+    {/* Logo Image Container */}
+    
+    <div className="relative w-full h-full">
+      <Image
+        src="/images/logoimg.png" // Replace with your actual logo path
+        alt="Gym Hack Logo"
+        fill
+        className="object-contain"
+        priority
+      />
+    </div>
+  </div>
+</Link>
 
           {/* ── Desktop Nav ── */}
-          <nav className="hidden md:flex items-center gap-10 font-bold text-gray-900 text-lg uppercase">
+          <nav className="hidden md:flex items-center gap-10 font-bold text-gray-900 text-lg">
             <Link href="/" className="hover:text-[#c23d6a] transition-colors">
               Home
             </Link>
@@ -88,6 +93,7 @@ export default function Navbar() {
               onMouseEnter={() => setIsMegaMenuOpen(true)}
               onMouseLeave={() => setIsMegaMenuOpen(false)}
             >
+              <Link href='/products'>
               <button className="hover:text-[#c23d6a] transition-colors flex items-center gap-1">
                 Shop all products
                 <ChevronDown
@@ -96,9 +102,10 @@ export default function Navbar() {
                   className={`transition-transform duration-200 ${isMegaMenuOpen ? 'rotate-180' : ''}`}
                 />
               </button>
+              </Link>
 
               {isMegaMenuOpen && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 w-screen max-w-[1200px] bg-[#f0ece2] rounded-3xl p-10 shadow-2xl border border-black/5 flex flex-col">
+                <div className="absolute top-full left-1/2 -translate-x-1/2 w-screen max-w-[1200px] bg-[#f0ece2] rounded-xl p-20 shadow-2xl border border-black/5 flex flex-col">
                   <h2 className="text-3xl font-black mb-8 text-black">Products</h2>
                   <div className="flex gap-10">
                     {products.map((item) => (
@@ -136,7 +143,7 @@ export default function Navbar() {
 
             <Link
               href="/order"
-              className="bg-[#c23d6a] text-white px-6 py-2.5 rounded-full flex items-center gap-2 font-bold hover:bg-[#a8325a] transition-all shadow-md active:scale-95"
+              className="bg-[#c23d6a] text-white px-6 py-2.5 rounded-full flex items-center gap-2 font-bold hover:bg-[#f2eadf] hover:text-black hover:border-black border-transparent border transition-all shadow-md active:scale-95"
             >
               Order now
               <ChevronRight size={20} strokeWidth={3} />
@@ -159,7 +166,7 @@ export default function Navbar() {
             <Link
               href="/"
               onClick={closeMobileMenu}
-              className="text-3xl font-black uppercase hover:text-[#c23d6a] transition-colors"
+              className="text-3xl font-black hover:text-[#c23d6a] transition-colors"
             >
               Home
             </Link>
@@ -168,7 +175,7 @@ export default function Navbar() {
             <div>
               <button
                 onClick={() => setIsMobileShopOpen((v) => !v)}
-                className="text-3xl font-black uppercase flex items-center gap-2 hover:text-[#c23d6a] transition-colors w-full text-left"
+                className="text-3xl font-black flex items-center gap-2 hover:text-[#c23d6a] transition-colors w-full text-left"
               >
                 Shop
                 <ChevronDown
@@ -209,7 +216,7 @@ export default function Navbar() {
             <Link
               href="/about"
               onClick={closeMobileMenu}
-              className="text-3xl font-black uppercase hover:text-[#c23d6a] transition-colors"
+              className="text-3xl font-black hover:text-[#c23d6a] transition-colors"
             >
               About
             </Link>

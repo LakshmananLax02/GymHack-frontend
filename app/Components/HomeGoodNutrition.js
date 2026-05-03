@@ -1,87 +1,222 @@
+// "use client";
+
+// import React, { useState } from 'react';
+// import Image from 'next/image';
+// import dynamic from 'next/dynamic';
+// import { Swiper, SwiperSlide } from 'swiper/react';
+// import { Autoplay, Pagination } from 'swiper/modules';
+// import { motion, AnimatePresence } from 'framer-motion';
+
+// // Import Swiper styles
+// import 'swiper/css';
+// import 'swiper/css/pagination';
+
+// const Sprout = dynamic(() => import('lucide-react').then((mod) => mod.Sprout), { ssr: false });
+// const Zap = dynamic(() => import('lucide-react').then((mod) => mod.Zap), { ssr: false });
+
+// export default function HomeGoodNutrition() {
+//   const [activeIndex, setActiveIndex] = useState(0);
+
+//   const slidingImages = [
+//     "/images/homenutritionimg.png",
+//     "/images/homenutritionimg.png", 
+//     "/images/homenutritionimg.png",
+//   ];
+
+//   const shakeVariant = {
+//     shake: {
+//       x: [0, -10, 10, -10, 10, 0],
+//       transition: { duration: 0.5 }
+//     }
+//   };
+
+//   return (
+//     /* Changed min-h-screen to h-screen to force a fixed height and prevent overflow gaps */
+//     <section className="w-full h-screen flex flex-col bg-white overflow-hidden">
+      
+//       {/* 1. TOP HEADER SECTION - Fixed height */}
+//       <div className="bg-[#414b56] text-white py-4 px-6 md:px-12 flex flex-col md:flex-row items-center justify-between gap-4 z-20 shrink-0">
+//         <div className="flex items-center gap-4">
+//           <Sprout size={48} strokeWidth={1.5} />
+//           <div>
+//             <h2 className="font-primary text-xl md:text-2xl uppercase tracking-wider">
+//               Good Nutrition, Anytime
+//             </h2>
+//             <p className="font-secondary text-xs md:text-sm text-gray-300 max-w-md leading-tight">
+//               Power your workouts and recovery with the right fuel.
+//             </p>
+//           </div>
+//         </div>
+//         <button className="bg-[#c23d6a] px-6 py-2.5 rounded-full font-secondary font-bold flex items-center gap-2 text-xs uppercase tracking-widest">
+//           Choose your fuel <Zap size={14} fill="white" />
+//         </button>
+//       </div>
+
+//       {/* 2. FULL SCREEN SLIDER SECTION - Takes up all remaining space */}
+//       <div className="flex-1 relative w-full overflow-hidden">
+//         <Swiper
+//           modules={[Autoplay, Pagination]}
+//           autoplay={{ delay: 1000, disableOnInteraction: false }}
+//           pagination={{ clickable: true, dynamicBullets: true }}
+//           loop={true}
+//           speed={1000} 
+//           onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
+//           className="w-full h-full mySwiper"
+//         >
+//           {slidingImages.map((src, index) => (
+//             <SwiperSlide key={index} className="h-full">
+//               <div className="relative w-full h-full overflow-hidden">
+//                 <AnimatePresence mode="wait">
+//                   <motion.div
+//                     key={`${index}-${activeIndex}`}
+//                     className="w-full h-full"
+//                     variants={shakeVariant}
+//                     animate={activeIndex === index ? "shake" : ""}
+//                   >
+//                     <Image
+//                       src={src}
+//                       alt={`Nutrition slide ${index + 1}`}
+//                       fill
+//                       className="object-cover" /* Ensures image fills the container without gaps */
+//                       priority={index === 0}
+//                       sizes="100vw"
+//                     />
+//                   </motion.div>
+//                 </AnimatePresence>
+//               </div>
+//             </SwiperSlide>
+//           ))}
+//         </Swiper>
+
+//         <style jsx global>{`
+//           .mySwiper {
+//             height: 100% !important;
+//           }
+//           .mySwiper .swiper-pagination {
+//               bottom: 30px !important;
+//               left: 30px !important;
+//               width: auto !important;
+//               z-index: 30;
+//           }
+//           .mySwiper .swiper-pagination-bullet-active {
+//             background: #c23d6a !important;
+//           }
+//         `}</style>
+//       </div>
+//     </section>
+//   );
+// }
+
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, EffectFade } from 'swiper/modules';
+import { Autoplay, Pagination } from 'swiper/modules';
+import { motion, AnimatePresence } from 'framer-motion';
 
-// Import Swiper styles
 import 'swiper/css';
-import 'swiper/css/effect-fade';
+import 'swiper/css/pagination';
 
-// Dynamic loading for icons to avoid Turbopack build errors
-const Zap = dynamic(() => import('lucide-react').then((mod) => mod.Zap), { ssr: false });
 const Sprout = dynamic(() => import('lucide-react').then((mod) => mod.Sprout), { ssr: false });
+const Zap = dynamic(() => import('lucide-react').then((mod) => mod.Zap), { ssr: false });
 
-export default function NutritionHero() {
-  // Replace these with your actual image paths
+export default function HomeGoodNutrition() {
+  const [activeIndex, setActiveIndex] = useState(0);
+
   const slidingImages = [
     "/images/homenutritionimg.png",
+    "/images/homenutritionimg.png", 
     "/images/homenutritionimg.png",
-    "/images/homenutritionimg.png"
   ];
 
+  const shakeVariant = {
+    shake: {
+      x: [0, -10, 10, -10, 10, 0],
+      transition: { duration: 0.5 }
+    }
+  };
+
   return (
-    <section className="w-full">
-      {/* --- Top Dark Banner --- */}
-      <div className="bg-[#4a5568] text-white py-4 px-6 md:px-12 flex flex-col md:flex-row items-center justify-between gap-4">
+    <section className="w-full h-screen flex flex-col bg-[#f3f4f6] overflow-hidden">
+      
+      {/* 1. TOP HEADER SECTION */}
+      <div className="bg-[#414b56] text-white py-4 px-6 md:px-12 flex flex-col md:flex-row items-center justify-between gap-4 z-20 shrink-0">
         <div className="flex items-center gap-4">
-          <div className="text-white">
-            <Sprout size={48} strokeWidth={1.5} />
-          </div>
+          <Sprout size={48} strokeWidth={1.5} />
           <div>
-            <h2 className="font-primary text-2xl md:text-3xl uppercase tracking-wide">
+            <h2 className="font-primary text-xl md:text-2xl uppercase tracking-wider">
               Good Nutrition, Anytime
             </h2>
-            <p className="font-secondary text-sm text-gray-300 max-w-md leading-tight">
-              Power your workouts, recovery, and everyday energy with the right fuel. 
-              Train better. Recover smarter.
+            <p className="font-secondary text-xs md:text-sm text-gray-300 max-w-md leading-tight">
+              Power your workouts and recovery with the right fuel.
             </p>
           </div>
         </div>
-        
-        <button className="bg-[#c23d6a] hover:bg-[#a13258] transition-colors px-6 py-3 rounded-full font-secondary font-bold flex items-center gap-2 text-sm uppercase tracking-wider">
-          Choose your fuel <Zap size={16} fill="white" />
+        <button className="bg-[#c23d6a] px-6 py-2.5 rounded-full font-secondary font-bold flex items-center gap-2 text-xs uppercase tracking-widest">
+          Choose your fuel <Zap size={14} fill="white" />
         </button>
       </div>
 
-      {/* --- Main Content Grid --- */}
-      <div className="grid grid-cols-1 md:grid-cols-12 w-full h-[600px]">
-        
-    
-        {/* Center & Right Column: Automatic Sliding Images */}
-        <div className="md:col-span-7 grid grid-cols-2">
-            {/* We use one Swiper that spans both columns, or separate them. 
-                Based on your image, we'll use a single Swiper for the "sliding" effect 
-                covering the remaining visual area. */}
-            <div className="col-span-2 w-full h-full">
-                <Swiper
-                    modules={[Autoplay, EffectFade]}
-                    effect="fade"
-                    autoplay={{
-                        delay: 3000,
-                        disableOnInteraction: false,
-                    }}
-                    loop={true}
-                    className="w-full h-full"
-                >
-                    {slidingImages.map((src, index) => (
-                        <SwiperSlide key={index}>
-                            <div className="relative w-full h-full">
-                                <Image
-                                    src={src}
-                                    alt={`Nutrition slide ${index + 1}`}
-                                    fill
-                                    className="object-cover"
-                                    priority={index === 0}
-                                />
-                            </div>
-                        </SwiperSlide>
-                    ))}
-                </Swiper>
-            </div>
-        </div>
+      {/* 2. FULL IMAGE SLIDER SECTION */}
+      <div className="flex-1 relative w-full overflow-hidden bg-black">
+        <Swiper
+          modules={[Autoplay, Pagination]}
+          autoplay={{ delay: 1000, disableOnInteraction: false }}
+          pagination={{ clickable: true, dynamicBullets: true }}
+          loop={true}
+          speed={300} 
+          onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
+          className="w-full h-full mySwiper"
+        >
+          {slidingImages.map((src, index) => (
+            <SwiperSlide key={index} className="h-full">
+              <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+                
+                {/* BACKGROUND BLUR (Optional: Makes the gaps look better) */}
+                <div 
+                  className="absolute inset-0 scale-110 blur-2xl opacity-50"
+                  style={{ backgroundImage: `url(${src})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+                />
+
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`${index}-${activeIndex}`}
+                    className="relative w-full h-full z-10 flex items-center justify-center"
+                    variants={shakeVariant}
+                    animate={activeIndex === index ? "shake" : ""}
+                  >
+                    <Image
+                      src={src}
+                      alt={`Nutrition slide ${index + 1}`}
+                      fill
+                      className="object-contain"
+                      priority={index === 0}
+                      sizes="100vw"
+                    />
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </SwiperSlide>
+          ))}
+        </Swiper>
+
+        <style jsx global>{`
+          .mySwiper { height: 100% !important; }
+          .mySwiper .swiper-pagination {
+              bottom: 20px !important;
+              left: 50% !important;
+              transform: translateX(-50%) !important;
+              width: auto !important;
+              z-index: 30;
+          }
+          .mySwiper .swiper-pagination-bullet-active {
+            background: #c23d6a !important;
+            width: 20px;
+            border-radius: 5px;
+          }
+        `}</style>
       </div>
     </section>
   );

@@ -1,51 +1,70 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Search, ChevronRight, Menu, X, ChevronDown } from 'lucide-react';
+import {
+  Search,
+  ChevronDown,
+  ShoppingCart,
+  User,
+  Menu,
+  X,
+  LogIn,
+  ArrowUpRight,
+  FileText,
+  Shield,
+  AlignJustify,
+} from 'lucide-react';
 
 const products = [
-  { name: 'Oats',   imageUrl: '/images/oatshoverimg.png',   link: '/products' },
-  { name: 'Muesli', imageUrl: '/images/meuslihoverimg1.png',  link: '/products' },
+  { name: 'Oats', imageUrl: '/images/oatshoverimg.png', link: '/products?category=OATS' },
+  { name: 'Muesli', imageUrl: '/images/meuslihoverimg1.png', link: '/products?category=Muesli' },
 ];
 
 const TICKER_ITEMS = [
-  'Fuel your body the right way',
-  'Strong habits create strong bodies',
+  'Free Shipping on orders over $50',
   'Discipline builds results',
-  'Consistency beats motivation',
+  'Fuel your body the right way',
 ];
 
 export default function Navbar() {
   const pathname = usePathname();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isShopOpen, setIsShopOpen] = useState(false);
+  const [isMoreOpen, setIsMoreOpen] = useState(false);
+  const [isShopMobileOpen, setIsShopMobileOpen] = useState(false);
+  const sidebarRef = useRef(null);
+  const moreRef = useRef(null);
 
-  const [isMegaMenuOpen,  setIsMegaMenuOpen]  = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isMobileShopOpen, setIsMobileShopOpen] = useState(false);
-
-  const closeMobileMenu = () => {
-    setIsMobileMenuOpen(false);
-    setIsMobileShopOpen(false);
-  };
+  // Close sidebar when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+        setIsSidebarOpen(false);
+      }
+      if (moreRef.current && !moreRef.current.contains(event.target)) {
+        setIsMoreOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <>
-      {/* ─── Announcement Ticker ─────────────────────────────────── */}
-      <div className="bg-[#f0ece2] py-2 overflow-hidden border-b border-black/5">
+      {/* ─── Top Utility Ticker ─── */}
+      <div className="bg-[#f3ead8] py-2 overflow-hidden border-b border-black/5">
         <div
           className="flex whitespace-nowrap"
-          style={{ animation: 'ticker 10s linear infinite' }}
+          style={{ animation: 'ticker 20s linear infinite' }}
         >
-          {[0, 1].map((copy) => (
-            <div key={copy} className="flex shrink-0">
+          {[0, 1].map((i) => (
+            <div key={i} className="flex shrink-0">
               {TICKER_ITEMS.map((text) => (
-                <span
-                  key={text}
-                  className="mx-8 text-[13px] font-medium uppercase tracking-tight text-gray-800"
-                >
-                  • {text}
+                <span key={text} className="mx-20 text-[11px] font-bold tracking-widest text-gray-800">
+                  • &nbsp;&nbsp; {text} &nbsp;&nbsp;
                 </span>
               ))}
             </div>
@@ -60,69 +79,56 @@ export default function Navbar() {
         `}</style>
       </div>
 
-      {/* ─── Main Navigation ─────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 bg-white shadow-sm">
-        <div className="max-w-[1440px] mx-auto px-4 md:px-10 h-20 flex items-center justify-between">
+      {/* ─── Main Navbar ─── */}
+      <header className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
+        <div className="max-w-[1440px] mx-auto px-4 md:px-10 h-20 flex items-center justify-between gap-4">
 
-         {/* Logo */}
-<Link href="/" className="flex items-center gap-3 group">
-  <div className="w-17 h-17 bg-[#c23d6a] rounded-full flex items-center justify-center overflow-hidden relative p-2 shadow-sm transition-transform group-hover:scale-105">
-    {/* Logo Image Container */}
-    
-    <div className="relative w-full h-full">
-      <Image
-        src="/images/logoimg.png" // Replace with your actual logo path
-        alt="Gym Hack Logo"
-        fill
-        className="object-contain"
-        priority
-      />
-    </div>
-  </div>
-</Link>
+          {/* 1. Mobile Menu Toggle & Brand */}
+          <div className="flex items-center gap-3 flex-1 md:flex-none">
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className="md:hidden p-2 text-black"
+            >
+              <Menu size={28} />
+            </button>
+            <Link href="/" className="flex items-center gap-2">
+              <div className="w-15 h-15 bg-[#c23d6a] rounded-full flex items-center justify-center p-1 relative">
+                <Image src="/images/logoimg.png" alt="Logo" fill className="object-contain p-1" />
+              </div>
+            </Link>
+          </div>
 
-          {/* ── Desktop Nav ── */}
-          <nav className="hidden md:flex items-center gap-10 font-bold text-gray-900 text-lg">
-            <Link href="/" className="hover:text-[#c23d6a] transition-colors">
+          {/* 2. Desktop Navigation Links */}
+          <nav className="hidden md:flex items-center gap-8 flex-1 justify-center">
+            <Link
+              href="/"
+              className={`text-xl font-bold tracking-tight hover:text-[#c23d6a] transition-colors ${pathname === '/' ? 'text-[#c23d6a]' : ''}`}
+            >
               Home
             </Link>
 
-            {/* Mega-menu (hover) */}
+            {/* Shop Dropdown */}
             <div
-              className="relative py-6"
-              onMouseEnter={() => setIsMegaMenuOpen(true)}
-              onMouseLeave={() => setIsMegaMenuOpen(false)}
+              className="relative group"
+              onMouseEnter={() => setIsShopOpen(true)}
+              onMouseLeave={() => setIsShopOpen(false)}
             >
-              <Link href='/products'>
-              <button className="hover:text-[#c23d6a] transition-colors flex items-center gap-1">
-                Shop all products
-                <ChevronDown
-                  size={18}
-                  strokeWidth={2.5}
-                  className={`transition-transform duration-200 ${isMegaMenuOpen ? 'rotate-180' : ''}`}
-                />
+              <button className="text-xl font-bold tracking-tight flex items-center gap-1 hover:text-[#c23d6a] transition-colors">
+                Shop <ChevronDown size={14} strokeWidth={3} className={`transition-transform duration-200 ${isShopOpen ? 'rotate-180' : ''}`} />
               </button>
-              </Link>
-
-              {isMegaMenuOpen && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 w-screen max-w-[1200px] bg-[#f0ece2] rounded-xl p-20 shadow-2xl border border-black/5 flex flex-col">
-                  <h2 className="text-3xl font-black mb-8 text-black">Products</h2>
-                  <div className="flex gap-10">
+              {isShopOpen && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-4 w-64 z-50">
+                  <div className="bg-white shadow-xl rounded-xl border border-gray-100 p-4">
                     {products.map((item) => (
-                      <Link key={item.name} href={item.link} className="group">
-                        {/* ── Product image ── */}
-                        <div className="relative w-44 h-44 bg-white rounded-3xl overflow-hidden mb-4 border border-black/5 shadow-sm">
-                          <Image
-                            src={item.imageUrl}
-                            alt={item.name}
-                            fill
-                            className="object-cover"
-                            sizes="176px"
-                          />
+                      <Link
+                        key={item.name}
+                        href={item.link}
+                        className="flex items-center gap-4 p-2 hover:bg-gray-50 rounded-lg transition-colors"
+                      >
+                        <div className="relative w-12 h-12 bg-gray-100 rounded-md overflow-hidden">
+                          <Image src={item.imageUrl} alt={item.name} fill className="object-cover" />
                         </div>
-                        <p className="text-center font-black text-xl group-hover:text-[#c23d6a] transition-colors">
-                          {item.name}
-                        </p>
+                        <span className="text-sm font-bold">{item.name}</span>
                       </Link>
                     ))}
                   </div>
@@ -130,99 +136,229 @@ export default function Navbar() {
               )}
             </div>
 
-            <Link href="/about" className="hover:text-[#c23d6a] transition-colors">
+            <Link href="/about" className="text-xl font-bold tracking-tight hover:text-[#c23d6a] transition-colors">
               About
             </Link>
           </nav>
 
-          {/* Action Buttons */}
-          <div className="flex items-center gap-4">
-            <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-              <Search size={24} strokeWidth={2.5} />
+          {/* 3. Utility Icons */}
+          <div className="flex items-center justify-end gap-1 md:gap-4 flex-1 md:flex-none">
+            {/* Search */}
+            <div className="hidden lg:flex items-center bg-gray-100 rounded-full px-4 py-2 border border-transparent focus-within:bg-white focus-within:border-gray-200 transition-all">
+              <Search size={18} className="text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search products..."
+                className="bg-transparent border-none focus:ring-0 text-sm ml-2 w-40 outline-none"
+              />
+            </div>
+
+            <button className="lg:hidden p-2 text-black hover:bg-gray-100 rounded-full transition-colors">
+              <Search size={22} />
             </button>
 
-            <Link
-              href="/order"
-              className="bg-[#c23d6a] text-white px-6 py-2.5 rounded-full flex items-center gap-2 font-bold hover:bg-[#f2eadf] hover:text-black hover:border-black border-transparent border transition-all shadow-md active:scale-95"
-            >
-              Order now
-              <ChevronRight size={20} strokeWidth={3} />
+            
+
+            <Link href="/profile" className="p-2 text-black hover:bg-gray-100 rounded-full transition-colors">
+              <User size={22} />
             </Link>
 
-            {/* Hamburger */}
-            <button
-              onClick={() => setIsMobileMenuOpen((v) => !v)}
-              className="md:hidden p-2"
-              aria-label="Toggle menu"
-            >
-              {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
-            </button>
-          </div>
-        </div>
-
-        {/* ── Mobile Nav Drawer ── */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden fixed inset-0 top-[120px] bg-white z-[60] p-6 flex flex-col gap-6 overflow-y-auto">
-            <Link
-              href="/"
-              onClick={closeMobileMenu}
-              className="text-3xl font-black hover:text-[#c23d6a] transition-colors"
-            >
-              Home
+            <Link href="/cart" className="p-2 text-black hover:bg-gray-100 rounded-full relative transition-colors">
+              <ShoppingCart size={22} />
+              <span className="absolute top-0.5 right-0.5 bg-[#c23d6a] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
+                3
+              </span>
             </Link>
 
-            {/* Shop — tap to expand */}
-            <div>
+            {/* Desktop hamburger menu — opens More panel */}
+            <div ref={moreRef} className="hidden md:block relative">
               <button
-                onClick={() => setIsMobileShopOpen((v) => !v)}
-                className="text-3xl font-black flex items-center gap-2 hover:text-[#c23d6a] transition-colors w-full text-left"
+                onClick={() => setIsMoreOpen((v) => !v)}
+                className="p-2 text-black hover:bg-gray-100 rounded-full transition-colors"
+                aria-label="More options"
               >
-                Shop
-                <ChevronDown
-                  size={26}
-                  strokeWidth={2.5}
-                  className={`transition-transform duration-200 ${isMobileShopOpen ? 'rotate-180' : ''}`}
-                />
+                <AlignJustify size={24} strokeWidth={2.5} />
               </button>
 
-              {isMobileShopOpen && (
-                <div className="mt-4 pl-4 flex flex-col gap-4">
-                  {products.map((item) => (
+              {isMoreOpen && (
+                <div className="absolute top-full right-0 mt-3 z-50" style={{ width: '420px' }}>
+                  <div className="bg-white shadow-2xl rounded-2xl border border-gray-100 overflow-hidden">
+                    {/* Login / Signup */}
                     <Link
-                      key={item.name}
-                      href={item.link}
-                      onClick={closeMobileMenu}
-                      className="flex items-center gap-3 group"
+                      href="/login"
+                      className="flex items-center gap-3 px-5 py-4 hover:bg-gray-50 transition-colors border-b border-gray-100"
+                      onClick={() => setIsMoreOpen(false)}
                     >
-                      {/* ── Thumbnail in mobile drawer ── */}
-                      <div className="relative w-10 h-10 rounded-xl overflow-hidden border border-black/10 shrink-0">
-                        <Image
-                          src={item.imageUrl}
-                          alt={item.name}
-                          fill
-                          className="object-cover"
-                          sizes="40px"
-                        />
-                      </div>
-                      <span className="text-xl font-bold text-gray-700 group-hover:text-[#c23d6a] transition-colors">
-                        {item.name}
-                      </span>
+                      <LogIn size={18} className="text-gray-700 shrink-0" />
+                      <span className="text-sm font-semibold text-gray-900">Login or signup</span>
                     </Link>
-                  ))}
+
+                    {/* Bulk Orders */}
+                    <Link
+                      href="/bulk"
+                      className="flex items-start gap-3 px-5 py-4 hover:bg-gray-50 transition-colors border-b border-gray-100"
+                      onClick={() => setIsMoreOpen(false)}
+                    >
+                      <ArrowUpRight size={18} className="text-gray-700 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">Bulk orders</p>
+                        <p className="text-xs text-gray-400 mt-0.5">Contact for bulk orders</p>
+                      </div>
+                    </Link>
+
+                    {/* Terms & Privacy */}
+                    <div className="py-1">
+                      <Link
+                        href="/terms"
+                        className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors"
+                        onClick={() => setIsMoreOpen(false)}
+                      >
+                        <span className="text-sm font-semibold text-gray-800">Terms and conditions</span>
+                      </Link>
+                      <Link
+                        href="/privacy"
+                        className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors"
+                        onClick={() => setIsMoreOpen(false)}
+                      >
+                        <span className="text-sm font-semibold text-gray-800">Privacy policy</span>
+                      </Link>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
-
-            <Link
-              href="/about"
-              onClick={closeMobileMenu}
-              className="text-3xl font-black hover:text-[#c23d6a] transition-colors"
-            >
-              About
-            </Link>
           </div>
-        )}
+        </div>
       </header>
+
+      {/* ─── Mobile Sidebar Overlay ─── */}
+      {isSidebarOpen && (
+        <div className="fixed inset-0 z-[100] flex">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+
+          {/* Sidebar Content */}
+          <div
+            ref={sidebarRef}
+            className="relative w-[80%] max-w-sm bg-white h-full shadow-2xl flex flex-col animate-in slide-in-from-left duration-300"
+          >
+            {/* Header */}
+            <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+              <span className="font-black text-xl tracking-tighter">MENU</span>
+              <button onClick={() => setIsSidebarOpen(false)} className="p-2 bg-gray-100 rounded-full">
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Scrollable Body */}
+            <nav className="flex-1 overflow-y-auto">
+              {/* Main nav links */}
+              <div className="p-6 space-y-5 border-b border-gray-100">
+                <Link href="/" className="block text-lg font-bold" onClick={() => setIsSidebarOpen(false)}>
+                  Home
+                </Link>
+
+                {/* Shop — accordion dropdown */}
+                <div>
+                  <button
+                    onClick={() => setIsShopMobileOpen((v) => !v)}
+                    className="w-full flex items-center justify-between text-lg font-bold py-0.5"
+                  >
+                    <span>Shop</span>
+                    <ChevronDown
+                      size={18}
+                      strokeWidth={3}
+                      className={`transition-transform duration-200 ${isShopMobileOpen ? 'rotate-180' : ''}`}
+                    />
+                  </button>
+
+                  {isShopMobileOpen && (
+                    <div className="mt-3 space-y-2 pl-1">
+                      <p className="text-[10px] font-black text-gray-400 tracking-widest mb-2">Shop Categories</p>
+                      {products.map((item) => (
+                        <Link
+                          key={item.name}
+                          href={item.link}
+                          className="flex items-center gap-4 p-1"
+                          onClick={() => setIsSidebarOpen(false)}
+                        >
+                          <div className="w-10 h-10 bg-gray-50 rounded-lg relative overflow-hidden shrink-0">
+                            <Image src={item.imageUrl} alt={item.name} fill className="object-cover" />
+                          </div>
+                          <span className="font-bold">{item.name}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <Link href="/about" className="block text-lg font-bold" onClick={() => setIsSidebarOpen(false)}>
+                  About Us
+                </Link>
+              </div>
+
+              {/* ─── The menu section from the screenshot ─── */}
+              <div className="p-6 space-y-1">
+                {/* Login or signup */}
+                <Link
+                  href="/login"
+                  className="flex items-center gap-4 py-3"
+                  onClick={() => setIsSidebarOpen(false)}
+                >
+                  <LogIn size={20} className="text-gray-700 shrink-0" />
+                  <span className="text-base font-semibold text-gray-900">Login or signup</span>
+                </Link>
+
+                {/* Bulk orders */}
+                <Link
+                  href="/bulk"
+                  className="flex items-start gap-4 py-3"
+                  onClick={() => setIsSidebarOpen(false)}
+                >
+                  <ArrowUpRight size={20} className="text-gray-700 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-base font-semibold text-gray-900">Bulk orders</p>
+                    <p className="text-sm text-gray-400">Contact for bulk orders</p>
+                  </div>
+                </Link>
+
+                {/* Divider */}
+                <div className="border-t border-gray-200 my-2" />
+
+                {/* Terms and conditions */}
+                <Link
+                  href="/terms"
+                  className="flex items-center gap-4 py-3"
+                  onClick={() => setIsSidebarOpen(false)}
+                >
+                  <span className="text-base font-semibold text-gray-900">Terms and conditions</span>
+                </Link>
+
+                {/* Privacy policy */}
+                <Link
+                  href="/privacy"
+                  className="flex items-center gap-4 py-3"
+                  onClick={() => setIsSidebarOpen(false)}
+                >
+                  <span className="text-base font-semibold text-gray-900">Privacy policy</span>
+                </Link>
+              </div>
+            </nav>
+
+            {/* Footer */}
+            <div className="p-6 bg-gray-50 border-t border-gray-100">
+              <p className="text-[10px] text-gray-400 font-bold uppercase mb-4">Follow Us</p>
+              <div className="flex gap-4">
+                <div className="w-8 h-8 bg-gray-200 rounded-full" />
+                <div className="w-8 h-8 bg-gray-200 rounded-full" />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

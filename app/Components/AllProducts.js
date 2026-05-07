@@ -88,13 +88,13 @@ export default function HomeProducts() {
                   src={product.image}
                   alt={product.name}
                   fill
-                  className="object-contain p-5 md:p-8 group-hover:scale-105 transition-transform duration-500"
+                  className="object-contain p-5 md:p-8 transition-transform duration-500"
                   sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                 />
                 {/* Hover overlay */}
                 <div className="absolute inset-0 z-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/40 backdrop-blur-[2px]">
                   <button className="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-xs shadow-lg bg-[#c23d6a] text-white hover:bg-[#f2eadf] hover:text-black border border-transparent hover:border-black transition-all duration-300 font-secondary">
-                    Buy Now <ShoppingCart className="w-4 h-4" />
+                    Add to cart <ShoppingCart className="w-4 h-4" />
                   </button>
                 </div>
               </div>

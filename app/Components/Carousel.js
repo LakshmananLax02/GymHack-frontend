@@ -12,23 +12,23 @@ export default function Hero() {
         <div 
           className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat transition-transform duration-700 hover:scale-105"
           style={{ 
-            backgroundImage: "url('/images/carouselimg.png')", // Put your gym man image in public/hero-bg.jpg
-            backgroundColor: "#1a1a1a" // Fallback color
+            backgroundImage: "url('/images/carouselimg.png')",
+            backgroundColor: "#1a1a1a" 
           }}
         >
           {/* Dark Overlay to make text readable */}
-          <div className="absolute inset-0 bg-black/50" />
+          <div className="absolute inset-0 bg-black/30" />
         </div>
 
         {/* Hero Content */}
-        <div className="relative z-10 max-w-[900px] mx-auto">
-          <h1 className="text-2xl font-primary md:text-3xl lg:text-5xl font-black text-white uppercase mb-6">
-            Stronger Workouts Start <br className="hidden font-primary md:block" /> with Better Fuel
-          </h1>
-          
-          <p className="text-gray-200 text-lg font-secondary md:text-xl font-medium mb-10 max-w-[600px] mx-auto">
-            Refuel your body with clean, powerful nutrition after every workout.
-          </p>
+        <div className="relative z-10 max-w-[900px] mx-auto ">
+          <h1 className="text-2xl font-primary md:text-3xl lg:text-5xl font-black mb-6 text-white">
+  Stronger Workouts Start <br className="hidden font-primary md:block" /> with Better Fuel
+</h1>
+
+<p className="text-lg font-secondary md:text-xl font-medium mb-10 max-w-[600px] mx-auto text-white">
+  Refuel your body with clean, powerful nutrition after every workout.
+</p>
 
           <Link 
             href="/products" 

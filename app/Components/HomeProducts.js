@@ -4,7 +4,7 @@ import { ArrowLeft, ArrowRight, ShoppingCart } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-const allProducts = [
+const product = [
   { id: 1, category: 'OATS', name: 'Premium Rolled Oats - High Protein', price: 180, image: '/images/oatsimg.jpg' },
   { id: 2, category: 'OATS', name: 'Instant Oats - Quick Energy', price: 150, image: '/images/oatsimg.jpg' },
   { id: 3, category: 'Muesli', name: 'Gourmet Muesli-Rich fruits, Nuts & Seeds', price: 250, image: '/images/meusliimg.png' },
@@ -20,7 +20,7 @@ export default function HomeProducts() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [itemsToShow, setItemsToShow] = useState(3);
 
-  const filteredProducts = allProducts.filter(p => p.category === activeTab);
+  const filteredProducts = product.filter(p => p.category === activeTab);
 
   useEffect(() => {
     const handleResize = () => {
@@ -103,6 +103,8 @@ export default function HomeProducts() {
           </button>
 
           <div className="w-full overflow-hidden px-2">
+            <Link href={`/productsviewpage/${product.id}`}>
+  <div className="cursor-pointer">
             <div 
               className="flex transition-transform duration-700 ease-in-out"
               style={{ 
@@ -121,12 +123,12 @@ export default function HomeProducts() {
                           src={product.image} 
                           alt={product.name}
                           fill
-                          className="object-contain p-6 md:p-10 group-hover:scale-105 transition-transform duration-500"
+                          className="object-contain p-6 md:p-10 transition-transform duration-500"
                           sizes="(max-width: 768px) 100vw, 33vw"
                        />
                     </div>
-                    <div className="absolute inset-0 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/40 backdrop-blur-[2px]">
-                      <button className="flex items-center font-secondary gap-2 px-6 md:px-8 py-3 md:py-4 rounded-full font-bold uppercase text-xs md:text-sm shadow-xl transition-all duration-300 bg-[#c23d6a] text-white hover:bg-[#f2eadf] hover:text-black hover:border-black border-transparent border">
+                    <div className="absolute inset-0 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/40 backdrop-blur-[1px]">
+                      <button className="flex items-center font-secondary gap-2 px-6 md:px-8 py-3 md:py-4 rounded-full font-bold text-xs md:text-sm shadow-xl transition-all duration-300 bg-[#c23d6a] text-white hover:bg-[#f2eadf] hover:text-black hover:border-black border-transparent border">
                         Add to cart <ShoppingCart className="w-4 h-4 md:w-5 md:h-5" />
                       </button>
                     </div>
@@ -144,6 +146,8 @@ export default function HomeProducts() {
                 </div>
               ))}
             </div>
+            </div>
+</Link>
           </div>
 
           <button 

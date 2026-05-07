@@ -24,7 +24,7 @@ export default function Home() {
 
      <HomeProducts/>
 
-     <WhatToEat/>
+     {/* <WhatToEat/> */}
 
      <TopSelling/>
 

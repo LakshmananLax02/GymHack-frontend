@@ -1,112 +1,3 @@
-// "use client";
-
-// import React, { useState } from 'react';
-// import Image from 'next/image';
-// import dynamic from 'next/dynamic';
-// import { Swiper, SwiperSlide } from 'swiper/react';
-// import { Autoplay, Pagination } from 'swiper/modules';
-// import { motion, AnimatePresence } from 'framer-motion';
-
-// // Import Swiper styles
-// import 'swiper/css';
-// import 'swiper/css/pagination';
-
-// const Sprout = dynamic(() => import('lucide-react').then((mod) => mod.Sprout), { ssr: false });
-// const Zap = dynamic(() => import('lucide-react').then((mod) => mod.Zap), { ssr: false });
-
-// export default function HomeGoodNutrition() {
-//   const [activeIndex, setActiveIndex] = useState(0);
-
-//   const slidingImages = [
-//     "/images/homenutritionimg.png",
-//     "/images/homenutritionimg.png", 
-//     "/images/homenutritionimg.png",
-//   ];
-
-//   const shakeVariant = {
-//     shake: {
-//       x: [0, -10, 10, -10, 10, 0],
-//       transition: { duration: 0.5 }
-//     }
-//   };
-
-//   return (
-//     /* Changed min-h-screen to h-screen to force a fixed height and prevent overflow gaps */
-//     <section className="w-full h-screen flex flex-col bg-white overflow-hidden">
-      
-//       {/* 1. TOP HEADER SECTION - Fixed height */}
-//       <div className="bg-[#414b56] text-white py-4 px-6 md:px-12 flex flex-col md:flex-row items-center justify-between gap-4 z-20 shrink-0">
-//         <div className="flex items-center gap-4">
-//           <Sprout size={48} strokeWidth={1.5} />
-//           <div>
-//             <h2 className="font-primary text-xl md:text-2xl uppercase tracking-wider">
-//               Good Nutrition, Anytime
-//             </h2>
-//             <p className="font-secondary text-xs md:text-sm text-gray-300 max-w-md leading-tight">
-//               Power your workouts and recovery with the right fuel.
-//             </p>
-//           </div>
-//         </div>
-//         <button className="bg-[#c23d6a] px-6 py-2.5 rounded-full font-secondary font-bold flex items-center gap-2 text-xs uppercase tracking-widest">
-//           Choose your fuel <Zap size={14} fill="white" />
-//         </button>
-//       </div>
-
-//       {/* 2. FULL SCREEN SLIDER SECTION - Takes up all remaining space */}
-//       <div className="flex-1 relative w-full overflow-hidden">
-//         <Swiper
-//           modules={[Autoplay, Pagination]}
-//           autoplay={{ delay: 1000, disableOnInteraction: false }}
-//           pagination={{ clickable: true, dynamicBullets: true }}
-//           loop={true}
-//           speed={1000} 
-//           onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
-//           className="w-full h-full mySwiper"
-//         >
-//           {slidingImages.map((src, index) => (
-//             <SwiperSlide key={index} className="h-full">
-//               <div className="relative w-full h-full overflow-hidden">
-//                 <AnimatePresence mode="wait">
-//                   <motion.div
-//                     key={`${index}-${activeIndex}`}
-//                     className="w-full h-full"
-//                     variants={shakeVariant}
-//                     animate={activeIndex === index ? "shake" : ""}
-//                   >
-//                     <Image
-//                       src={src}
-//                       alt={`Nutrition slide ${index + 1}`}
-//                       fill
-//                       className="object-cover" /* Ensures image fills the container without gaps */
-//                       priority={index === 0}
-//                       sizes="100vw"
-//                     />
-//                   </motion.div>
-//                 </AnimatePresence>
-//               </div>
-//             </SwiperSlide>
-//           ))}
-//         </Swiper>
-
-//         <style jsx global>{`
-//           .mySwiper {
-//             height: 100% !important;
-//           }
-//           .mySwiper .swiper-pagination {
-//               bottom: 30px !important;
-//               left: 30px !important;
-//               width: auto !important;
-//               z-index: 30;
-//           }
-//           .mySwiper .swiper-pagination-bullet-active {
-//             background: #c23d6a !important;
-//           }
-//         `}</style>
-//       </div>
-//     </section>
-//   );
-// }
-
 "use client";
 
 import React, { useState } from 'react';
@@ -127,20 +18,15 @@ export default function HomeGoodNutrition() {
 
   const slidingImages = [
     "/images/homenutritionimg.png",
-    "/images/homenutritionimg.png", 
+    "/images/homenutritionimg.png",
     "/images/homenutritionimg.png",
   ];
 
-  const shakeVariant = {
-    shake: {
-      x: [0, -10, 10, -10, 10, 0],
-      transition: { duration: 0.5 }
-    }
-  };
+
 
   return (
-    <section className="w-full h-screen flex flex-col bg-[#f3f4f6] overflow-hidden">
-      
+    <section className="w-full h-screen flex flex-col bg-[#f5d32a] overflow-hidden">
+
       {/* 1. TOP HEADER SECTION */}
       <div className="bg-[#414b56] text-white py-4 px-6 md:px-12 flex flex-col md:flex-row items-center justify-between gap-4 z-20 shrink-0">
         <div className="flex items-center gap-4">
@@ -160,43 +46,37 @@ export default function HomeGoodNutrition() {
       </div>
 
       {/* 2. FULL IMAGE SLIDER SECTION */}
-      <div className="flex-1 relative w-full overflow-hidden bg-black">
+      <div className="flex-1 relative w-full overflow-hidden bg-[#f5d32a]">
         <Swiper
           modules={[Autoplay, Pagination]}
-          autoplay={{ delay: 1000, disableOnInteraction: false }}
+          autoplay={{ delay: 3000, disableOnInteraction: false }}
           pagination={{ clickable: true, dynamicBullets: true }}
           loop={true}
-          speed={300} 
+          speed={300}
           onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
           className="w-full h-full mySwiper"
         >
           {slidingImages.map((src, index) => (
             <SwiperSlide key={index} className="h-full">
-              <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
-                
-                {/* BACKGROUND BLUR (Optional: Makes the gaps look better) */}
-                <div 
-                  className="absolute inset-0 scale-110 blur-2xl opacity-50"
-                  style={{ backgroundImage: `url(${src})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
-                />
+              <div className="w-full h-full flex items-center justify-center bg-[#f5d32a]">
 
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={`${index}-${activeIndex}`}
-                    className="relative w-full h-full z-10 flex items-center justify-center"
-                    variants={shakeVariant}
+                    className="relative w-full z-10 slide-image-ratio"
                     animate={activeIndex === index ? "shake" : ""}
                   >
                     <Image
                       src={src}
                       alt={`Nutrition slide ${index + 1}`}
                       fill
-                      className="object-contain"
+                      className="object-fill"
                       priority={index === 0}
                       sizes="100vw"
                     />
                   </motion.div>
                 </AnimatePresence>
+
               </div>
             </SwiperSlide>
           ))}
@@ -205,19 +85,32 @@ export default function HomeGoodNutrition() {
         <style jsx global>{`
           .mySwiper { height: 100% !important; }
           .mySwiper .swiper-pagination {
-              bottom: 20px !important;
-              left: 50% !important;
-              transform: translateX(-50%) !important;
-              width: auto !important;
-              z-index: 30;
+            bottom: 20px !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            width: auto !important;
+            z-index: 30;
           }
           .mySwiper .swiper-pagination-bullet-active {
             background: #c23d6a !important;
             width: 20px;
             border-radius: 5px;
           }
+
+          /* Mobile: taller ratio */
+          .slide-image-ratio {
+            aspect-ratio: 2 / 1;
+          }
+
+          /* Tablet and up: wider ratio */
+          @media (min-width: 768px) {
+            .slide-image-ratio {
+              aspect-ratio: 2.5 / 1;
+            }
+          }
         `}</style>
       </div>
+
     </section>
   );
 }

@@ -38,7 +38,7 @@ export default function ProductShowcase() {
               className="
                 group relative overflow-hidden rounded-xl cursor-pointer
                 flex-[1] hover:flex-[2.2]
-                h-full hover:h-[80%]
+                h-full hover:h-[500px]
                 transition-all duration-500 ease-in-out
                 bg-gray-100
               "

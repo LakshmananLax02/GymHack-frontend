@@ -23,9 +23,9 @@ const product = {
 };
 
 const initialReviews = [
-  { id: 1, name: "Rathy R.", rating: 5, title: "Excellent quality!", body: "Ordered for the first time. Very happy with the quality. Will definitely recommend to product.", verified: true, date: "2 days ago", helpful: 4 },
-  { id: 2, name: "Leela S.", rating: 4, title: "Healthy product", body: "Good taste and texture. Easy to cook. The oats are clean and fresh. Good for daily use.", verified: true, date: "1 week ago", helpful: 2 },
-  { id: 3, name: "Arjun M.", rating: 5, title: "Best oats I've tried!", body: "Really good quality oats. No added junk as claimed. Makes a great breakfast with fruits.", verified: false, date: "2 weeks ago", helpful: 7 },
+  { id: 1, name: "Laxman", rating: 5, title: "Excellent quality!", body: "Ordered for the first time. Very happy with the quality. Will definitely recommend to product.", verified: true, date: "2 days ago", helpful: 4 },
+  { id: 2, name: "Lohit", rating: 4, title: "Healthy product", body: "Good taste and texture. Easy to cook. The oats are clean and fresh. Good for daily use.", verified: true, date: "1 week ago", helpful: 2 },
+  { id: 3, name: "Santhosh", rating: 5, title: "Best oats I've tried!", body: "Really good quality oats. No added junk as claimed. Makes a great breakfast with fruits.", verified: false, date: "2 weeks ago", helpful: 7 },
 ];
 
 const Star = ({ filled, half, size = 18, onClick, onHover }) => (

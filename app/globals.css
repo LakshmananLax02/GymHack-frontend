@@ -45,3 +45,12 @@ body {
   /* Apply the secondary font as the default for the body */
   font-family: var(--font-overpass), Arial, sans-serif;
 }
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee-infinite {
+  animation: marquee 30s linear infinite;
+}

@@ -460,7 +460,7 @@ export default function Navbar() {
       </nav>
 
       {/* Bottom nav spacer — accounts for nav height + iOS safe area */}
-      <div className="md:hidden" style={{ height: 'calc(4rem + env(safe-area-inset-bottom))' }} />
+      {/* <div className="md:hidden" style={{ height: 'calc(4rem + env(safe-area-inset-bottom))' }} /> */}
     </>
   );
 }

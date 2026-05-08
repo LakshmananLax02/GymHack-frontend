@@ -2,6 +2,8 @@ import Image from "next/image";
 
 import Carousel from './Components/Carousel'
 
+import HomeMarquee from './Components/HomeMarquee'
+
 import HomeProducts from './Components/HomeProducts'
 
 import WhatToEat from './Components/HomeWhenToEat'
@@ -21,6 +23,8 @@ export default function Home() {
     <>
 
      <Carousel/>
+
+     <HomeMarquee/>
 
      <HomeProducts/>
 

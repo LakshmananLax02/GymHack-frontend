@@ -1,17 +1,16 @@
-/** @type {import('tailwindcss').Config} */
+// tailwind.config.js
 module.exports = {
-  content: [
-    "./app/**/*.{js,ts,jsx,tsx}",
-    "./components/**/*.{js,ts,jsx,tsx}",
-  ],
   theme: {
     extend: {
-      fontFamily: {
-        // This allows you to use 'font-primary' and 'font-secondary'
-        primary: ['var(--font-oswald)', 'sans-serif'],
-        secondary: ['var(--font-overpass)', 'sans-serif'],
+      animation: {
+        'marquee-infinite': 'marquee 25s linear infinite',
+      },
+      keyframes: {
+        marquee: {
+          '0%': { transform: 'translateX(0%)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
       },
     },
   },
-  plugins: [],
-};
+}

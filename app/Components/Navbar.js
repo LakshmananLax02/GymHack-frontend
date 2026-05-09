@@ -88,24 +88,24 @@ export default function Navbar() {
 
       {/* ─── Main Navbar ─── */}
       <header className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm overflow-visible">
-        <div className="max-w-[1440px] mx-auto px-4 md:px-10 h-20 flex items-center justify-between gap-4">
+<div className="max-w-[1440px] mx-auto px-2 md:px-10 h-20 flex items-center justify-between gap-4">
+      {/* 1. Mobile Menu Toggle & Brand */}
+<div className="flex items-center justify-between w-full md:w-auto md:flex-none">
+  
+  {/* Logo — LEFT on mobile */}
+  <Link href="/" className="flex items-center gap-2">
+    <div className="w-15 h-15 bg-[#c23d6a] rounded-full flex items-center justify-center p-1 relative">
+      <Image src="/images/logoimg.png" alt="Logo" fill className="object-contain p-1" />
+    </div>
+  </Link>
 
-          {/* 1. Mobile Menu Toggle & Brand */}
-          <div className="flex items-center gap-3 flex-1 md:flex-none">
-            {/* Hamburger — mobile only */}
-            <button
-              onClick={() => setIsSidebarOpen(true)}
-              className="md:hidden p-2 text-black"
-            >
-              <Menu size={28} />
-            </button>
-
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-15 h-15 bg-[#c23d6a] rounded-full flex items-center justify-center p-1 relative">
-                <Image src="/images/logoimg.png" alt="Logo" fill className="object-contain p-1" />
-              </div>
-            </Link>
-          </div>
+  {/* Hamburger — RIGHT on mobile */}
+  <button
+    onClick={() => setIsSidebarOpen(true)}
+className="md:hidden text-black"  >
+    <Menu size={28} />
+  </button>
+</div>
 
           {/* 2. Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-8 flex-1 justify-center">

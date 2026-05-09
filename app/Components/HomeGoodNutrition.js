@@ -17,20 +17,18 @@ export default function HomeGoodNutrition() {
   const [activeIndex, setActiveIndex] = useState(0);
 
   const slidingImages = [
-    "/images/homenutritionimg.png",
-    "/images/homenutritionimg.png",
-    "/images/homenutritionimg.png",
+    "/images/homeslideimg1.png",
+    "/images/homeslideimg2.png",
+    "/images/homeslideimg3.png",
   ];
 
-
-
   return (
-    <section className="w-full h-screen flex flex-col bg-[#f5d32a] overflow-hidden">
+    <section className="w-full h-screen flex flex-col overflow-hidden bg-white">
 
-      {/* 1. TOP HEADER SECTION */}
+      {/* 1. HEADER */}
       <div className="bg-[#414b56] text-white py-4 px-6 md:px-12 flex flex-col md:flex-row items-center justify-between gap-4 z-20 shrink-0">
         <div className="flex items-center gap-4">
-          <Sprout size={48} strokeWidth={1.5} />
+          <Sprout size={48} strokeWidth={1.5} className="text-[#f0ece2]" />
           <div>
             <h2 className="font-primary text-xl md:text-2xl uppercase tracking-wider">
               Good Nutrition, Anytime
@@ -40,43 +38,43 @@ export default function HomeGoodNutrition() {
             </p>
           </div>
         </div>
-        <button className="bg-[#c23d6a] px-6 py-2.5 rounded-full font-secondary font-bold flex items-center gap-2 text-xs uppercase tracking-widest">
+        <button className="bg-[#c23d6a] px-6 py-2.5 rounded-full font-secondary font-bold flex items-center gap-2 text-xs uppercase tracking-widest hover:scale-105 transition-transform">
           Choose your fuel <Zap size={14} fill="white" />
         </button>
       </div>
 
-      {/* 2. FULL IMAGE SLIDER SECTION */}
-      <div className="flex-1 relative w-full overflow-hidden bg-[#f5d32a]">
+      {/* 2. IMAGE SLIDER */}
+      <div className="relative w-full overflow-hidden bg-white h-[500px] md:flex-1">
         <Swiper
           modules={[Autoplay, Pagination]}
-          autoplay={{ delay: 3000, disableOnInteraction: false }}
+          autoplay={{ delay: 4000, disableOnInteraction: false }}
           pagination={{ clickable: true, dynamicBullets: true }}
           loop={true}
-          speed={300}
+          speed={600}
           onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
           className="w-full h-full mySwiper"
         >
           {slidingImages.map((src, index) => (
             <SwiperSlide key={index} className="h-full">
-              <div className="w-full h-full flex items-center justify-center bg-[#f5d32a]">
-
+              <div className="w-full h-full relative p-2 md:p-0">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={`${index}-${activeIndex}`}
-                    className="relative w-full z-10 slide-image-ratio"
-                    animate={activeIndex === index ? "shake" : ""}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5 }}
+                    className="relative w-full h-full"
                   >
                     <Image
                       src={src}
                       alt={`Nutrition slide ${index + 1}`}
                       fill
-                      className="object-fill"
                       priority={index === 0}
                       sizes="100vw"
+                      className="object-contain"
                     />
                   </motion.div>
                 </AnimatePresence>
-
               </div>
             </SwiperSlide>
           ))}
@@ -85,28 +83,18 @@ export default function HomeGoodNutrition() {
         <style jsx global>{`
           .mySwiper { height: 100% !important; }
           .mySwiper .swiper-pagination {
-            bottom: 20px !important;
-            left: 50% !important;
-            transform: translateX(-50%) !important;
-            width: auto !important;
+            bottom: 15px !important;
             z-index: 30;
+          }
+          .mySwiper .swiper-pagination-bullet {
+            background: #414b56 !important;
+            opacity: 0.3;
           }
           .mySwiper .swiper-pagination-bullet-active {
             background: #c23d6a !important;
-            width: 20px;
+            width: 24px;
             border-radius: 5px;
-          }
-
-          /* Mobile: taller ratio */
-          .slide-image-ratio {
-            aspect-ratio: 2 / 1;
-          }
-
-          /* Tablet and up: wider ratio */
-          @media (min-width: 768px) {
-            .slide-image-ratio {
-              aspect-ratio: 2.5 / 1;
-            }
+            opacity: 1;
           }
         `}</style>
       </div>

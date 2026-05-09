@@ -154,7 +154,7 @@ export default function ProductViewPage() {
                 <button onClick={() => setQty(q => q + 1)} style={{ width: 36, height: 36, border: "none", background: "#f5f5f5", fontSize: 18, cursor: "pointer" }}>+</button>
               </div> */}
               <button style={{ flex: 1, background: "#c23d6a", color: "#fff", border: "none", borderRadius: 8, padding: "12px 20px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Buy Now</button>
-              {/* <button style={{ flex: 1, background: "#fff", color: "#c23d6a", border: "2px solid #c23d6a", borderRadius: 8, padding: "12px 20px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Add to Cart</button> */}
+              <button style={{ flex: 1, background: "#fff", color: "#c23d6a", border: "2px solid #c23d6a", borderRadius: 8, padding: "12px 20px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Add to Cart</button>
             </div> 
 
             {/* TABS */}

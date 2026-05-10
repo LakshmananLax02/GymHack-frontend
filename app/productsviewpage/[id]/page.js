@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCartStore } from '../../store/useCartStore';
+import { ChevronDown } from 'lucide-react';
 
 const product = {
   id: 1,
@@ -11,23 +12,33 @@ const product = {
   price: 240,
   description:
     "Made from 100% whole grain oats, our Rolled Oats are minimally processed to retain maximum nutrients. Perfect for pre/post workout meals, they provide slow-release energy to fuel your fitness goals.",
-  ingredients: "Whole Grain Rolled Oats (100%)",
+  ingredients: "Almond Milk (Water, Almonds), Rolled Oats, Dates, Vanilla Extract, Sea Salt.",
+  howToUse: "Add 40g of oats to 200ml of water or milk. Cook on medium heat for 3-5 minutes, stirring occasionally. Add your favourite toppings and enjoy!",
   tags: ["Clean Ingredients", "High in Fiber", "No Added Junk", "Ready in Minutes", "Made for Daily Fitness"],
   images: [
-     "/images/oatshoverimg.png",
+    "/images/oatshoverimg.png",
     "/images/oatsimg.jpg",
     "/images/oatshoverimg.png",
     "/images/oatshoverimg.png",
     "/images/oatshoverimg.png",
-
   ],
 };
 
 const initialReviews = [
-  { id: 1, name: "Laxman", rating: 5, title: "Excellent quality!", body: "Ordered for the first time. Very happy with the quality. Will definitely recommend to product.", verified: true, date: "2 days ago", helpful: 4 },
-  { id: 2, name: "Lohit", rating: 4, title: "Healthy product", body: "Good taste and texture. Easy to cook. The oats are clean and fresh. Good for daily use.", verified: true, date: "1 week ago", helpful: 2 },
-  { id: 3, name: "Santhosh", rating: 5, title: "Best oats I've tried!", body: "Really good quality oats. No added junk as claimed. Makes a great breakfast with fruits.", verified: false, date: "2 weeks ago", helpful: 7 },
+  { id: 1, name: "Laxman", rating: 5, title: "Excellent quality!", body: "Ordered for the first time. Very happy with the quality. Will definitely recommend to product.", verified: true, date: "2 days ago" },
+  { id: 2, name: "Lohit", rating: 4, title: "Healthy product", body: "Good taste and texture. Easy to cook. The oats are clean and fresh. Good for daily use.", verified: true, date: "1 week ago" },
+  { id: 3, name: "Santhosh", rating: 5, title: "Best oats I've tried!", body: "Really good quality oats. No added junk as claimed. Makes a great breakfast with fruits.", verified: false, date: "2 weeks ago" },
 ];
+
+const tickerItems = [
+  { text: "Clean Ingredients", icon: "🌿" },
+  { text: "High In Fiber", icon: "💪" },
+  { text: "No Added Junk", icon: "🚫" },
+  { text: "Ready In Minutes", icon: "⚡" },
+  { text: "Made For Daily Fitness", icon: "🥣" },
+];
+
+const scrollItems = [...tickerItems, ...tickerItems];
 
 const Star = ({ filled, half, size = 18, onClick, onHover }) => (
   <svg
@@ -52,7 +63,7 @@ const Star = ({ filled, half, size = 18, onClick, onHover }) => (
 
 const StarRating = ({ rating, size = 18 }) => (
   <span style={{ display: "inline-flex", gap: 2 }}>
-    {[1,2,3,4,5].map(i => (
+    {[1, 2, 3, 4, 5].map(i => (
       <Star key={i} filled={i <= Math.floor(rating)} half={i === Math.ceil(rating) && rating % 1 >= 0.5} size={size} />
     ))}
   </span>
@@ -60,7 +71,7 @@ const StarRating = ({ rating, size = 18 }) => (
 
 const InteractiveStar = ({ rating, setRating, hovered, setHovered }) => (
   <span style={{ display: "inline-flex", gap: 4 }}>
-    {[1,2,3,4,5].map(i => (
+    {[1, 2, 3, 4, 5].map(i => (
       <Star key={i} size={32} filled={i <= (hovered || rating)}
         onClick={() => setRating(i)}
         onHover={() => setHovered(i)}
@@ -69,9 +80,29 @@ const InteractiveStar = ({ rating, setRating, hovered, setHovered }) => (
   </span>
 );
 
-const ratingDist = { 5: 68, 4: 32, 3: 16, 2: 8, 1: 4 };
-
-
+// ── Accordion Component ───────────────────────────────────────
+const Accordion = ({ title, children }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="border-b border-gray-200">
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="w-full flex items-center justify-between px-4 py-4 bg-[#f5f0e8] rounded-lg mb-1 font-bold text-sm uppercase tracking-widest text-gray-800"
+      >
+        {title}
+        <ChevronDown
+          size={18}
+          className={`text-[#c23d6a] transition-transform duration-300 ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+      {open && (
+        <div className="px-1 pb-4 text-sm text-[#c23d6a] leading-relaxed">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default function ProductViewPage() {
   const [selectedImg, setSelectedImg] = useState(0);
@@ -82,256 +113,246 @@ export default function ProductViewPage() {
   const [reviewTitle, setReviewTitle] = useState("");
   const [reviewBody, setReviewBody] = useState("");
   const [reviewName, setReviewName] = useState("");
-  const [qty, setQty] = useState(1);
-  const [tab, setTab] = useState("description");
   const [submitted, setSubmitted] = useState(false);
+
   const addToCart = useCartStore((state) => state.addToCart);
 
   const handleSubmit = () => {
     if (!reviewRating || !reviewTitle || !reviewBody) return;
-    setReviews([{ id: Date.now(), name: reviewName || "Anonymous", rating: reviewRating, title: reviewTitle, body: reviewBody, verified: false, date: "Just now", helpful: 0 }, ...reviews]);
+    setReviews([{
+      id: Date.now(),
+      name: reviewName || "Anonymous",
+      rating: reviewRating,
+      title: reviewTitle,
+      body: reviewBody,
+      verified: false,
+      date: "Just now",
+    }, ...reviews]);
     setShowReviewPopup(false);
-    setReviewRating(0); setReviewTitle(""); setReviewBody(""); setReviewName("");
+    setReviewRating(0);
+    setReviewTitle("");
+    setReviewBody("");
+    setReviewName("");
     setSubmitted(true);
     setTimeout(() => setSubmitted(false), 3000);
   };
 
-  const total = reviews.length;
-  const avg = (reviews.reduce((a, r) => a + r.rating, 0) / total).toFixed(1);
-
-
-  const items = [
-  { text: "Clean Ingredients", icon: "🌿" },
-  { text: "High In Fiber", icon: "💪" },
-  { text: "No Added Junk", icon: "🚫" },
-  { text: "Ready In Minutes", icon: "⚡" },
-  { text: "Made For Daily Fitness", icon: "🥣" },
-];
-
-  const scrollItems = [...items, ...items];
-
   return (
-    <div style={{ fontFamily: "'Segoe UI', sans-serif", background: "#f8f8f8", minHeight: "100vh" }}>
+    <div className="font-sans bg-[#f8f8f8] min-h-screen">
 
+      {/* ── PRODUCT SECTION ── */}
+      <div className="bg-white mb-3 p-4 md:p-24">
+        <div className="flex flex-col md:flex-row gap-6">
 
-      {/* PRODUCT SECTION */}
-      <div style={{ background: "#fff", margin: "0 0 12px", padding: "20px" }}>
-        <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
+          {/* IMAGE GALLERY — 1. Reduced main image size */}
+          <div className="w-full md:w-[380px] shrink-0">
 
-          {/* IMAGE GALLERY */}
-          <div style={{ flex: "1 1 280px" }}>
-            <div style={{ border: "1px solid #eee", borderRadius: 12, overflow: "hidden", aspectRatio: "1/1", background: "#f9f9f9", position: "relative", marginBottom: 10 }}>
-              <img src={product.images[selectedImg]} alt="product" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-              {/* <span style={{ position: "absolute", top: 10, left: 10, background: "#c23d6a", color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 8px", borderRadius: 4 }}>{product.discount}</span> */}
+            {/* Main Image — reduced from full flex to fixed smaller size */}
+            <div className="border border-gray-100 rounded-xl overflow-hidden bg-[#f9f9f9] mb-3 mx-auto"
+              style={{ width: "100%", maxWidth: 360, aspectRatio: "1/1" }}
+            >
+              <img
+                src={product.images[selectedImg]}
+                alt="product"
+                className="w-full h-full object-contain"
+              />
             </div>
-            <div style={{ display: "flex", gap: 8 }}>
+
+            {/* 2. Thumbnail images — increased size */}
+            <div className="flex gap-2 flex-wrap">
               {product.images.map((img, i) => (
-                <div key={i} onClick={() => setSelectedImg(i)} style={{ width: 56, height: 56, border: `2px solid ${selectedImg === i ? "#c23d6a" : "#eee"}`, borderRadius: 8, overflow: "hidden", cursor: "pointer" }}>
-                  <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <div
+                  key={i}
+                  onClick={() => setSelectedImg(i)}
+                  className={`rounded-xl overflow-hidden cursor-pointer border-2 transition-colors shrink-0 ${
+                    selectedImg === i ? "border-[#c23d6a]" : "border-gray-200"
+                  }`}
+                  style={{ width: 72, height: 72 }}
+                >
+                  <img src={img} alt="" className="w-full h-full object-cover" />
                 </div>
               ))}
             </div>
           </div>
 
           {/* PRODUCT INFO */}
-          <div style={{ flex: "1 1 280px" }}>
-            <h1 style={{ fontSize: 22, fontWeight: 800, color: "#222", margin: "0 0 4px" }}>{product.name}</h1>
-            <p style={{ fontSize: 13, color: "#c23d6a", fontWeight: 600, margin: "0 0 10px" }}>{product.subtitle}</p>
+          <div className="flex-1">
+            <h1 className="text-xl md:text-2xl font-extrabold text-gray-900 mb-1">{product.name}</h1>
+            <p className="text-sm text-[#c23d6a] font-semibold mb-3">{product.subtitle}</p>
 
-            {/* <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-              <StarRating rating={product.rating} />
-              <span style={{ fontSize: 13, color: "#555" }}>{product.rating} ({product.totalReviews} reviews)</span>
-            </div> */}
-
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-              <span style={{ fontSize: 28, fontWeight: 800, color: "#222" }}>₹ {product.price}</span>
-              {/* <span style={{ fontSize: 16, color: "#999", textDecoration: "line-through" }}>₹ {product.mrp}</span> */}
-              <span style={{ background: "#fff3f7", color: "#c23d6a", fontSize: 12, fontWeight: 700, padding: "2px 8px", borderRadius: 4 }}>{product.discount}</span>
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-2xl md:text-3xl font-extrabold text-gray-900">₹ {product.price}</span>
             </div>
 
-            <p style={{ fontSize: 13, color: "#555", lineHeight: 1.6, marginBottom: 16 }}>{product.description}</p>
+            <p className="text-sm text-gray-500 leading-relaxed mb-5">{product.description}</p>
 
-            {/* QTY + ADD TO CART */}
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-              {/* <div style={{ display: "flex", alignItems: "center", border: "1px solid #eee", borderRadius: 8, overflow: "hidden" }}>
-                <button onClick={() => setQty(q => Math.max(1, q - 1))} style={{ width: 36, height: 36, border: "none", background: "#f5f5f5", fontSize: 18, cursor: "pointer" }}>−</button>
-                <span style={{ width: 36, textAlign: "center", fontWeight: 700 }}>{qty}</span>
-                <button onClick={() => setQty(q => q + 1)} style={{ width: 36, height: 36, border: "none", background: "#f5f5f5", fontSize: 18, cursor: "pointer" }}>+</button>
-              </div> */}
-              <button style={{ flex: 1, background: "#c23d6a", color: "#fff", border: "none", borderRadius: 8, padding: "12px 20px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Buy Now</button>
-<button
-  onClick={() => addToCart({
-    id: product.id,
-    name: product.name,
-    price: product.price,
-    image: product.images[0],  // ← pass the first image as 'image'
-  })}
-  style={{ flex: 1, background: "#fff", color: "#c23d6a", border: "2px solid #c23d6a", borderRadius: 8, padding: "12px 20px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}
->
-  Add to Cart
-</button>            </div> 
-
-            {/* TABS */}
-            <div style={{ borderBottom: "2px solid #eee", display: "flex", gap: 0, marginBottom: 14 }}>
-              {["ingredients", "How to use"].map(t => (
-                <button key={t} onClick={() => setTab(t)} style={{ background: "none", border: "none", borderBottom: tab === t ? "2px solid #c23d6a" : "2px solid transparent", marginBottom: -2, padding: "8px 14px", fontSize: 12, fontWeight: 700, color: tab === t ? "#c23d6a" : "#999", cursor: "pointer", textTransform: "capitalize" }}>{t}</button>
-              ))}
+            {/* BUY NOW + ADD TO CART */}
+            <div className="flex gap-3 mb-6">
+              <button className="flex-1 bg-[#c23d6a] text-white rounded-lg py-3 px-5 text-sm font-bold hover:bg-[#a8305a] transition-colors">
+                Buy Now
+              </button>
+              <button
+                onClick={() => addToCart({
+                  id: product.id,
+                  name: product.name,
+                  price: product.price,
+                  image: product.images[0],
+                })}
+                className="flex-1 bg-white text-[#c23d6a] border-2 border-[#c23d6a] rounded-lg py-3 px-5 text-sm font-bold hover:bg-[#fff3f7] transition-colors"
+              >
+                Add to Cart
+              </button>
             </div>
-            <div style={{ fontSize: 13, color: "#555", lineHeight: 1.6 }}>
-              {tab === "ingredients" && <p><strong>Ingredients:</strong> {product.ingredients}</p>}
-              {tab === "How to Use" && <p>How to use details will be updated</p>}
 
+            {/* 3. Accordion style tabs */}
+            <div className="flex flex-col gap-2">
+              <Accordion title="Ingredients">
+                Ingredients: {product.ingredients}
+              </Accordion>
+              <Accordion title="How to Use">
+                {product.howToUse}
+              </Accordion>
             </div>
+
           </div>
         </div>
       </div>
 
-      {/* TAGS TICKER */}
-      <div className="w-full bg-[#414b56] py-3 overflow-hidden whitespace-nowrap border-y border-white/5">
-      <div className="flex w-max animate-marquee-infinite">
-        {scrollItems.map((item, index) => (
-          <div key={index} className="flex items-center">
-            <div className="flex items-center gap-3 px-8 md:px-12">
-              <span className="text-base md:text-lg">{item.icon}</span>
-              <span className="text-white text-xs md:text-sm tracking-[0.2em] font-primary">
-                {item.text}
-              </span>
-            </div>
-            {/* The distinctive pink separator dot */}
-            <div className="w-1.5 h-1.5 bg-[#c23d6a] rounded-full mx-2" />
-          </div>
-        ))}
-      </div>
-    </div>
-
-      {/* REVIEWS SECTION */}
-      <div style={{ background: "#fff", padding: "24px 20px", margin: "0 0 12px" }}>
-        <div style={{ textAlign: "center", marginBottom: 20 }}>
-          <div style={{ width: 10, height: 10, background: "#c23d6a", borderRadius: "50%", display: "inline-block", marginRight: 6 }}></div>
-          <span style={{ fontSize: 20, fontWeight: 800, color: "#222" }}>Customer Reviews</span>
-          <p style={{ fontSize: 13, color: "#999", marginTop: 4 }}>Fuel your body with the right choice for your routine.</p>
-        </div>
-
-  
-
-        {/* WRITE REVIEW BUTTON */}
-        <div style={{ textAlign: "center", marginBottom: 24 }}>
-          {submitted && <div style={{ background: "#f0fff4", color: "#22c55e", fontSize: 13, padding: "8px 16px", borderRadius: 8, marginBottom: 12, fontWeight: 600 }}>✓ Review submitted successfully!</div>}
-          <button onClick={() => setShowReviewPopup(true)} style={{ background: "#fff", border: "2px solid #c23d6a", color: "#c23d6a", borderRadius: 24, padding: "10px 32px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Write a Review</button>
-        </div>
-
-        {/* REVIEW CARDS */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          {reviews.map(r => (
-            <div key={r.id} style={{ border: "1px solid #f0f0f0", borderRadius: 12, padding: 16 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                <div style={{ width: 36, height: 36, background: "#c23d6a", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
-                  {r.name[0]}
-                </div>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: 13, color: "#222" }}>{r.name}</div>
-                  {r.verified && <div style={{ fontSize: 11, color: "#22c55e", fontStyle: "bold" }}>✓ Verified Buyer</div>}
-                </div>
-                <div style={{ marginLeft: "auto", fontSize: 11, color: "#bbb" }}>{r.date}</div>
+      {/* ── TAGS TICKER ── */}
+      <div className="w-full bg-[#414b56] py-3 overflow-hidden whitespace-nowrap border-y border-white/5 mb-3">
+        <div className="flex w-max animate-marquee-infinite">
+          {scrollItems.map((item, index) => (
+            <div key={index} className="flex items-center">
+              <div className="flex items-center gap-3 px-8 md:px-12">
+                <span className="text-base md:text-lg">{item.icon}</span>
+                <span className="text-white text-xs md:text-sm tracking-[0.2em] font-primary">
+                  {item.text}
+                </span>
               </div>
-              <StarRating rating={r.rating} size={14} color="yellow"/>
-              <div style={{ fontWeight: 700, fontSize: 14, color: "#222", marginTop: 6, marginBottom: 4 }}>{r.title}</div>
-              <p style={{ fontSize: 13, color: "#555", lineHeight: 1.6, margin: 0 }}>{r.body}</p>
-              <div style={{ marginTop: 10, fontSize: 12, color: "#999" }}>
-              </div>
+              <div className="w-1.5 h-1.5 bg-[#c23d6a] rounded-full mx-2" />
             </div>
           ))}
         </div>
       </div>
 
-      {/* REVIEW POPUP */}
+      {/* ── REVIEWS SECTION ── */}
+      <div className="bg-white px-5 py-6 mb-3">
+
+        <div className="text-center mb-5">
+          <span className="inline-block w-2.5 h-2.5 bg-[#c23d6a] rounded-full mr-1.5" />
+          <span className="text-xl font-extrabold text-gray-900">Customer Reviews</span>
+          <p className="text-sm text-gray-400 mt-1">Fuel your body with the right choice for your routine.</p>
+        </div>
+
+        <div className="text-center mb-6">
+          {submitted && (
+            <div className="bg-green-50 text-green-500 text-sm px-4 py-2 rounded-lg mb-3 font-semibold">
+              ✓ Review submitted successfully!
+            </div>
+          )}
+          <button
+            onClick={() => setShowReviewPopup(true)}
+            className="bg-white border-2 border-[#c23d6a] text-[#c23d6a] rounded-full px-8 py-2.5 text-sm font-bold hover:bg-[#fff3f7] transition-colors"
+          >
+            Write a Review
+          </button>
+        </div>
+
+        <div className="flex flex-col gap-4">
+          {reviews.map(r => (
+            <div key={r.id} className="border border-gray-100 rounded-xl p-4">
+              <div className="flex items-center gap-2.5 mb-2">
+                <div className="w-9 h-9 bg-[#c23d6a] rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0">
+                  {r.name[0]}
+                </div>
+                <div>
+                  <div className="font-bold text-sm text-gray-900">{r.name}</div>
+                  {r.verified && <div className="text-xs text-green-500 font-semibold">✓ Verified Buyer</div>}
+                </div>
+                <div className="ml-auto text-xs text-gray-300">{r.date}</div>
+              </div>
+              <StarRating rating={r.rating} size={14} />
+              <div className="font-bold text-sm text-gray-900 mt-1.5 mb-1">{r.title}</div>
+              <p className="text-sm text-gray-500 leading-relaxed">{r.body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── REVIEW POPUP ── */}
       <AnimatePresence>
         {showReviewPopup && (
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+            className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-5"
             onClick={(e) => e.target === e.currentTarget && setShowReviewPopup(false)}
           >
             <motion.div
               initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }}
               transition={{ type: "spring", damping: 20 }}
-              style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth: 480, padding: 28, position: "relative" }}
+              className="bg-white rounded-2xl w-full max-w-[480px] p-7 relative"
             >
-              {/* CLOSE */}
-              <button onClick={() => setShowReviewPopup(false)} style={{ position: "absolute", top: 14, right: 16, background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#999" }}>✕</button>
+              <button
+                onClick={() => setShowReviewPopup(false)}
+                className="absolute top-3.5 right-4 bg-transparent border-none text-xl cursor-pointer text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
 
-              {/* LOGO */}
-              <div style={{ textAlign: "center", marginBottom: 16 }}>
-                <div style={{ 
-  width: 64, 
-  height: 64, 
-  position: "relative", 
-  borderRadius: "50%", 
-  display: "inline-flex", 
-  alignItems: "center", 
-  justifyContent: "center",
-  overflow: "hidden" 
-}}>
-  {/* The Image */}
-  <img 
-    src="/images/logoimg.png" 
-    alt="Badge"
-    style={{ position: "absolute", width: "100%", height: "100%", objectCover: "cover" }} 
-  />
-  
-  {/* Dark Overlay to make white text pop */}
-  <div style={{ position: "absolute", inset: 0, background: "rgba(194, 61, 106, 0.6)" }} />
-
- 
-</div>
+              <div className="text-center mb-4">
+                <div className="w-16 h-16 rounded-full inline-flex items-center justify-center overflow-hidden relative">
+                  <img src="/images/logoimg.png" alt="Logo" className="absolute w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-[#c23d6a]/60" />
+                </div>
               </div>
 
-              <hr style={{ border: "none", borderTop: "1px solid #eee", marginBottom: 16 }} />
+              <hr className="border-t border-gray-100 mb-4" />
 
-              {/* PRODUCT ROW */}
-              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-                <img src={product.images[0]} alt="" style={{ width: 56, height: 56, borderRadius: 8, objectFit: "cover", border: "1px solid #eee" }} />
+              <div className="flex items-center gap-3 mb-5">
+                <img src={product.images[0]} alt="" className="w-14 h-14 rounded-lg object-cover border border-gray-100" />
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: 14, color: "#222" }}>{product.name}</div>
-                  <div style={{ marginTop: 6 }} onMouseLeave={() => setHovered(0)}>
+                  <div className="font-bold text-sm text-gray-900">{product.name}</div>
+                  <div className="mt-1.5" onMouseLeave={() => setHovered(0)}>
                     <InteractiveStar rating={reviewRating} setRating={setReviewRating} hovered={hovered} setHovered={setHovered} />
                   </div>
                 </div>
               </div>
 
-              {/* NAME */}
               <input
                 value={reviewName}
                 onChange={e => setReviewName(e.target.value)}
                 placeholder="Your Name (optional)"
-                style={{ width: "100%", border: "1px solid #eee", borderRadius: 8, padding: "12px 14px", fontSize: 13, marginBottom: 12, boxSizing: "border-box", outline: "none" }}
+                className="w-full border border-gray-100 rounded-lg px-3.5 py-3 text-sm mb-3 outline-none focus:border-[#c23d6a] transition-colors"
               />
-
-              {/* TITLE */}
               <input
                 value={reviewTitle}
                 onChange={e => setReviewTitle(e.target.value)}
                 placeholder="Review Title"
-                style={{ width: "100%", border: "1px solid #eee", borderRadius: 8, padding: "12px 14px", fontSize: 13, marginBottom: 12, boxSizing: "border-box", outline: "none" }}
+                className="w-full border border-gray-100 rounded-lg px-3.5 py-3 text-sm mb-3 outline-none focus:border-[#c23d6a] transition-colors"
               />
-
-              {/* BODY */}
               <textarea
                 value={reviewBody}
                 onChange={e => setReviewBody(e.target.value)}
                 placeholder="Review Description"
                 rows={4}
-                style={{ width: "100%", border: "1px solid #eee", borderRadius: 8, padding: "12px 14px", fontSize: 13, marginBottom: 16, boxSizing: "border-box", resize: "none", outline: "none" }}
+                className="w-full border border-gray-100 rounded-lg px-3.5 py-3 text-sm mb-4 outline-none resize-none focus:border-[#c23d6a] transition-colors"
               />
 
-              <p style={{ fontSize: 11, color: "#999", textAlign: "center", marginBottom: 16 }}>
-                By continuing you agree to Gymhack's <span style={{ color: "#c23d6a", cursor: "pointer" }}>Terms and Conditions</span> and <span style={{ color: "#c23d6a", cursor: "pointer" }}>Privacy Policy</span>.
+              <p className="text-xs text-gray-400 text-center mb-4">
+                By continuing you agree to Gymhack's{" "}
+                <span className="text-[#c23d6a] cursor-pointer">Terms and Conditions</span>{" "}
+                and{" "}
+                <span className="text-[#c23d6a] cursor-pointer">Privacy Policy</span>.
               </p>
 
               <button
                 onClick={handleSubmit}
                 disabled={!reviewRating || !reviewTitle || !reviewBody}
-                style={{ width: "100%", background: reviewRating && reviewTitle && reviewBody ? "#c23d6a" : "#f0a0b8", color: "#fff", border: "none", borderRadius: 12, padding: "14px", fontSize: 15, fontWeight: 700, cursor: reviewRating && reviewTitle && reviewBody ? "pointer" : "not-allowed" }}
+                className={`w-full text-white border-none rounded-xl py-3.5 text-base font-bold transition-colors ${
+                  reviewRating && reviewTitle && reviewBody
+                    ? "bg-[#c23d6a] cursor-pointer hover:bg-[#a8305a]"
+                    : "bg-[#f0a0b8] cursor-not-allowed"
+                }`}
               >
                 Agree & Submit
               </button>
@@ -339,6 +360,7 @@ export default function ProductViewPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
     </div>
   );
 }

@@ -64,7 +64,7 @@ export default function Philosophy() {
           </div>
 
           {/* ── Feature icons row ── */}
-          <div className="mt-10 pt-8 border-t border-gray-200">
+          <div className="mt-5 pt-8 border-t border-gray-200">
             <div className="flex items-start">
 
               {/* Clean Ingredients */}
@@ -109,13 +109,15 @@ export default function Philosophy() {
             </div>
           </div>
 
-          {/* CTA */}
-          <Link
-            href="/about"
-            className="inline-flex items-center gap-2 bg-[#c23d6a] text-white px-6 py-3 rounded-full hover:bg-[#f2eadf] hover:text-black hover:border-black border-transparent border font-bold text-sm  transition-all mt-8 font-secondary"
-          >
-            See More about Gym Hack <ArrowRightCircle size={18} />
-          </Link>
+      {/* CTA Container */}
+<div className="w-full text-center md:text-left"> 
+  <Link
+    href="/about"
+    className="inline-flex items-center gap-2 bg-[#c23d6a] text-white px-6 py-3 rounded-full hover:bg-[#f2eadf] hover:text-black hover:border-black border-transparent border font-bold text-sm transition-all mt-8 font-secondary"
+  >
+    See More about Gym Hack <ArrowRightCircle size={18} />
+  </Link>
+</div>
         </div>
 
         {/* ── Right Image ── */}
@@ -125,7 +127,7 @@ export default function Philosophy() {
           <div className="absolute -bottom-4 -right-4 sm:bottom-0 sm:right-0 w-28 h-28 sm:w-36 sm:h-36 rounded-3xl z-0" />
 
           {/* Image sits above the cyan block */}
-          <div className="relative z-10 rounded-3xl overflow-hidden shadow-lg">
+          <div className="relative z-10 rounded-xl overflow-hidden shadow-lg">
             <Image
               src="/images/homephilosophyimg.png"
               alt="Gym Hack Philosophy"

@@ -3,8 +3,9 @@ import React, { useState } from 'react';
 import { ShoppingCart } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useCartStore } from '../store/useCartStore';
 
-const allProducts = [
+const product = [
   { id: 1,  category: 'OATS',   name: 'Premium Rolled Oats - High Protein',      price: 180, image: '/images/oatsimg.jpg' },
   { id: 2,  category: 'OATS',   name: 'Instant Oats - Quick Energy',              price: 150, image: '/images/oatsimg.jpg' },
   { id: 7,  category: 'OATS',   name: 'Premium Rolled Oats - High Protein',      price: 180, image: '/images/oatsimg.jpg' },
@@ -27,8 +28,10 @@ const tabs = [
 export default function HomeProducts() {
   const [activeTab, setActiveTab] = useState('OATS');
 
-  const filtered = allProducts.filter(p => p.category === activeTab);
+  const filtered = product.filter(p => p.category === activeTab);
 
+
+  const addToCart = useCartStore((state) => state.addToCart);
   return (
     <section className="py-10 md:py-16 bg-white font-sans">
       <div className="max-w-[1200px] mx-auto px-4 md:px-6">
@@ -78,6 +81,8 @@ export default function HomeProducts() {
         </p>
 
         {/* ── Product Grid ── */}
+                    <Link href={`/productsviewpage/${product.id}`}>
+
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
           {filtered.map(product => (
             <div key={product.id} className="group flex flex-col">
@@ -93,10 +98,13 @@ export default function HomeProducts() {
                 />
                 {/* Hover overlay */}
                 <div className="absolute inset-0 z-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/40 backdrop-blur-[2px]">
-                  <button className="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-xs shadow-lg bg-[#c23d6a] text-white hover:bg-[#f2eadf] hover:text-black border border-transparent hover:border-black transition-all duration-300 font-secondary">
+                  <button onClick={() => addToCart(product)} className="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-xs shadow-lg bg-[#c23d6a] text-white hover:bg-[#f2eadf] hover:text-black border border-transparent hover:border-black transition-all duration-300 font-secondary">
                     Add to cart <ShoppingCart className="w-4 h-4" />
                   </button>
+
+                  
                 </div>
+                
               </div>
 
               {/* Name + Price */}
@@ -112,6 +120,9 @@ export default function HomeProducts() {
             </div>
           ))}
         </div>
+        </Link>
+
+        
       </div>
     </section>
   );

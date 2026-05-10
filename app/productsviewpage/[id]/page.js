@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useCartStore } from '../../store/useCartStore';
 
 const product = {
   id: 1,
@@ -70,6 +71,8 @@ const InteractiveStar = ({ rating, setRating, hovered, setHovered }) => (
 
 const ratingDist = { 5: 68, 4: 32, 3: 16, 2: 8, 1: 4 };
 
+
+
 export default function ProductViewPage() {
   const [selectedImg, setSelectedImg] = useState(0);
   const [showReviewPopup, setShowReviewPopup] = useState(false);
@@ -82,6 +85,7 @@ export default function ProductViewPage() {
   const [qty, setQty] = useState(1);
   const [tab, setTab] = useState("description");
   const [submitted, setSubmitted] = useState(false);
+  const addToCart = useCartStore((state) => state.addToCart);
 
   const handleSubmit = () => {
     if (!reviewRating || !reviewTitle || !reviewBody) return;
@@ -105,6 +109,7 @@ export default function ProductViewPage() {
 ];
 
   const scrollItems = [...items, ...items];
+
   return (
     <div style={{ fontFamily: "'Segoe UI', sans-serif", background: "#f8f8f8", minHeight: "100vh" }}>
 
@@ -154,8 +159,17 @@ export default function ProductViewPage() {
                 <button onClick={() => setQty(q => q + 1)} style={{ width: 36, height: 36, border: "none", background: "#f5f5f5", fontSize: 18, cursor: "pointer" }}>+</button>
               </div> */}
               <button style={{ flex: 1, background: "#c23d6a", color: "#fff", border: "none", borderRadius: 8, padding: "12px 20px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Buy Now</button>
-              <button style={{ flex: 1, background: "#fff", color: "#c23d6a", border: "2px solid #c23d6a", borderRadius: 8, padding: "12px 20px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Add to Cart</button>
-            </div> 
+<button
+  onClick={() => addToCart({
+    id: product.id,
+    name: product.name,
+    price: product.price,
+    image: product.images[0],  // ← pass the first image as 'image'
+  })}
+  style={{ flex: 1, background: "#fff", color: "#c23d6a", border: "2px solid #c23d6a", borderRadius: 8, padding: "12px 20px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}
+>
+  Add to Cart
+</button>            </div> 
 
             {/* TABS */}
             <div style={{ borderBottom: "2px solid #eee", display: "flex", gap: 0, marginBottom: 14 }}>

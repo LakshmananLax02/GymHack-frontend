@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation } from 'swiper/modules';
@@ -42,24 +42,33 @@ const testimonialData = [
     role: "Founder @ Apple",
     text: "Yet preference connection unpleasant yet melancholy but end appearance. And excellence partiality estimating terminated day everything.",
     rating: 5
+  },
+  {
+    id: 5,
+    name: "Sabo Masties",
+    role: "Founder @ Apple",
+    text: "Yet preference connection unpleasant yet melancholy but end appearance. And excellence partiality estimating terminated day everything.",
+    rating: 5
   }
 ];
 
 export default function Testimonials() {
+  const [activeDir, setActiveDir] = useState('next');
+
   return (
-    <section className="bg-[#f2ead3] py-10 px-6 overflow-hidden">
+    <section className="bg-[#f2ead3] py-16 px-6 overflow-hidden">
       <div className="max-w-[1200px] mx-auto">
         
         {/* Section Header */}
         <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-3 mb-2">
             <span className="w-4 h-4 bg-[#c23d6a] rounded-full"></span>
-            <h2 className="font-primary text-4xl font-bold md:text-4xl tracking-tight">
-              What Our customers Say About Gymhack
+            <h2 className="font-primary text-3xl font-bold md:text-4xl tracking-tight ">
+              What Our customers Say
             </h2>
           </div>
           <p className="font-secondary text-gray-500 lowercase tracking-widest text-lg">
-            testimonals
+            testimonials
           </p>
         </div>
 
@@ -70,8 +79,13 @@ export default function Testimonials() {
             spaceBetween={30}
             slidesPerView={1}
             navigation={{
-              prevEl: '.prev-btn',
-              nextEl: '.next-btn',
+              prevEl: '.prev-btn', // MUST match the class in the button below
+              nextEl: '.next-btn', // MUST match the class in the button below
+            }}
+            onSlideChange={(swiper) => {
+              // Sync state if user swipes instead of clicking
+              if (swiper.activeIndex > swiper.previousIndex) setActiveDir('next');
+              else if (swiper.activeIndex < swiper.previousIndex) setActiveDir('prev');
             }}
             breakpoints={{
               768: { slidesPerView: 2 },
@@ -96,7 +110,7 @@ export default function Testimonials() {
 
                   {/* Author Info */}
                   <div>
-                    <h5 className="font-primary text-xl font-bold tracking-wide">
+                    <h5 className="font-primary text-xl font-bold tracking-wide uppercase">
                       {item.name}
                     </h5>
                     <p className="font-secondary text-gray-400 text-sm">
@@ -110,11 +124,28 @@ export default function Testimonials() {
 
           {/* Navigation Controls */}
           <div className="flex justify-center items-center gap-0 mt-8">
-            <button className="prev-btn w-14 h-12 flex items-center justify-center bg-white border border-gray-200 rounded-l-lg hover:bg-gray-50 transition-colors">
-              <MoveLeft size={20} className="text-gray-400" />
+            {/* Previous Button */}
+            <button 
+              onClick={() => setActiveDir('prev')}
+              className={`prev-btn w-14 h-12 flex items-center justify-center border border-gray-200 rounded-l-lg transition-all duration-300 ${
+                activeDir === 'prev' 
+                  ? 'bg-[#2b2b2b] text-white border-[#2b2b2b] z-10' 
+                  : 'bg-white text-gray-400 hover:bg-gray-50'
+              }`}
+            >
+              <MoveLeft size={20} />
             </button>
-            <button className="next-btn w-14 h-12 flex items-center justify-center bg-[#2b2b2b] rounded-r-lg hover:bg-black transition-colors">
-              <MoveRight size={20} className="text-white" />
+
+            {/* Next Button */}
+            <button 
+              onClick={() => setActiveDir('next')}
+              className={`next-btn w-14 h-12 flex items-center justify-center border border-gray-200 rounded-r-lg transition-all duration-300 ${
+                activeDir === 'next' 
+                  ? 'bg-[#2b2b2b] text-white border-[#2b2b2b] z-10' 
+                  : 'bg-white text-gray-400 hover:bg-gray-50'
+              }`}
+            >
+              <MoveRight size={20} />
             </button>
           </div>
         </div>

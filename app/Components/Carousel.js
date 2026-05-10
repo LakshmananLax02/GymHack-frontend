@@ -6,7 +6,7 @@ export default function Hero() {
   return (
     <section className="relative w-full">
       {/* --- Main Hero Section with Background Video --- */}
-      <div className="relative h-[500px] md:h-[650px] w-full flex flex-col items-center justify-center text-center px-4 overflow-hidden">
+      <div className="relative h-[500px] md:h-[550px] w-full flex flex-col items-center justify-center text-center px-4 overflow-hidden">
         
         {/* Background Video Implementation */}
         <div className="absolute inset-0 z-0">

@@ -60,6 +60,7 @@ export default function OurTopSelling() {
           </button>
 
           {/* Card Container */}
+          
           <div className="overflow-hidden">
             <div 
               className="flex transition-transform duration-500 ease-out"
@@ -94,9 +95,10 @@ export default function OurTopSelling() {
                   </div>
 
                   {/* View Details Button */}
-                  <button className="w-full py-3 bg-[#c23d6a] text-white rounded-full font-secondary font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#f2eadf] hover:text-black hover:border-black border-transparent border transition-colors">
+                <Link href={`/productsviewpage/${product.id}`}>                  <button className="w-full py-3 bg-[#c23d6a] text-white rounded-full font-secondary font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#f2eadf] hover:text-black hover:border-black border-transparent border transition-colors">
                     View details <ShoppingCart size={16} />
                   </button>
+                  </Link>
                 </div>
               ))}
             </div>

@@ -49,8 +49,8 @@ export default function Hero() {
   <div className="max-w-[1440px] mx-auto px-4 md:px-10 grid grid-cols-4">
 
     {/* Stat 1: Plant Based */}
-    <div className="flex flex-row items-center justify-center gap-2 md:gap-4 border-r border-black/10 px-2 md:px-6">
-      <div className="relative w-8 h-8 md:w-12 md:h-12 lg:w-14 lg:h-14 shrink-0">
+    <div className="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-4 border-r border-black/10 px-1 md:px-6">
+      <div className="relative w-7 h-7 md:w-12 md:h-12 lg:w-14 lg:h-14 shrink-0">
         <Image
           src="/images/carouselbottomimg1.png"
           alt="Plant Based"
@@ -58,19 +58,19 @@ export default function Hero() {
           className="object-contain"
         />
       </div>
-      <div>
-        <p className="font-primary text-base md:text-2xl lg:text-3xl font-black text-[#3a4a3a] leading-none">
+      <div className="text-center md:text-left">
+        <p className="font-primary text-xs md:text-2xl lg:text-3xl font-black text-[#3a4a3a] leading-none">
           50K+
         </p>
-        <p className="font-secondary text-[7px] md:text-[10px] lg:text-xs font-semibold text-[#3a4a3a] tracking-wide mt-0.5">
+        <p className="font-secondary text-[6px] md:text-[10px] lg:text-xs font-semibold text-[#3a4a3a] tracking-wide mt-0.5">
           Happy Customers
         </p>
       </div>
     </div>
 
     {/* Stat 2: Certified Vegan */}
-    <div className="flex flex-row items-center justify-center gap-2 md:gap-4 border-r border-black/10 px-2 md:px-6">
-      <div className="relative w-8 h-8 md:w-12 md:h-12 lg:w-14 lg:h-14 shrink-0">
+    <div className="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-4 border-r border-black/10 px-1 md:px-6">
+      <div className="relative w-7 h-7 md:w-12 md:h-12 lg:w-14 lg:h-14 shrink-0">
         <Image
           src="/images/carouselbottomimg2.png"
           alt="Certified Vegan"
@@ -78,19 +78,19 @@ export default function Hero() {
           className="object-contain"
         />
       </div>
-      <div>
-        <p className="font-primary text-base md:text-2xl lg:text-3xl font-black text-[#3a4a3a] leading-none">
+      <div className="text-center md:text-left">
+        <p className="font-primary text-xs md:text-2xl lg:text-3xl font-black text-[#3a4a3a] leading-none">
           2M+
         </p>
-        <p className="font-secondary text-[7px] md:text-[10px] lg:text-xs font-semibold text-[#3a4a3a] tracking-wide mt-0.5">
+        <p className="font-secondary text-[6px] md:text-[10px] lg:text-xs font-semibold text-[#3a4a3a] tracking-wide mt-0.5">
           Bowls Enjoyed
         </p>
       </div>
     </div>
 
     {/* Stat 3: Gluten Free */}
-    <div className="flex flex-row items-center justify-center gap-2 md:gap-4 border-r border-black/10 px-2 md:px-6">
-      <div className="relative w-8 h-8 md:w-12 md:h-12 lg:w-14 lg:h-14 shrink-0">
+    <div className="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-4 border-r border-black/10 px-1 md:px-6">
+      <div className="relative w-7 h-7 md:w-12 md:h-12 lg:w-14 lg:h-14 shrink-0">
         <Image
           src="/images/carouselbottomimg3.png"
           alt="Gluten Free"
@@ -98,19 +98,19 @@ export default function Hero() {
           className="object-contain"
         />
       </div>
-      <div>
-        <p className="font-primary text-base md:text-2xl lg:text-3xl font-black text-[#3a4a3a] leading-none">
+      <div className="text-center md:text-left">
+        <p className="font-primary text-xs md:text-2xl lg:text-3xl font-black text-[#3a4a3a] leading-none">
           4.8/5
         </p>
-        <p className="font-secondary text-[7px] md:text-[10px] lg:text-xs font-semibold text-[#3a4a3a] tracking-wide mt-0.5">
+        <p className="font-secondary text-[6px] md:text-[10px] lg:text-xs font-semibold text-[#3a4a3a] tracking-wide mt-0.5">
           Rating
         </p>
       </div>
     </div>
 
     {/* Stat 4: Nutrient Dense */}
-    <div className="flex flex-row items-center justify-center gap-2 md:gap-4 px-2 md:px-6">
-      <div className="relative w-8 h-8 md:w-12 md:h-12 lg:w-14 lg:h-14 shrink-0">
+    <div className="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-4 px-1 md:px-6">
+      <div className="relative w-7 h-7 md:w-12 md:h-12 lg:w-14 lg:h-14 shrink-0">
         <Image
           src="/images/carouselbottomimg4.png"
           alt="Nutrient Dense"
@@ -118,11 +118,11 @@ export default function Hero() {
           className="object-contain"
         />
       </div>
-      <div>
-        <p className="font-primary text-base md:text-2xl lg:text-3xl font-black text-[#3a4a3a] leading-none">
+      <div className="text-center md:text-left">
+        <p className="font-primary text-xs md:text-2xl lg:text-3xl font-black text-[#3a4a3a] leading-none">
           100%
         </p>
-        <p className="font-secondary text-[7px] md:text-[10px] lg:text-xs font-semibold text-[#3a4a3a] tracking-wide mt-0.5">
+        <p className="font-secondary text-[6px] md:text-[10px] lg:text-xs font-semibold text-[#3a4a3a] tracking-wide mt-0.5">
           Clean & Safe
         </p>
       </div>

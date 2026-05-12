@@ -1,0 +1,37 @@
+
+now in this code there is a proceed to checout button.
+
+now i want the when i click that that i want the screen that is the delivery details screen 
+
+like the uploaded image. make the Ui with we developed before with the proper form validation
+
+add the button for the move to payment section. i go with razorpay. give me these both screen now
+
+
+
+in this i want to the delivery option in the form also. in that there is a functionality 
+
+
+
+that is 
+
+there is a dropdown with two things. those are 
+
+1. Case on delivery
+
+2. Razorpay
+
+
+
+if the user select Case on delivery means. the proceed place order button works when the user sumbit it 
+
+
+
+else select the razor pay the proceed to place order  button changes to proceed for make payment text
+
+
+
+i want these two screens
+
+
+the Delivery details page and the Razorpay payment page — matching your brand's existing style (#c23d6a, rounded cards, clean white UI).

@@ -72,7 +72,7 @@ export default function Footer() {
 
         {/* 5. Social Media */}
         <div className="font-secondary">
-          <h4 className="font-primary text-3xl uppercase mb-6 tracking-wider text-[#e2e2d5]">Social Media</h4>
+          <h4 className="font-primary text-3xl uppercase mb-6 tracking-wider">Social Media</h4>
           <div className="flex flex-col gap-4">
             <SocialPill label="LinkedIn" href="https://linkedin.com" icon={<FaLinkedin size={18} />} />
             <SocialPill label="Instagram" href="https://instagram.com" icon={<FaInstagram size={18} />} />
@@ -82,8 +82,7 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="bg-[#1e2325] py-6 border-t border-gray-700/50">
-        <p className="text-center text-gray-500 text-[12px] tracking-wide font-secondary px-4">
+<div className="bg-[#1e2325] py-6 border-t border-gray-700/50 pb-20 md:pb-6">        <p className="text-center text-gray-500 text-[12px] tracking-wide font-secondary px-4">
           Copyrights gymhack © 2026. Designed and developed by wexoraa infotech
         </p>
       </div>

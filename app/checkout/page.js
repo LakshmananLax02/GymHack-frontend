@@ -1,18 +1,56 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
-  ChevronDown, ChevronRight, MapPin, Phone, User, Building2,
-  CreditCard, Truck, ShieldCheck, Lock, CheckCircle2, ArrowLeft,
-  Package, Wallet, Banknote, X
+  ChevronDown, MapPin, Phone, User, CreditCard, Truck,
+  ShieldCheck, Lock, CheckCircle2, ArrowLeft, Package,
+  Wallet, Banknote, AlertCircle, RefreshCw, Smartphone,
+  ChevronRight, Star, Tag,
 } from 'lucide-react';
 
-// ─── Utility ───────────────────────────────────────────────────────────────
-const BRAND = '#c23d6a';
-const BRAND_DARK = '#a8305a';
-const BRAND_LIGHT = '#fff0f5';
+// ─────────────────────────────────────────────────────────────────────────────
+// ██  CONFIG  — replace before going live
+// ─────────────────────────────────────────────────────────────────────────────
+const RAZORPAY_KEY_ID    = 'rzp_test_XXXXXXXXXXXXXXXXX'; // your key
+const TELEGRAM_BOT_TOKEN = 'YOUR_BOT_TOKEN';
+const TELEGRAM_CHAT_ID   = 'YOUR_CHAT_ID';
+// NOTE: In production the Razorpay order must be created server-side via
+// POST /v1/orders using your key_secret. The client only receives order_id.
+// ─────────────────────────────────────────────────────────────────────────────
 
-const indianStates = [
+// ─── Telegram ────────────────────────────────────────────────────────────────
+async function sendTelegram(text) {
+  try {
+    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text, parse_mode: 'HTML' }),
+    });
+  } catch (e) { console.error('Telegram:', e); }
+}
+
+function tgMessage({ form, items, total, method, status, paymentId, orderId }) {
+  const lines = items.map(i => `  • ${i.name} ×${i.qty}  ₹${i.price * i.qty}`).join('\n');
+  const em = status === 'PAID' ? '✅' : status.startsWith('FAIL') ? '❌' : status === 'INITIATED' ? '🚀' : '🟡';
+  return `${em} <b>GYM HACK — New Order</b>
+
+💳 <b>Method:</b> ${method === 'cod' ? 'Cash on Delivery' : 'Razorpay Online'}
+📊 <b>Status:</b> ${status}${paymentId ? `\n🔑 <b>Payment ID:</b> <code>${paymentId}</code>` : ''}${orderId ? `\n📋 <b>Order ID:</b> <code>${orderId}</code>` : ''}
+
+👤 <b>${form.firstName} ${form.lastName}</b>
+📞 +91 ${form.phone}${form.email ? `\n📧 ${form.email}` : ''}
+
+📦 ${form.address}${form.apartment ? ', ' + form.apartment : ''}
+   ${form.city}, ${form.state} – ${form.pincode}
+
+🛒 Items:
+${lines}
+
+💰 <b>Total: ₹${total}  |  Shipping: FREE</b>`;
+}
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+const STATES = [
   'Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa',
   'Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala',
   'Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland',
@@ -21,135 +59,125 @@ const indianStates = [
   'Delhi','Chandigarh','Puducherry','Jammu & Kashmir','Ladakh',
 ];
 
-function InputField({ label, value, onChange, error, type = 'text', optional = false, icon: Icon, children, ...rest }) {
+// Replace with useCartStore(s => s.cart) in production
+const CART = [
+  { id: 1, name: 'Premium Rolled Oats',    qty: 2, price: 180, image: '/images/oatsimg.jpg' },
+  { id: 3, name: 'Dark Chocolate Muesli',  qty: 1, price: 290, image: '/images/meusliimg.png' },
+];
+
+// ─── UI primitives ────────────────────────────────────────────────────────────
+function Field({ label, error, optional, children }) {
   return (
     <div className="flex flex-col gap-1">
-      <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#888' }}>
-        {label}{optional && <span style={{ color: '#bbb', fontWeight: 500 }}> (optional)</span>}
+      <label className="text-[11px] font-bold uppercase tracking-widest text-gray-400">
+        {label}{optional && <span className="text-gray-300 font-normal"> (optional)</span>}
       </label>
-      <div style={{ position: 'relative' }}>
-        {Icon && (
-          <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#bbb', pointerEvents: 'none' }}>
-            <Icon size={15} />
-          </span>
-        )}
-        {children || (
-          <input
-            type={type}
-            value={value}
-            onChange={onChange}
-            style={{
-              width: '100%',
-              padding: Icon ? '11px 14px 11px 36px' : '11px 14px',
-              border: `1.5px solid ${error ? '#f87171' : '#e5e7eb'}`,
-              borderRadius: 12,
-              fontSize: 14,
-              fontWeight: 500,
-              color: '#111',
-              background: '#fff',
-              outline: 'none',
-              transition: 'border-color 0.15s',
-              boxSizing: 'border-box',
-            }}
-            onFocus={e => e.target.style.borderColor = BRAND}
-            onBlur={e => e.target.style.borderColor = error ? '#f87171' : '#e5e7eb'}
-            {...rest}
-          />
-        )}
-      </div>
-      {error && <span style={{ color: '#ef4444', fontSize: 11, fontWeight: 600 }}>{error}</span>}
+      {children}
+      {error && (
+        <span className="flex items-center gap-1 text-[11px] text-red-500 font-semibold">
+          <AlertCircle size={11} /> {error}
+        </span>
+      )}
     </div>
   );
 }
 
-function SelectField({ label, value, onChange, error, options, icon: Icon, optional }) {
+function Input({ error, icon: Icon, className = '', ...props }) {
   return (
-    <div className="flex flex-col gap-1">
-      <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#888' }}>
-        {label}{optional && <span style={{ color: '#bbb', fontWeight: 500 }}> (optional)</span>}
-      </label>
-      <div style={{ position: 'relative' }}>
-        {Icon && (
-          <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#bbb', pointerEvents: 'none', zIndex: 1 }}>
-            <Icon size={15} />
-          </span>
-        )}
-        <select
-          value={value}
-          onChange={onChange}
-          style={{
-            width: '100%',
-            padding: Icon ? '11px 36px 11px 36px' : '11px 36px 11px 14px',
-            border: `1.5px solid ${error ? '#f87171' : '#e5e7eb'}`,
-            borderRadius: 12,
-            fontSize: 14,
-            fontWeight: 500,
-            color: value ? '#111' : '#9ca3af',
-            background: '#fff',
-            outline: 'none',
-            appearance: 'none',
-            cursor: 'pointer',
-            boxSizing: 'border-box',
-          }}
-          onFocus={e => e.target.style.borderColor = BRAND}
-          onBlur={e => e.target.style.borderColor = error ? '#f87171' : '#e5e7eb'}
-        >
-          {options.map(o => (
-            <option key={o.value} value={o.value} disabled={o.disabled}>{o.label}</option>
-          ))}
-        </select>
-        <ChevronDown size={14} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', pointerEvents: 'none' }} />
-      </div>
-      {error && <span style={{ color: '#ef4444', fontSize: 11, fontWeight: 600 }}>{error}</span>}
+    <div className="relative">
+      {Icon && <Icon size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none" />}
+      <input
+        {...props}
+        className={`w-full py-3 rounded-xl border text-sm font-medium text-gray-900 bg-white outline-none transition-all
+          focus:ring-2 focus:ring-[#c23d6a]/10 focus:border-[#c23d6a]
+          ${Icon ? 'pl-9 pr-4' : 'px-4'}
+          ${error ? 'border-red-400 bg-red-50' : 'border-gray-200'}
+          ${className}`}
+      />
     </div>
   );
 }
 
-// ─── Order Summary Mini ─────────────────────────────────────────────────────
-function OrderSummary({ items = [], total = 0, collapsed = false }) {
+function Select({ error, ...props }) {
+  return (
+    <div className="relative">
+      <select
+        {...props}
+        className={`w-full px-4 py-3 pr-8 rounded-xl border text-sm font-medium bg-white outline-none appearance-none cursor-pointer transition-all
+          focus:ring-2 focus:ring-[#c23d6a]/10 focus:border-[#c23d6a]
+          ${error ? 'border-red-400 bg-red-50 text-red-900' : 'border-gray-200'}
+          ${props.value ? 'text-gray-900' : 'text-gray-400'}`}
+      />
+      <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+    </div>
+  );
+}
+
+function Btn({ children, variant = 'primary', loading, disabled, onClick, className = '' }) {
+  const base = 'w-full font-black py-4 rounded-2xl flex items-center justify-center gap-2 text-[15px] tracking-wide transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100';
+  const variants = {
+    primary: 'bg-[#c23d6a] hover:bg-[#a8305a] text-white shadow-[0_4px_20px_rgba(194,61,106,0.3)]',
+    blue:    'bg-gradient-to-r from-[#072654] to-[#3395FF] text-white shadow-[0_4px_20px_rgba(51,149,255,0.35)] hover:opacity-90',
+    ghost:   'bg-transparent text-gray-400 hover:text-gray-600 shadow-none py-2',
+  };
+  return (
+    <button onClick={onClick} disabled={disabled || loading} className={`${base} ${variants[variant]} ${className}`}>
+      {loading
+        ? <><span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" /> Processing...</>
+        : children}
+    </button>
+  );
+}
+
+// ─── Order Summary ────────────────────────────────────────────────────────────
+function OrderSummary({ items, collapsed = false }) {
   const [open, setOpen] = useState(!collapsed);
-  const mockItems = items.length ? items : [
-    { name: 'Premium Rolled Oats', qty: 2, price: 180 },
-    { name: 'Dark Chocolate Muesli', qty: 1, price: 290 },
-  ];
-  const mockTotal = total || mockItems.reduce((a, i) => a + i.price * i.qty, 0);
+  const sub  = items.reduce((a, i) => a + i.price * i.qty, 0);
+  const ship = sub >= 500 ? 0 : 60;
+  const total = sub + ship;
 
   return (
-    <div style={{ background: '#fafafa', border: '1.5px solid #f0e8ee', borderRadius: 16, overflow: 'hidden' }}>
-      <button
-        onClick={() => setOpen(v => !v)}
-        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer' }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Package size={16} style={{ color: BRAND }} />
-          <span style={{ fontWeight: 700, fontSize: 13, color: '#111' }}>Order Summary</span>
-          <span style={{ background: BRAND, color: '#fff', fontSize: 10, fontWeight: 800, borderRadius: 999, padding: '1px 7px' }}>
-            {mockItems.reduce((a, i) => a + i.qty, 0)}
+    <div className="bg-[#fafafa] border border-[#f0e8ee] rounded-2xl overflow-hidden">
+      <button onClick={() => setOpen(v => !v)}
+        className="w-full flex items-center justify-between px-4 py-3.5 cursor-pointer">
+        <div className="flex items-center gap-2">
+          <Package size={16} className="text-[#c23d6a]" />
+          <span className="font-bold text-[13px] text-gray-900">Order Summary</span>
+          <span className="bg-[#c23d6a] text-white text-[10px] font-black rounded-full px-2 py-0.5">
+            {items.reduce((a, i) => a + i.qty, 0)}
           </span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontWeight: 800, color: BRAND, fontSize: 15 }}>₹{mockTotal}</span>
-          <ChevronDown size={14} style={{ color: '#9ca3af', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+        <div className="flex items-center gap-2">
+          <span className="font-black text-[#c23d6a]">₹{total}</span>
+          <ChevronDown size={14} className={`text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`} />
         </div>
       </button>
       {open && (
-        <div style={{ borderTop: '1px solid #f0e8ee', padding: '12px 16px 14px' }}>
-          {mockItems.map((item, i) => (
-            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: i < mockItems.length - 1 ? '1px dashed #f0e8ee' : 'none' }}>
+        <div className="border-t border-[#f0e8ee] px-4 py-3 space-y-0">
+          {items.map((item, i) => (
+            <div key={i} className={`flex justify-between items-center py-2 ${i < items.length - 1 ? 'border-b border-dashed border-[#f0e8ee]' : ''}`}>
               <div>
-                <p style={{ fontSize: 13, fontWeight: 600, color: '#222' }}>{item.name}</p>
-                <p style={{ fontSize: 11, color: '#9ca3af', fontWeight: 500 }}>Qty: {item.qty}</p>
+                <p className="text-[13px] font-semibold text-gray-800">{item.name}</p>
+                <p className="text-[11px] text-gray-400">Qty: {item.qty}</p>
               </div>
-              <span style={{ fontWeight: 700, fontSize: 13, color: '#444' }}>₹{item.price * item.qty}</span>
+              <span className="font-bold text-[13px] text-gray-600">₹{item.price * item.qty}</span>
             </div>
           ))}
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10, paddingTop: 10, borderTop: '1.5px solid #f0e8ee' }}>
-            <span style={{ fontSize: 12, color: '#888', fontWeight: 600 }}>Shipping</span>
-            <span style={{ fontSize: 12, color: '#22c55e', fontWeight: 700 }}>FREE</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
-            <span style={{ fontSize: 14, fontWeight: 800, color: '#111' }}>Total</span>
-            <span style={{ fontSize: 16, fontWeight: 900, color: BRAND }}>₹{mockTotal}</span>
+          <div className="pt-2.5 mt-1 border-t border-[#f0e8ee] space-y-1.5">
+            <div className="flex justify-between text-xs text-gray-400">
+              <span>Subtotal</span><span className="font-semibold text-gray-700">₹{sub}</span>
+            </div>
+            <div className="flex justify-between text-xs text-gray-400">
+              <span>Shipping</span>
+              <span className={`font-semibold ${ship === 0 ? 'text-green-500' : 'text-gray-700'}`}>
+                {ship === 0 ? 'FREE' : `₹${ship}`}
+              </span>
+            </div>
+            {ship > 0 && <p className="text-[10px] text-gray-300">Add ₹{500 - sub} more for free shipping</p>}
+            <div className="flex justify-between pt-1 border-t border-gray-100">
+              <span className="text-sm font-black text-gray-900">Total</span>
+              <span className="font-black text-[#c23d6a]">₹{total}</span>
+            </div>
           </div>
         </div>
       )}
@@ -157,30 +185,31 @@ function OrderSummary({ items = [], total = 0, collapsed = false }) {
   );
 }
 
-// ─── Step Indicator ─────────────────────────────────────────────────────────
+// ─── Step Bar ─────────────────────────────────────────────────────────────────
 function StepBar({ step }) {
-  const steps = ['Cart', 'Delivery', 'Payment'];
+  const steps = [
+    { label: 'Details', icon: User },
+    { label: 'Verify', icon: Smartphone },
+    { label: 'Payment', icon: CreditCard },
+    { label: 'Done', icon: CheckCircle2 },
+  ];
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0, marginBottom: 28 }}>
+    <div className="flex items-center justify-center mb-7">
       {steps.map((s, i) => (
-        <React.Fragment key={s}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-            <div style={{
-              width: 32, height: 32, borderRadius: '50%',
-              background: i < step ? BRAND : i === step ? BRAND : '#e5e7eb',
-              color: i <= step ? '#fff' : '#9ca3af',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontWeight: 800, fontSize: 13,
-              border: i === step ? `3px solid ${BRAND}` : '3px solid transparent',
-              boxShadow: i === step ? `0 0 0 3px #f9d1de` : 'none',
-              transition: 'all 0.3s',
-            }}>
-              {i < step ? <CheckCircle2 size={16} /> : i + 1}
+        <React.Fragment key={s.label}>
+          <div className="flex flex-col items-center gap-1">
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center border-[2.5px] transition-all text-[12px] font-black
+              ${i < step  ? 'bg-[#c23d6a] border-[#c23d6a] text-white' :
+                i === step ? 'bg-white border-[#c23d6a] text-[#c23d6a] ring-4 ring-pink-100' :
+                             'bg-white border-gray-200 text-gray-300'}`}>
+              {i < step ? <CheckCircle2 size={14} /> : <s.icon size={14} />}
             </div>
-            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: i <= step ? BRAND : '#9ca3af' }}>{s}</span>
+            <span className={`text-[9px] font-bold uppercase tracking-wider ${i <= step ? 'text-[#c23d6a]' : 'text-gray-300'}`}>
+              {s.label}
+            </span>
           </div>
           {i < steps.length - 1 && (
-            <div style={{ width: 60, height: 2, background: i < step ? BRAND : '#e5e7eb', margin: '0 4px', marginBottom: 18, transition: 'background 0.3s' }} />
+            <div className={`w-10 h-0.5 mb-4 mx-0.5 transition-all ${i < step ? 'bg-[#c23d6a]' : 'bg-gray-200'}`} />
           )}
         </React.Fragment>
       ))}
@@ -188,394 +217,618 @@ function StepBar({ step }) {
   );
 }
 
-// ─── Delivery Screen ────────────────────────────────────────────────────────
-function DeliveryScreen({ onNext, onBack }) {
-  const [form, setForm] = useState({
+// ─── SCREEN 1 — Delivery Details ──────────────────────────────────────────────
+function DeliveryScreen({ onNext, loading }) {
+  const [f, setF] = useState({
     firstName: '', lastName: '', phone: '', email: '',
     address: '', apartment: '', city: '', state: '', pincode: '',
-    paymentMethod: 'cod',
+    paymentMethod: 'razorpay',
   });
-  const [errors, setErrors] = useState({});
-  const [submitted, setSubmitted] = useState(false);
+  const [errs, setErrs] = useState({});
+  const [touched, setTouched] = useState(false);
 
-  const set = (key) => (e) => setForm(f => ({ ...f, [key]: e.target.value }));
+  const s = k => e => setF(p => ({ ...p, [k]: e.target.value }));
+  const sub = CART.reduce((a, i) => a + i.price * i.qty, 0);
+  const total = sub >= 500 ? sub : sub + 60;
 
   const validate = () => {
-    const errs = {};
-    if (!form.firstName.trim()) errs.firstName = 'First name is required';
-    if (!form.lastName.trim()) errs.lastName = 'Last name is required';
-    if (!form.phone.trim()) errs.phone = 'Phone number is required';
-    else if (!/^[6-9]\d{9}$/.test(form.phone.trim())) errs.phone = 'Enter a valid 10-digit Indian mobile number';
-    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = 'Enter a valid email address';
-    if (!form.address.trim()) errs.address = 'Address is required';
-    if (!form.city.trim()) errs.city = 'City is required';
-    if (!form.state) errs.state = 'Please select a state';
-    if (!form.pincode.trim()) errs.pincode = 'Pincode is required';
-    else if (!/^\d{6}$/.test(form.pincode.trim())) errs.pincode = 'Enter a valid 6-digit pincode';
-    return errs;
+    const e = {};
+    if (!f.firstName.trim()) e.firstName = 'Required';
+    if (!f.lastName.trim()) e.lastName = 'Required';
+    if (!/^[6-9]\d{9}$/.test(f.phone)) e.phone = 'Valid 10-digit Indian number';
+    if (f.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email)) e.email = 'Invalid email';
+    if (!f.address.trim()) e.address = 'Required';
+    if (!f.city.trim()) e.city = 'Required';
+    if (!f.state) e.state = 'Select state';
+    if (!/^\d{6}$/.test(f.pincode)) e.pincode = 'Valid 6-digit pincode';
+    return e;
   };
 
-  const handleSubmit = () => {
-    setSubmitted(true);
-    const errs = validate();
-    setErrors(errs);
-    if (Object.keys(errs).length === 0) {
-      onNext(form);
-    }
+  const submit = () => {
+    setTouched(true);
+    const e = validate();
+    setErrs(e);
+    if (Object.keys(e).length === 0) onNext(f, total);
   };
 
-  const isCOD = form.paymentMethod === 'cod';
+  const E = k => touched && errs[k];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      <OrderSummary collapsed />
+    <div className="flex flex-col gap-4">
+      <OrderSummary items={CART} collapsed />
 
       {/* Contact */}
-      <div style={{ background: '#fff', border: '1.5px solid #f0e8ee', borderRadius: 16, padding: '18px 16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-          <User size={16} style={{ color: BRAND }} />
-          <span style={{ fontWeight: 800, fontSize: 14, color: '#111' }}>Contact Information</span>
+      <div className="bg-white border border-[#f0e8ee] rounded-2xl p-4 space-y-3.5">
+        <div className="flex items-center gap-2">
+          <User size={16} className="text-[#c23d6a]" />
+          <span className="font-black text-sm text-gray-900">Contact Information</span>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <InputField label="First Name" value={form.firstName} onChange={set('firstName')} error={submitted && errors.firstName} />
-          <InputField label="Last Name" value={form.lastName} onChange={set('lastName')} error={submitted && errors.lastName} />
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="First Name" error={E('firstName')}>
+            <Input value={f.firstName} onChange={s('firstName')} error={E('firstName')} placeholder="First name" />
+          </Field>
+          <Field label="Last Name" error={E('lastName')}>
+            <Input value={f.lastName} onChange={s('lastName')} error={E('lastName')} placeholder="Last name" />
+          </Field>
         </div>
-        <InputField label="Phone" value={form.phone} onChange={set('phone')} error={submitted && errors.phone} type="tel" icon={Phone} placeholder="10-digit mobile number" />
-        <InputField label="Email" value={form.email} onChange={set('email')} error={submitted && errors.email} type="email" optional placeholder="For order updates" />
+        <Field label="Mobile Number" error={E('phone')}>
+          <div className="flex gap-2">
+            <div className="flex items-center px-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-gray-500 shrink-0">
+              🇮🇳 +91
+            </div>
+            <Input value={f.phone} onChange={s('phone')} error={E('phone')} placeholder="10-digit number" type="tel" maxLength={10} className="flex-1" />
+          </div>
+        </Field>
+        <Field label="Email" error={E('email')} optional>
+          <Input value={f.email} onChange={s('email')} error={E('email')} placeholder="you@example.com" type="email" />
+        </Field>
       </div>
 
       {/* Address */}
-      <div style={{ background: '#fff', border: '1.5px solid #f0e8ee', borderRadius: 16, padding: '18px 16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-          <MapPin size={16} style={{ color: BRAND }} />
-          <span style={{ fontWeight: 800, fontSize: 14, color: '#111' }}>Delivery Address</span>
+      <div className="bg-white border border-[#f0e8ee] rounded-2xl p-4 space-y-3.5">
+        <div className="flex items-center gap-2">
+          <MapPin size={16} className="text-[#c23d6a]" />
+          <span className="font-black text-sm text-gray-900">Delivery Address</span>
         </div>
-        <InputField label="Street Address" value={form.address} onChange={set('address')} error={submitted && errors.address} icon={MapPin} placeholder="House no., Street name" />
-        <InputField label="Apartment / Suite" value={form.apartment} onChange={set('apartment')} optional placeholder="Floor, Building, Landmark" />
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <InputField label="City" value={form.city} onChange={set('city')} error={submitted && errors.city} />
-          <SelectField
-            label="State"
-            value={form.state}
-            onChange={set('state')}
-            error={submitted && errors.state}
-            options={[{ value: '', label: 'Select State', disabled: true }, ...indianStates.map(s => ({ value: s, label: s }))]}
-          />
+        <Field label="Street Address" error={E('address')}>
+          <Input value={f.address} onChange={s('address')} error={E('address')} icon={MapPin} placeholder="House no., Street, Area" />
+        </Field>
+        <Field label="Apartment / Landmark" optional>
+          <Input value={f.apartment} onChange={s('apartment')} placeholder="Floor, Building, Landmark" />
+        </Field>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="City" error={E('city')}>
+            <Input value={f.city} onChange={s('city')} error={E('city')} placeholder="City" />
+          </Field>
+          <Field label="State" error={E('state')}>
+            <div className="relative">
+              <select
+                value={f.state} onChange={s('state')}
+                className={`w-full px-4 py-3 pr-8 rounded-xl border text-sm font-medium bg-white outline-none appearance-none cursor-pointer transition-all focus:ring-2 focus:ring-[#c23d6a]/10 focus:border-[#c23d6a] ${E('state') ? 'border-red-400 bg-red-50' : 'border-gray-200'} ${f.state ? 'text-gray-900' : 'text-gray-400'}`}
+              >
+                <option value="" disabled>State</option>
+                {STATES.map(st => <option key={st} value={st}>{st}</option>)}
+              </select>
+              <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+            </div>
+          </Field>
         </div>
-        <InputField label="Pincode" value={form.pincode} onChange={set('pincode')} error={submitted && errors.pincode} placeholder="6-digit pincode" maxLength={6} />
+        <Field label="Pincode" error={E('pincode')}>
+          <Input value={f.pincode} onChange={s('pincode')} error={E('pincode')} placeholder="6-digit pincode" maxLength={6} />
+        </Field>
       </div>
 
-      {/* Payment Method Selection */}
-      <div style={{ background: '#fff', border: '1.5px solid #f0e8ee', borderRadius: 16, padding: '18px 16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-          <Wallet size={16} style={{ color: BRAND }} />
-          <span style={{ fontWeight: 800, fontSize: 14, color: '#111' }}>Payment Method</span>
+      {/* Payment selection */}
+      <div className="bg-white border border-[#f0e8ee] rounded-2xl p-4 space-y-3">
+        <div className="flex items-center gap-2">
+          <Wallet size={16} className="text-[#c23d6a]" />
+          <span className="font-black text-sm text-gray-900">Payment Method</span>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {[
-            { value: 'cod', label: 'Cash on Delivery', desc: 'Pay when your order arrives', icon: Banknote },
-            { value: 'razorpay', label: 'Razorpay', desc: 'UPI, Cards, Net Banking & more', icon: CreditCard },
-          ].map(opt => (
-            <label
-              key={opt.value}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 12,
-                padding: '13px 14px',
-                border: `2px solid ${form.paymentMethod === opt.value ? BRAND : '#e5e7eb'}`,
-                borderRadius: 12,
-                background: form.paymentMethod === opt.value ? BRAND_LIGHT : '#fff',
-                cursor: 'pointer',
-                transition: 'all 0.15s',
-              }}
-            >
-              <input
-                type="radio"
-                name="paymentMethod"
-                value={opt.value}
-                checked={form.paymentMethod === opt.value}
-                onChange={set('paymentMethod')}
-                style={{ accentColor: BRAND, width: 16, height: 16, cursor: 'pointer' }}
-              />
-              <div style={{
-                width: 36, height: 36, borderRadius: 10,
-                background: form.paymentMethod === opt.value ? BRAND : '#f3f4f6',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                flexShrink: 0,
-              }}>
-                <opt.icon size={18} style={{ color: form.paymentMethod === opt.value ? '#fff' : '#9ca3af' }} />
+        {[
+          { v: 'razorpay', label: 'Pay Online', sub: 'UPI · Cards · Net Banking · Wallets', icon: CreditCard, badge: 'Recommended' },
+          { v: 'cod',      label: 'Cash on Delivery', sub: 'Pay when order arrives', icon: Banknote, badge: null },
+        ].map(opt => (
+          <label key={opt.v}
+            className={`flex items-center gap-3 px-3.5 py-3 rounded-xl border-2 cursor-pointer transition-all
+              ${f.paymentMethod === opt.v ? 'border-[#c23d6a] bg-[#fff0f5]' : 'border-gray-200 hover:border-gray-300'}`}>
+            <input type="radio" name="pm" value={opt.v} checked={f.paymentMethod === opt.v}
+              onChange={s('paymentMethod')} className="accent-[#c23d6a] w-4 h-4" />
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all
+              ${f.paymentMethod === opt.v ? 'bg-[#c23d6a]' : 'bg-gray-100'}`}>
+              <opt.icon size={18} className={f.paymentMethod === opt.v ? 'text-white' : 'text-gray-400'} />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <p className="font-bold text-sm text-gray-900">{opt.label}</p>
+                {opt.badge && (
+                  <span className="text-[9px] font-black bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                    {opt.badge}
+                  </span>
+                )}
               </div>
-              <div>
-                <p style={{ fontWeight: 700, fontSize: 14, color: '#111', lineHeight: 1.3 }}>{opt.label}</p>
-                <p style={{ fontSize: 11, color: '#888', fontWeight: 500 }}>{opt.desc}</p>
-              </div>
-              {form.paymentMethod === opt.value && (
-                <CheckCircle2 size={18} style={{ color: BRAND, marginLeft: 'auto' }} />
-              )}
-            </label>
-          ))}
-        </div>
-        {isCOD && (
-          <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 10, padding: '10px 13px', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-            <Truck size={15} style={{ color: '#16a34a', marginTop: 1, flexShrink: 0 }} />
-            <p style={{ fontSize: 12, color: '#166534', fontWeight: 600 }}>
-              Pay in cash when your order is delivered. Please keep exact change ready.
-            </p>
+              <p className="text-[11px] text-gray-400">{opt.sub}</p>
+            </div>
+            {f.paymentMethod === opt.v && <CheckCircle2 size={18} className="text-[#c23d6a] shrink-0" />}
+          </label>
+        ))}
+        {f.paymentMethod === 'cod' && (
+          <div className="flex gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3.5 py-2.5">
+            <Truck size={14} className="text-amber-600 mt-0.5 shrink-0" />
+            <p className="text-[11px] text-amber-800 font-semibold">₹{total} payable on delivery. Keep exact change.</p>
           </div>
         )}
       </div>
 
-      {/* CTA */}
-      <button
-        onClick={handleSubmit}
-        style={{
-          width: '100%',
-          background: BRAND,
-          color: '#fff',
-          border: 'none',
-          borderRadius: 16,
-          padding: '16px',
-          fontSize: 15,
-          fontWeight: 800,
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 8,
-          letterSpacing: '0.02em',
-          boxShadow: `0 4px 20px ${BRAND}40`,
-          transition: 'all 0.2s',
-        }}
-        onMouseEnter={e => e.target.style.background = BRAND_DARK}
-        onMouseLeave={e => e.target.style.background = BRAND}
-      >
-        {isCOD ? (
-          <><CheckCircle2 size={18} /> Place Order</>
-        ) : (
-          <><CreditCard size={18} /> Proceed to Make Payment</>
-        )}
-      </button>
-
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-        <ShieldCheck size={13} style={{ color: '#9ca3af' }} />
-        <span style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600 }}>Secure & encrypted checkout</span>
+      <Btn onClick={submit} loading={loading}>
+        {f.paymentMethod === 'cod'
+          ? <><CheckCircle2 size={18} /> Place Order (COD)</>
+          : <><Smartphone size={18} /> Verify OTP & Continue</>}
+      </Btn>
+      <div className="flex justify-center gap-1.5 items-center">
+        <ShieldCheck size={12} className="text-gray-300" />
+        <span className="text-[11px] text-gray-400 font-semibold">Secure & encrypted checkout</span>
       </div>
     </div>
   );
 }
 
-// ─── Razorpay Screen ─────────────────────────────────────────────────────────
-function RazorpayScreen({ deliveryData, onBack }) {
-  const [paying, setPaying] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const mockTotal = 650;
+// ─── SCREEN 2 — OTP Verification ─────────────────────────────────────────────
+function OTPScreen({ phone, onVerified, onBack }) {
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [sent, setSent] = useState(true);  // auto-sent on mount
+  const [timer, setTimer] = useState(30);
+  const [verifying, setVerifying] = useState(false);
+  const [error, setError] = useState('');
+  const [resending, setResending] = useState(false);
+  const refs = useRef([]);
 
-  const handlePay = () => {
-    setPaying(true);
-    setTimeout(() => {
-      setPaying(false);
-      setSuccess(true);
-    }, 2200);
+  // Countdown timer
+  useEffect(() => {
+    if (timer <= 0) return;
+    const t = setInterval(() => setTimer(v => v - 1), 1000);
+    return () => clearInterval(t);
+  }, [timer]);
+
+  const handleOtp = (val, idx) => {
+    if (!/^\d?$/.test(val)) return;
+    const next = [...otp];
+    next[idx] = val;
+    setOtp(next);
+    setError('');
+    if (val && idx < 5) refs.current[idx + 1]?.focus();
   };
 
-  if (success) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 18, padding: '40px 20px', textAlign: 'center' }}>
-        <div style={{
-          width: 80, height: 80, borderRadius: '50%',
-          background: '#f0fdf4', border: '3px solid #22c55e',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          animation: 'popIn 0.4s ease',
-        }}>
-          <CheckCircle2 size={40} style={{ color: '#22c55e' }} />
-        </div>
-        <div>
-          <h2 style={{ fontWeight: 900, fontSize: 22, color: '#111', marginBottom: 6 }}>Payment Successful!</h2>
-          <p style={{ color: '#888', fontSize: 14, fontWeight: 500 }}>Your order has been placed. You'll receive a confirmation soon.</p>
-        </div>
-        <div style={{ background: '#f8f8f8', borderRadius: 14, padding: '14px 24px', width: '100%', maxWidth: 300 }}>
-          <p style={{ fontSize: 12, color: '#888', fontWeight: 600 }}>Amount Paid</p>
-          <p style={{ fontSize: 26, fontWeight: 900, color: BRAND }}>₹{mockTotal}</p>
-        </div>
-      </div>
-    );
-  }
+  const handleKey = (e, idx) => {
+    if (e.key === 'Backspace' && !otp[idx] && idx > 0) refs.current[idx - 1]?.focus();
+  };
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-      <OrderSummary collapsed />
-
-      {/* Delivery To */}
-      {deliveryData && (
-        <div style={{ background: '#fff', border: '1.5px solid #f0e8ee', borderRadius: 16, padding: '14px 16px', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-          <div style={{ width: 36, height: 36, borderRadius: 10, background: BRAND_LIGHT, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <MapPin size={16} style={{ color: BRAND }} />
-          </div>
-          <div>
-            <p style={{ fontWeight: 700, fontSize: 13, color: '#111' }}>Delivering to</p>
-            <p style={{ fontSize: 12, color: '#666', fontWeight: 500, marginTop: 2 }}>
-              {deliveryData.firstName} {deliveryData.lastName} · {deliveryData.phone}
-            </p>
-            <p style={{ fontSize: 12, color: '#888', fontWeight: 500, marginTop: 1 }}>
-              {deliveryData.address}{deliveryData.apartment ? `, ${deliveryData.apartment}` : ''}, {deliveryData.city}, {deliveryData.state} – {deliveryData.pincode}
-            </p>
-          </div>
-          <button onClick={onBack} style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 700, color: BRAND, background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0 }}>Change</button>
-        </div>
-      )}
-
-      {/* Razorpay Card */}
-      <div style={{ background: '#fff', border: '1.5px solid #f0e8ee', borderRadius: 16, overflow: 'hidden' }}>
-        {/* Header */}
-        <div style={{ background: 'linear-gradient(135deg, #072654 0%, #3395FF 100%)', padding: '18px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div>
-            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 3 }}>Powered by</p>
-            <p style={{ color: '#fff', fontSize: 20, fontWeight: 900, letterSpacing: '-0.03em' }}>Razorpay</p>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Lock size={14} style={{ color: 'rgba(255,255,255,0.7)' }} />
-            <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11, fontWeight: 600 }}>100% Secure</span>
-          </div>
-        </div>
-
-        <div style={{ padding: '18px 16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {/* Amount */}
-          <div style={{ textAlign: 'center', padding: '12px', background: BRAND_LIGHT, borderRadius: 12 }}>
-            <p style={{ fontSize: 11, color: '#888', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Amount to Pay</p>
-            <p style={{ fontSize: 32, fontWeight: 900, color: BRAND, lineHeight: 1.2, marginTop: 4 }}>₹{mockTotal}</p>
-          </div>
-
-          {/* Payment Options Preview */}
-          <div>
-            <p style={{ fontSize: 11, color: '#888', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>Pay via</p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-              {[
-                { label: 'UPI', icon: '⚡', sub: 'GPay, PhonePe, Paytm' },
-                { label: 'Cards', icon: '💳', sub: 'Visa, Mastercard, Amex' },
-                { label: 'Net Banking', icon: '🏦', sub: 'All major banks' },
-                { label: 'Wallets', icon: '👜', sub: 'Paytm, Amazon Pay' },
-              ].map(opt => (
-                <div key={opt.label} style={{ border: '1.5px solid #f0e8ee', borderRadius: 12, padding: '10px 12px', background: '#fafafa' }}>
-                  <p style={{ fontSize: 15 }}>{opt.icon}</p>
-                  <p style={{ fontSize: 12, fontWeight: 700, color: '#111', marginTop: 4 }}>{opt.label}</p>
-                  <p style={{ fontSize: 10, color: '#9ca3af', fontWeight: 500, marginTop: 1 }}>{opt.sub}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Trust Badges */}
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {['256-bit SSL', 'PCI DSS', 'RBI Compliant'].map(badge => (
-              <div key={badge} style={{ display: 'flex', alignItems: 'center', gap: 4, background: '#f0fdf4', borderRadius: 8, padding: '4px 10px' }}>
-                <ShieldCheck size={11} style={{ color: '#22c55e' }} />
-                <span style={{ fontSize: 10, fontWeight: 700, color: '#166534' }}>{badge}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Pay Button */}
-      <button
-        onClick={handlePay}
-        disabled={paying}
-        style={{
-          width: '100%',
-          background: paying ? '#e5e7eb' : 'linear-gradient(135deg, #072654 0%, #3395FF 100%)',
-          color: paying ? '#9ca3af' : '#fff',
-          border: 'none',
-          borderRadius: 16,
-          padding: '16px',
-          fontSize: 15,
-          fontWeight: 800,
-          cursor: paying ? 'not-allowed' : 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 8,
-          letterSpacing: '0.02em',
-          boxShadow: paying ? 'none' : '0 4px 20px rgba(51, 149, 255, 0.4)',
-          transition: 'all 0.2s',
-        }}
-      >
-        {paying ? (
-          <>
-            <span style={{
-              width: 18, height: 18, border: '2px solid #9ca3af', borderTopColor: 'transparent',
-              borderRadius: '50%', display: 'inline-block', animation: 'spin 0.7s linear infinite'
-            }} />
-            Processing...
-          </>
-        ) : (
-          <><Lock size={16} /> Pay ₹{mockTotal} Securely</>
-        )}
-      </button>
-    </div>
-  );
-}
-
-// ─── Main App ────────────────────────────────────────────────────────────────
-export default function CheckoutFlow() {
-  const [step, setStep] = useState(1); // 1 = delivery, 2 = payment
-  const [deliveryData, setDeliveryData] = useState(null);
-
-  const handleDeliveryNext = (data) => {
-    setDeliveryData(data);
-    if (data.paymentMethod === 'razorpay') {
-      setStep(2);
-    } else {
-      // COD — show success inline (you'd route to /order-success)
-      alert('Order placed successfully! You will pay on delivery.');
+  const handlePaste = (e) => {
+    const paste = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (paste.length === 6) {
+      setOtp(paste.split(''));
+      refs.current[5]?.focus();
     }
   };
 
+  const resend = async () => {
+    setResending(true);
+    setOtp(['', '', '', '', '', '']);
+    setError('');
+    // In production: call your OTP sending API here
+    await new Promise(r => setTimeout(r, 1000));
+    setTimer(30);
+    setResending(false);
+    refs.current[0]?.focus();
+  };
+
+  const verify = async () => {
+    const code = otp.join('');
+    if (code.length < 6) { setError('Enter the 6-digit OTP'); return; }
+    setVerifying(true);
+    setError('');
+    // ── In production: verify OTP via your backend ──
+    // const res = await fetch('/api/verify-otp', { method:'POST', body: JSON.stringify({ phone, otp: code }) });
+    // if (!res.ok) { setError('Wrong OTP. Try again.'); setVerifying(false); return; }
+    // For demo, any 6-digit OTP passes:
+    await new Promise(r => setTimeout(r, 1200));
+    setVerifying(false);
+    onVerified();
+  };
+
   return (
-    <>
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', -apple-system, sans-serif; }
-      `}</style>
-
-      <div style={{ minHeight: '100vh', background: '#fdf8f9', padding: '24px 16px 40px' }}>
-        <div style={{ maxWidth: 480, margin: '0 auto' }}>
-
-          {/* Brand Header */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 40, height: 40, borderRadius: '50%', background: BRAND, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ color: '#fff', fontWeight: 900, fontSize: 16 }}>O</span>
-              </div>
-              <div>
-                <p style={{ fontWeight: 900, fontSize: 16, color: '#111', letterSpacing: '-0.03em' }}>OatStore</p>
-                <p style={{ fontSize: 10, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Checkout</p>
-              </div>
-            </div>
-            {step === 2 && (
-              <button onClick={() => setStep(1)} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 700, color: BRAND, background: 'none', border: 'none', cursor: 'pointer' }}>
-                <ArrowLeft size={14} /> Back
-              </button>
-            )}
-          </div>
-
-          <StepBar step={step} />
-
-          {step === 1 && (
-            <DeliveryScreen
-              onNext={handleDeliveryNext}
-              onBack={() => {}}
-            />
-          )}
-
-          {step === 2 && (
-            <RazorpayScreen
-              deliveryData={deliveryData}
-              onBack={() => setStep(1)}
-            />
-          )}
+    <div className="flex flex-col gap-5">
+      {/* Icon */}
+      <div className="flex flex-col items-center gap-3 py-4">
+        <div className="w-16 h-16 rounded-2xl bg-[#fff0f5] flex items-center justify-center">
+          <Smartphone size={32} className="text-[#c23d6a]" />
+        </div>
+        <div className="text-center">
+          <h2 className="font-black text-lg text-gray-900">Verify Your Number</h2>
+          <p className="text-sm text-gray-500 mt-1">OTP sent to <span className="font-black text-gray-800">+91 {phone}</span></p>
         </div>
       </div>
-    </>
+
+      {/* OTP inputs */}
+      <div className="flex gap-2.5 justify-center" onPaste={handlePaste}>
+        {otp.map((d, i) => (
+          <input
+            key={i}
+            ref={el => refs.current[i] = el}
+            type="tel"
+            inputMode="numeric"
+            maxLength={1}
+            value={d}
+            onChange={e => handleOtp(e.target.value, i)}
+            onKeyDown={e => handleKey(e, i)}
+            className={`w-12 h-14 text-center text-xl font-black rounded-xl border-2 outline-none transition-all
+              ${d ? 'border-[#c23d6a] bg-[#fff0f5] text-[#c23d6a]' : 'border-gray-200 bg-white text-gray-900'}
+              focus:border-[#c23d6a] focus:ring-4 focus:ring-pink-100
+              ${error ? 'border-red-400 bg-red-50' : ''}`}
+          />
+        ))}
+      </div>
+
+      {error && (
+        <div className="flex items-center justify-center gap-1.5">
+          <AlertCircle size={13} className="text-red-500" />
+          <p className="text-sm text-red-500 font-semibold">{error}</p>
+        </div>
+      )}
+
+      {/* Resend */}
+      <div className="flex justify-center">
+        {timer > 0 ? (
+          <p className="text-sm text-gray-400 font-medium">
+            Resend OTP in <span className="font-black text-[#c23d6a]">{timer}s</span>
+          </p>
+        ) : (
+          <button onClick={resend} disabled={resending}
+            className="flex items-center gap-1.5 text-sm font-bold text-[#c23d6a] hover:underline disabled:opacity-50">
+            <RefreshCw size={14} className={resending ? 'animate-spin' : ''} />
+            {resending ? 'Sending...' : 'Resend OTP'}
+          </button>
+        )}
+      </div>
+
+      <Btn onClick={verify} loading={verifying}>
+        <CheckCircle2 size={18} /> Verify & Proceed
+      </Btn>
+
+      <Btn variant="ghost" onClick={onBack}>
+        <ArrowLeft size={15} /> Change Number
+      </Btn>
+    </div>
+  );
+}
+
+// ─── SCREEN 3 — Razorpay Payment ─────────────────────────────────────────────
+function PaymentScreen({ deliveryData, total, onSuccess, onFail, onBack }) {
+  const [paying, setPaying] = useState(false);
+  const [error, setError] = useState('');
+  const [selectedMethod, setSelectedMethod] = useState('upi');
+
+  const launch = () => {
+    setPaying(true);
+    setError('');
+
+    const options = {
+      key: RAZORPAY_KEY_ID,
+      amount: total * 100,         // paise
+      currency: 'INR',
+      name: 'GYM HACK',
+      description: `Order for ${deliveryData.firstName} ${deliveryData.lastName}`,
+      image: '/images/logoimg.png',
+      // order_id: 'order_xxx',    // ← uncomment when created server-side
+      prefill: {
+        name:    `${deliveryData.firstName} ${deliveryData.lastName}`,
+        contact: `+91${deliveryData.phone}`,
+        email:   deliveryData.email || 'customer@gymhack.in',
+      },
+      notes: {
+        address: `${deliveryData.address}${deliveryData.apartment ? ', ' + deliveryData.apartment : ''}, ${deliveryData.city}, ${deliveryData.state} – ${deliveryData.pincode}`,
+      },
+      theme:  { color: '#c23d6a', hide_topbar: false },
+      config: {
+        display: {
+          blocks: {
+            utib: { name: 'Pay via UPI',    instruments: [{ method: 'upi' }] },
+            other: { name: 'Other Methods', instruments: [{ method: 'card' }, { method: 'netbanking' }, { method: 'wallet' }] },
+          },
+          sequence: ['block.utib', 'block.other'],
+          preferences: { show_default_blocks: true },
+        },
+      },
+      handler: resp => {
+        setPaying(false);
+        onSuccess({
+          paymentId: resp.razorpay_payment_id,
+          orderId:   resp.razorpay_order_id,
+          signature: resp.razorpay_signature,
+        });
+      },
+      modal: {
+        confirm_close: true,
+        ondismiss: () => {
+          setPaying(false);
+          setError('Payment window was closed. Please try again.');
+          onFail('DISMISSED');
+        },
+      },
+    };
+
+    const open = () => {
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', resp => {
+        setPaying(false);
+        setError(`Payment failed: ${resp.error.description}`);
+        onFail(resp.error.description);
+      });
+      rzp.open();
+    };
+
+    if (window.Razorpay) {
+      open();
+    } else {
+      const s = document.createElement('script');
+      s.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      s.onload  = open;
+      s.onerror = () => { setPaying(false); setError('Could not load payment gateway. Check internet connection.'); };
+      document.body.appendChild(s);
+    }
+  };
+
+  const methods = [
+    { id: 'upi',    label: 'UPI',          icon: '⚡', sub: 'GPay · PhonePe · Paytm · BHIM' },
+    { id: 'card',   label: 'Debit / Credit Card', icon: '💳', sub: 'Visa · Mastercard · Amex · RuPay' },
+    { id: 'nb',     label: 'Net Banking',  icon: '🏦', sub: 'SBI · HDFC · ICICI · Axis & more' },
+    { id: 'wallet', label: 'Wallets',      icon: '👜', sub: 'Paytm · Amazon Pay · Mobikwik' },
+    { id: 'emi',    label: 'EMI',          icon: '📅', sub: 'No-cost EMI on select cards' },
+  ];
+
+  return (
+    <div className="flex flex-col gap-4">
+      <OrderSummary items={CART} collapsed />
+
+      {/* Delivery address chip */}
+      <div className="bg-white border border-[#f0e8ee] rounded-2xl p-3.5 flex gap-3 items-start">
+        <div className="w-8 h-8 rounded-xl bg-[#fff0f5] flex items-center justify-center shrink-0">
+          <MapPin size={15} className="text-[#c23d6a]" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-bold text-[12px] text-gray-900">{deliveryData.firstName} {deliveryData.lastName} · +91 {deliveryData.phone}</p>
+          <p className="text-[11px] text-gray-400 mt-0.5 leading-relaxed">
+            {deliveryData.address}{deliveryData.apartment ? `, ${deliveryData.apartment}` : ''}, {deliveryData.city}, {deliveryData.state} – {deliveryData.pincode}
+          </p>
+        </div>
+        <button onClick={onBack} className="text-[11px] font-bold text-[#c23d6a] hover:underline shrink-0">Edit</button>
+      </div>
+
+      {/* Razorpay card */}
+      <div className="bg-white border border-[#f0e8ee] rounded-2xl overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-br from-[#072654] via-[#1a4a9e] to-[#3395FF] px-5 py-4">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="text-white/60 text-[9px] font-bold uppercase tracking-widest">Powered by</p>
+              <p className="text-white text-[22px] font-black tracking-tighter leading-none">razorpay</p>
+            </div>
+            <div className="flex flex-col items-end gap-1">
+              <div className="flex items-center gap-1">
+                <Lock size={12} className="text-white/70" />
+                <span className="text-white/70 text-[10px] font-semibold">256-bit SSL</span>
+              </div>
+              <div className="flex gap-1">
+                {['PCI', 'RBI'].map(b => (
+                  <span key={b} className="text-[9px] font-black bg-white/20 text-white px-1.5 py-0.5 rounded">{b}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="bg-white/10 rounded-xl px-4 py-2.5 flex items-center justify-between">
+            <span className="text-white/70 text-[11px] font-semibold">Amount to Pay</span>
+            <span className="text-white text-2xl font-black">₹{total}</span>
+          </div>
+        </div>
+
+        {/* Methods */}
+        <div className="p-4 space-y-2">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">Select Payment Method</p>
+          {methods.map(m => (
+            <button
+              key={m.id}
+              onClick={() => setSelectedMethod(m.id)}
+              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border-2 transition-all text-left
+                ${selectedMethod === m.id ? 'border-[#c23d6a] bg-[#fff0f5]' : 'border-gray-100 bg-gray-50 hover:border-gray-200'}`}
+            >
+              <span className="text-xl leading-none">{m.icon}</span>
+              <div className="flex-1">
+                <p className="text-[13px] font-bold text-gray-900">{m.label}</p>
+                <p className="text-[10px] text-gray-400 font-medium">{m.sub}</p>
+              </div>
+              {selectedMethod === m.id
+                ? <CheckCircle2 size={16} className="text-[#c23d6a] shrink-0" />
+                : <ChevronRight size={14} className="text-gray-300 shrink-0" />}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {error && (
+        <div className="flex gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+          <AlertCircle size={15} className="text-red-500 mt-0.5 shrink-0" />
+          <p className="text-[12px] text-red-700 font-semibold">{error}</p>
+        </div>
+      )}
+
+      {/* Trust row */}
+      <div className="flex items-center justify-center gap-4 flex-wrap">
+        {[
+          { icon: Lock, text: '100% Secure' },
+          { icon: ShieldCheck, text: 'Bank-grade Encryption' },
+          { icon: Star, text: '4.9★ Trusted' },
+        ].map(({ icon: I, text }) => (
+          <div key={text} className="flex items-center gap-1.5">
+            <I size={12} className="text-green-500" />
+            <span className="text-[11px] text-gray-400 font-semibold">{text}</span>
+          </div>
+        ))}
+      </div>
+
+      <Btn variant="blue" onClick={launch} loading={paying}>
+        <Lock size={16} /> Pay ₹{total} Securely via Razorpay
+      </Btn>
+
+      <Btn variant="ghost" onClick={onBack}>
+        <ArrowLeft size={14} /> Back
+      </Btn>
+    </div>
+  );
+}
+
+// ─── SCREEN 4 — Success ───────────────────────────────────────────────────────
+function SuccessScreen({ paymentInfo, form, isCOD }) {
+  const total = CART.reduce((a, i) => a + i.price * i.qty, 0) + (CART.reduce((a, i) => a + i.price * i.qty, 0) >= 500 ? 0 : 60);
+  const orderId = 'GH' + Date.now().toString().slice(-6);
+
+  return (
+    <div className="flex flex-col items-center gap-5 py-6 text-center">
+      <div className="relative">
+        <div className="w-24 h-24 rounded-full bg-green-50 border-4 border-green-400 flex items-center justify-center">
+          <CheckCircle2 size={48} className="text-green-500" />
+        </div>
+        <div className="absolute -top-1 -right-1 w-8 h-8 rounded-full bg-[#c23d6a] flex items-center justify-center">
+          <Tag size={14} className="text-white" />
+        </div>
+      </div>
+
+      <div>
+        <h2 className="text-2xl font-black text-gray-900">
+          {isCOD ? 'Order Placed! 🎉' : 'Payment Successful! 🎉'}
+        </h2>
+        <p className="text-gray-500 text-sm mt-1.5 font-medium">
+          {isCOD
+            ? 'Your order is confirmed. Pay on delivery.'
+            : 'Your payment was received & order is confirmed.'}
+        </p>
+      </div>
+
+      {/* Order card */}
+      <div className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 text-left space-y-3">
+        <div className="flex justify-between items-center">
+          <span className="text-[11px] font-bold uppercase tracking-widest text-gray-400">Order ID</span>
+          <span className="font-black text-sm text-gray-900">#{orderId}</span>
+        </div>
+        {paymentInfo?.paymentId && (
+          <div className="flex justify-between items-center">
+            <span className="text-[11px] font-bold uppercase tracking-widest text-gray-400">Payment ID</span>
+            <span className="font-mono text-[11px] text-gray-600">{paymentInfo.paymentId}</span>
+          </div>
+        )}
+        <div className="border-t border-gray-200 pt-3 space-y-1">
+          <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400">Delivering to</p>
+          <p className="text-sm font-bold text-gray-900">{form.firstName} {form.lastName}</p>
+          <p className="text-xs text-gray-500">{form.address}{form.apartment ? `, ${form.apartment}` : ''}</p>
+          <p className="text-xs text-gray-500">{form.city}, {form.state} – {form.pincode}</p>
+          <p className="text-xs text-gray-500">+91 {form.phone}</p>
+        </div>
+        <div className="border-t border-gray-200 pt-3">
+          <div className="flex justify-between">
+            <span className="font-black text-sm text-gray-900">Total {isCOD ? '(COD)' : 'Paid'}</span>
+            <span className="font-black text-[#c23d6a]">₹{total}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="w-full bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-left">
+        <p className="text-[11px] font-bold text-blue-800">📦 Estimated Delivery: 3–5 Business Days</p>
+        <p className="text-[10px] text-blue-600 mt-0.5">
+          {form.email ? `Order confirmation sent to ${form.email}` : `SMS confirmation sent to +91 ${form.phone}`}
+        </p>
+      </div>
+
+      <a href="/"
+        className="w-full bg-[#c23d6a] text-white font-bold py-4 rounded-2xl text-center hover:bg-[#a8305a] transition-colors block text-[15px]">
+        Continue Shopping
+      </a>
+    </div>
+  );
+}
+
+// ─── Root ─────────────────────────────────────────────────────────────────────
+export default function CheckoutFlow() {
+  // steps: 0=details  1=otp  2=payment  3=success
+  const [step, setStep]         = useState(0);
+  const [form, setForm]         = useState(null);
+  const [total, setTotal]       = useState(0);
+  const [isCOD, setIsCOD]       = useState(false);
+  const [payInfo, setPayInfo]   = useState(null);
+  const [loading, setLoading]   = useState(false);
+
+  const items = CART;
+
+  // Step 0 → next (OTP for Razorpay, COD skips to success)
+  const onDetailsNext = async (f, t) => {
+    setForm(f);
+    setTotal(t);
+    setLoading(true);
+    if (f.paymentMethod === 'cod') {
+      setIsCOD(true);
+      await sendTelegram(tgMessage({ form: f, items, total: t, method: 'cod', status: 'PENDING (COD)' }));
+      setLoading(false);
+      setStep(3);
+    } else {
+      setIsCOD(false);
+      // In production: trigger OTP send to f.phone via your backend
+      setLoading(false);
+      setStep(1);
+    }
+  };
+
+  // Step 1 → OTP verified
+  const onOTPVerified = () => setStep(2);
+
+  // Step 2 → Razorpay success
+  const onPaySuccess = async (info) => {
+    setPayInfo(info);
+    await sendTelegram(tgMessage({ form, items, total, method: 'razorpay', status: 'PAID', paymentId: info.paymentId, orderId: info.orderId }));
+    setStep(3);
+  };
+
+  // Step 2 → Razorpay fail
+  const onPayFail = async (reason) => {
+    await sendTelegram(tgMessage({ form, items, total, method: 'razorpay', status: `FAILED — ${reason}` }));
+  };
+
+  return (
+    <div className="min-h-screen bg-[#fdf8f9] px-4 py-6 pb-16">
+      <div className="max-w-[480px] mx-auto">
+
+        {/* Header */}
+        <div className="flex items-center justify-between mb-7">
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-full bg-[#c23d6a] flex items-center justify-center shrink-0">
+              <span className="text-white font-black">G</span>
+            </div>
+            <div>
+              <p className="font-black text-base text-gray-900 tracking-tight leading-none">GYM HACK</p>
+              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">Secure Checkout</p>
+            </div>
+          </div>
+          {step > 0 && step < 3 && (
+            <button onClick={() => setStep(s => s - 1)}
+              className="flex items-center gap-1 text-[13px] font-bold text-[#c23d6a] hover:underline">
+              <ArrowLeft size={14} /> Back
+            </button>
+          )}
+        </div>
+
+        {step < 3 && <StepBar step={step} />}
+
+        {step === 0 && <DeliveryScreen onNext={onDetailsNext} loading={loading} />}
+        {step === 1 && <OTPScreen phone={form?.phone} onVerified={onOTPVerified} onBack={() => setStep(0)} />}
+        {step === 2 && <PaymentScreen deliveryData={form} total={total} onSuccess={onPaySuccess} onFail={onPayFail} onBack={() => setStep(0)} />}
+        {step === 3 && <SuccessScreen paymentInfo={payInfo} form={form} isCOD={isCOD} />}
+      </div>
+    </div>
   );
 }

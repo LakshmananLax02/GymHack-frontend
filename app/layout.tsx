@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   title: "Gym Hack | Fuel Your Body",
   description: "High-quality nutrition for your workouts",
 };
-
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 export default function RootLayout({
   children,
 }: Readonly<{

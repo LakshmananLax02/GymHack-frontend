@@ -144,7 +144,7 @@ export default function HomeProducts() {
                               image: item.image,
                             });
                           }}
-                          className="flex items-center font-secondary gap-2 px-6 md:px-8 py-3 md:py-4 rounded-full font-bold text-xs md:text-sm shadow-xl transition-all duration-300 bg-[#c23d6a] text-white hover:bg-[#f2eadf] hover:text-black border border-transparent hover:border-black"
+                      className="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-xs shadow-lg bg-[#c23d6a] text-white hover:bg-[#f2eadf] hover:text-black border border-transparent hover:border-black transition-all duration-300 font-secondary"
                         >
                           Add to cart <ShoppingCart className="w-4 h-4 md:w-5 md:h-5" />
                         </button>
@@ -194,7 +194,8 @@ export default function HomeProducts() {
       {/* Container hidden on mobile, centered flex on medium screens and up */}
 <div className="hidden md:flex justify-center mt-8 md:mt-10">
   <Link href='/products'>
-    <button className="font-secondary flex items-center gap-3 px-10 py-4 bg-[#c23d6a] text-white rounded-full font-bold text-lg md:text-xl shadow-lg hover:bg-[#f2eadf] hover:text-black border border-transparent hover:border-black hover:scale-105 active:scale-95 transition-all duration-300">
+    <button                      className="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-xs shadow-lg bg-[#c23d6a] text-white hover:bg-[#f2eadf] hover:text-black border border-transparent hover:border-black transition-all duration-300 font-secondary"
+>
       Shop all <ShoppingCart className="w-5 h-5 md:w-6 md:h-6" />
     </button>
   </Link>

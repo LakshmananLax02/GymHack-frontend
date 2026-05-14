@@ -11,7 +11,7 @@ import {
 // ─────────────────────────────────────────────────────────────────────────────
 // ██  CONFIG  — replace before going live
 // ─────────────────────────────────────────────────────────────────────────────
-const RAZORPAY_KEY_ID    = 'rzp_test_XXXXXXXXXXXXXXXXX'; // your key
+const RAZORPAY_KEY_ID    = 'rzp_test_Soo247cVBCqXX3'; // your key
 const TELEGRAM_BOT_TOKEN = 'YOUR_BOT_TOKEN';
 const TELEGRAM_CHAT_ID   = 'YOUR_CHAT_ID';
 // NOTE: In production the Razorpay order must be created server-side via

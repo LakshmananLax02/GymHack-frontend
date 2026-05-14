@@ -52,6 +52,8 @@ export default function Navbar() {
   const [isShopMobileOpen, setIsShopMobileOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isAddProductsOpen, setIsAddProductsOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('OATS');
   const [mounted, setMounted] = useState(false);
   const sidebarRef = useRef(null);
@@ -68,10 +70,18 @@ export default function Navbar() {
   const totalPrice = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const filteredProducts = allProducts.filter(p => p.category === activeCategory);
 
+  const searchResults = searchQuery.trim()
+    ? allProducts.filter(
+        (p) =>
+          p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          p.category.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : [];
+
   useEffect(() => {
-    document.body.style.overflow = (isCartOpen || isAddProductsOpen) ? 'hidden' : '';
+    document.body.style.overflow = (isCartOpen || isAddProductsOpen || isSearchOpen) ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
-  }, [isCartOpen, isAddProductsOpen]);
+  }, [isCartOpen, isAddProductsOpen, isSearchOpen]);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -81,6 +91,11 @@ export default function Navbar() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const closeSearch = () => {
+    setIsSearchOpen(false);
+    setSearchQuery('');
+  };
 
   return (
     <>
@@ -99,6 +114,10 @@ export default function Navbar() {
         }
         @keyframes fadeInUp {
           0%   { opacity: 0; transform: translateY(40px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInDown {
+          0%   { opacity: 0; transform: translateY(-20px); }
           100% { opacity: 1; transform: translateY(0); }
         }
       `}</style>
@@ -122,20 +141,35 @@ export default function Navbar() {
       <header className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm overflow-visible">
         <div className="max-w-[1440px] mx-auto px-2 md:px-10 h-20 flex items-center justify-between gap-4">
 
-          {/* Logo + Hamburger */}
+          {/* Logo + Mobile Actions */}
           <div className="flex items-center justify-between w-full md:w-auto md:flex-none">
             <Link href="/" className="flex items-center gap-2">
               <div className="w-15 h-15 bg-[#c23d6a] rounded-full flex items-center justify-center p-1 relative">
                 <Image src="/images/logoimg.png" alt="Logo" fill className="object-contain p-1" />
               </div>
             </Link>
-            <button onClick={() => setIsSidebarOpen(true)} className="md:hidden text-black ml-auto">
-              <Menu size={28} />
-            </button>
+
+            {/* Mobile-only: search + hamburger */}
+            <div className="flex items-center gap-1 md:hidden ml-auto">
+              <button
+                onClick={() => setIsSearchOpen(true)}
+                className="p-2 text-black hover:bg-gray-100 rounded-full transition-colors"
+                aria-label="Search"
+              >
+                <Search size={24} />
+              </button>
+              <button
+                onClick={() => setIsSidebarOpen(true)}
+                className="p-2 text-black"
+                aria-label="Menu"
+              >
+                <Menu size={28} />
+              </button>
+            </div>
           </div>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-8 flex-1 justify-center">
+          <nav className="hidden md:flex items-center gap-8 flex-1 justify-center ml-40">
             <Link href="/" className={`text-xl font-bold tracking-tight hover:text-[#c23d6a] transition-colors ${pathname === '/' ? 'text-[#c23d6a]' : ''}`}>
               Home
             </Link>
@@ -170,12 +204,12 @@ export default function Navbar() {
           {/* Utility Icons */}
           <div className="flex items-center justify-end gap-1 md:gap-4 flex-1 md:flex-none">
 
-            <div className="hidden lg:flex items-center bg-gray-100 rounded-full px-4 py-2 border border-transparent focus-within:bg-white focus-within:border-gray-200 transition-all">
-              <Search size={18} className="text-gray-400" />
-              <input type="text" placeholder="Search products..." className="bg-transparent border-none focus:ring-0 text-sm ml-2 w-40 outline-none" />
-            </div>
-
-            <button className="hidden md:flex lg:hidden p-2 text-black hover:bg-gray-100 rounded-full transition-colors">
+            {/* Desktop large: search button that opens overlay */}
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              className="hidden md:flex p-2 text-black hover:bg-gray-100 rounded-full transition-colors"
+              aria-label="Search"
+            >
               <Search size={22} />
             </button>
 
@@ -232,6 +266,118 @@ export default function Navbar() {
           </div>
         </div>
       </header>
+
+      {/* ─── Search Overlay ─── */}
+      {isSearchOpen && (
+        <div className="fixed inset-0 z-[99999] flex items-start justify-center pt-0 md:pt-20">
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={closeSearch}
+          />
+          <div
+            className="relative w-full md:max-w-2xl bg-white md:rounded-2xl shadow-2xl flex flex-col"
+            style={{ animation: 'fadeInDown 0.25s ease forwards', maxHeight: '90vh' }}
+          >
+            {/* Search Input Bar */}
+            <div className="flex items-center gap-3 px-4 md:px-5 py-4 border-b border-gray-100 shrink-0">
+              <Search size={22} className="text-gray-400 shrink-0" />
+              <input
+                type="text"
+                autoFocus
+                placeholder="Search for oats, muesli..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="flex-1 bg-transparent border-none focus:ring-0 text-base outline-none"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                  aria-label="Clear"
+                >
+                  <X size={18} className="text-gray-400" />
+                </button>
+              )}
+              <button
+                onClick={closeSearch}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors shrink-0"
+                aria-label="Close search"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Results / Suggestions */}
+            <div className="flex-1 overflow-y-auto">
+              {searchQuery.trim() === '' ? (
+                <div className="p-5">
+                  <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">
+                    Popular Searches
+                  </p>
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    {['Rolled Oats', 'Muesli'].map((term) => (
+                      <button
+                        key={term}
+                        onClick={() => setSearchQuery(term)}
+                        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm font-semibold text-gray-800 transition-colors"
+                      >
+                        {term}
+                      </button>
+                    ))}
+                  </div>
+
+                  <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">
+                    Browse Categories
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {navProducts.map((item) => (
+                      <Link
+                        key={item.name}
+                        href={item.link}
+                        onClick={closeSearch}
+                        className="flex items-center gap-3 p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors"
+                      >
+                        <div className="relative w-12 h-12 bg-white rounded-lg overflow-hidden shrink-0">
+                          <Image src={item.imageUrl} alt={item.name} fill className="object-cover" />
+                        </div>
+                        <span className="text-sm font-bold">{item.name}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ) : searchResults.length > 0 ? (
+                <div className="divide-y divide-gray-100">
+                  {searchResults.map((p) => (
+                    <Link
+                      key={p.id}
+                      href={`/products?category=${p.category}`}
+                      onClick={closeSearch}
+                      className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="relative w-14 h-14 bg-[#f8f8f8] rounded-lg overflow-hidden shrink-0 border border-gray-100">
+                        <Image src={p.image} alt={p.name} fill className="object-contain p-1" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-gray-900 line-clamp-1">{p.name}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{p.category}</p>
+                      </div>
+                      <p className="text-sm font-black text-[#c23d6a] shrink-0">₹ {p.price}</p>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-10 text-center">
+                  <Search size={48} className="text-gray-200 mx-auto mb-3" />
+                  <p className="text-base font-bold text-gray-400">No products found</p>
+                  <p className="text-sm text-gray-300 mt-1">
+                    Try searching for &quot;{searchQuery}&quot; differently
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ─── Cart OffCanvas ─── */}
       {isCartOpen && (

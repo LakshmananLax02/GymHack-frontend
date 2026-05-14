@@ -37,7 +37,9 @@ export default function Hero() {
 
           <Link 
             href="/products" 
-            className="inline-flex items-center gap-2 bg-[#c23d6a] text-white px-8 py-4 rounded-full text-lg font-bold hover:bg-[#f0ece2] hover:text-black transition-all hover:scale-105 active:scale-95 shadow-2xl"
+            // className="inline-flex items-center gap-2 bg-[#c23d6a] text-white px-8 py-4 rounded-full text-lg font-bold hover:bg-[#f0ece2] hover:text-black transition-all hover:scale-105 active:scale-95 shadow-2xl"
+                        className="inline-flex items-center gap-2 bg-[#c23d6a] text-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-[#f0ece2] hover:text-black transition-all hover:scale-105 active:scale-95 shadow-2xl"
+
           >
             Explore all products
             <MoveUpRight size={20} strokeWidth={3} />

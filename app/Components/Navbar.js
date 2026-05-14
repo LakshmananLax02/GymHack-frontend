@@ -490,7 +490,7 @@ export default function Navbar() {
                   <span className="text-xl font-black text-[#c23d6a]">₹ {totalPrice.toFixed(2)}</span>
                 </div>
                 <Link
-                  href="/checkout"
+                  href="/"
                   onClick={() => setIsCartOpen(false)}
                   className="block w-full bg-[#c23d6a] text-white text-center text-sm font-bold py-4 rounded-2xl hover:bg-[#a8305a] transition-colors active:scale-95 transform"
                 >

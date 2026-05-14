@@ -53,7 +53,7 @@ export default function Footer() {
             <li><Link href="/category/oats" className="hover:text-white transition-colors">Oats</Link></li>
             <li><Link href="/category/muesli" className="hover:text-white transition-colors">Muesli</Link></li>
           </ul>
-          <Link href="/products" className="mt-8 inline-flex items-center gap-2 bg-[#c23d6a] px-5 py-2.5 rounded-lg text-xs font-bold hover:brightness-110 transition-all hover:bg-[#f0ece2] hover:text-black transition-all hover:scale-105">
+          <Link href="/products" className="mt-8 inline-flex items-center gap-2 bg-[#c23d6a] px-5 py-2.5 rounded-full text-xs font-bold hover:brightness-110 transition-all hover:bg-[#f0ece2] hover:text-black transition-all hover:scale-105">
             Browse All Product <ArrowRight size={14} />
           </Link>
         </div>
@@ -82,8 +82,9 @@ export default function Footer() {
         </div>
       </div>
 
-<div className="bg-[#1e2325] py-6 border-t border-gray-700/50 pb-20 md:pb-6">        <p className="text-center text-gray-500 text-[12px] tracking-wide font-secondary px-4">
-          Copyrights gymhack © 2026. Designed and developed by wexoraa infotech
+<div className="bg-[#1e2325] py-6 border-t border-gray-700/50 pb-20 md:pb-6">       
+ <p className="text-center text-gray-200 text-[12px] tracking-wide font-secondary px-4">
+          Copyrights gymhack © 2026. Designed and developed by <Link className='text-[#c23d6a]' href="https://wexoraa.com/">Wexoraa infotech</Link>
         </p>
       </div>
     </footer>

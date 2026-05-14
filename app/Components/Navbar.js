@@ -213,14 +213,34 @@ export default function Navbar() {
               <Search size={22} />
             </button>
 
-            <div ref={moreRef} className="hidden md:block relative">
+           
+            <Link href="/profile" className="hidden md:flex p-2 text-black hover:bg-gray-100 rounded-full transition-colors">
+              <User size={22} />
+            </Link>
+
+            {/* Cart icon */}
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className="hidden md:block relative p-2 text-black hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <div className="relative">
+                <ShoppingCart size={22} />
+                {mounted && totalItems > 0 && (
+                  <span className="absolute bg-[#c23d6a] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold leading-none border-2 border-white" style={{ top: '-7px', right: '-7px' }}>
+                    {totalItems}
+                  </span>
+                )}
+              </div>
+            </button>
+
+             <div ref={moreRef} className="hidden md:block relative">
               <button onClick={() => setIsMoreOpen((v) => !v)} className="p-2 text-black hover:bg-gray-100 rounded-full transition-colors">
                 <AlignJustify size={24} strokeWidth={2.5} />
               </button>
               {isMoreOpen && (
                 <div className="absolute top-full right-0 mt-3 z-50" style={{ width: '420px' }}>
                   <div className="bg-white shadow-2xl rounded-2xl border border-gray-100 overflow-hidden">
-                    <Link href="/login" className="flex items-center gap-3 px-5 py-4 hover:bg-gray-50 transition-colors border-b border-gray-100" onClick={() => setIsMoreOpen(false)}>
+                    <Link href="/signup" className="flex items-center gap-3 px-5 py-4 hover:bg-gray-50 transition-colors border-b border-gray-100" onClick={() => setIsMoreOpen(false)}>
                       <LogIn size={18} className="text-gray-700 shrink-0" />
                       <span className="text-sm font-semibold text-gray-900">Login or signup</span>
                     </Link>
@@ -244,24 +264,6 @@ export default function Navbar() {
               )}
             </div>
 
-            <Link href="/profile" className="hidden md:flex p-2 text-black hover:bg-gray-100 rounded-full transition-colors">
-              <User size={22} />
-            </Link>
-
-            {/* Cart icon */}
-            <button
-              onClick={() => setIsCartOpen(true)}
-              className="hidden md:block relative p-2 text-black hover:bg-gray-100 rounded-full transition-colors"
-            >
-              <div className="relative">
-                <ShoppingCart size={22} />
-                {mounted && totalItems > 0 && (
-                  <span className="absolute bg-[#c23d6a] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold leading-none border-2 border-white" style={{ top: '-7px', right: '-7px' }}>
-                    {totalItems}
-                  </span>
-                )}
-              </div>
-            </button>
 
           </div>
         </div>
@@ -622,7 +624,7 @@ export default function Navbar() {
                 <Link href="/about" className="block text-lg font-bold" onClick={() => setIsSidebarOpen(false)}>About Us</Link>
               </div>
               <div className="p-6 space-y-1">
-                <Link href="/login" className="flex items-center gap-4 py-3" onClick={() => setIsSidebarOpen(false)}>
+                <Link href="/signup" className="flex items-center gap-4 py-3" onClick={() => setIsSidebarOpen(false)}>
                   <LogIn size={20} className="text-gray-700 shrink-0" />
                   <span className="text-base font-semibold text-gray-900">Login or signup</span>
                 </Link>

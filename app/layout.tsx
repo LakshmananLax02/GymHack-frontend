@@ -2,15 +2,16 @@ import type { Metadata } from "next";
 import { Oswald, Overpass } from 'next/font/google';
 import "./globals.css";
 import Navbar from './Components/Navbar';
-import Footer from './Components/Footer'
+import Footer from './Components/Footer';
+import { AuthProvider } from './context/AuthContext'; // 1. Import your AuthProvider
+import Script from 'next/script'; // 2. Import Script for Razorpay
 
 const oswald = Oswald({
   subsets: ['latin'],
   variable: '--font-oswald',
-  weight: ['400', '700'], // Add weights you need
+  weight: ['400', '700'],
 });
 
-// Secondary text font
 const overpass = Overpass({
   subsets: ['latin'],
   variable: '--font-overpass',
@@ -21,7 +22,7 @@ export const metadata: Metadata = {
   title: "Gym Hack | Fuel Your Body",
   description: "High-quality nutrition for your workouts",
 };
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -30,14 +31,24 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      // 2. These variables now exist and can be used here
       className={`${oswald.variable} ${overpass.variable} h-full antialiased`}
     >
+      <head>
+        {/* Standard Way to add Razorpay in Next.js */}
+        <Script 
+          src="https://checkout.razorpay.com/v1/checkout.js"
+          strategy="beforeInteractive"
+        />
+      </head>
       <body className="min-h-full flex flex-col">
-        <Navbar />
-        {children}
-        <Footer/>
-
+        {/* 3. Wrap everything in AuthProvider so Signup/Login/Cart can work */}
+        <AuthProvider>
+          <Navbar />
+          <main className="flex-grow">
+            {children}
+          </main>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );

@@ -33,21 +33,21 @@ import {
   Star, Tag, Copy, XCircle, RotateCcw, Info,
 } from 'lucide-react';
 
-<<<<<<< HEAD
-// ─────────────────────────────────────────────────────────────────────────────
-// ██  CONFIG  — replace before going live
-// ─────────────────────────────────────────────────────────────────────────────
-const RAZORPAY_KEY_ID    = 'rzp_test_Soo247cVBCqXX3'; // your key
-const TELEGRAM_BOT_TOKEN = 'YOUR_BOT_TOKEN';
-const TELEGRAM_CHAT_ID   = 'YOUR_CHAT_ID';
-// NOTE: In production the Razorpay order must be created server-side via
-// POST /v1/orders using your key_secret. The client only receives order_id.
-// ─────────────────────────────────────────────────────────────────────────────
-=======
-// ─── ENV CONFIG ───────────────────────────────────────────────────────────────
-const API     = process.env.NEXT_PUBLIC_API_BASE_URL    || 'http://localhost:5000';
-const RZP_KEY = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '';
->>>>>>> a2d05f784cca0a751133457b44c8435607587960
+// <<<<<<< HEAD
+// // ─────────────────────────────────────────────────────────────────────────────
+// // ██  CONFIG  — replace before going live
+// // ─────────────────────────────────────────────────────────────────────────────
+// const RAZORPAY_KEY_ID    = 'rzp_test_Soo247cVBCqXX3'; // your key
+// const TELEGRAM_BOT_TOKEN = 'YOUR_BOT_TOKEN';
+// const TELEGRAM_CHAT_ID   = 'YOUR_CHAT_ID';
+// // NOTE: In production the Razorpay order must be created server-side via
+// // POST /v1/orders using your key_secret. The client only receives order_id.
+// // ─────────────────────────────────────────────────────────────────────────────
+// =======
+// // ─── ENV CONFIG ───────────────────────────────────────────────────────────────
+// const API     = process.env.NEXT_PUBLIC_API_BASE_URL    || 'http://localhost:5000';
+// const RZP_KEY = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '';
+// >>>>>>> a2d05f784cca0a751133457b44c8435607587960
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const STATES = [

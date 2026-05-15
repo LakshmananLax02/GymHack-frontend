@@ -120,6 +120,14 @@ export default function Navbar() {
     );
   };
 
+
+  const { fetchUserCart } = useCartStore();
+
+useEffect(() => {
+  if (user) {
+    fetchUserCart();
+  }
+}, [user]);
   return (
     <>
       <style>{`
@@ -242,6 +250,7 @@ export default function Navbar() {
                     {user ? (
                       /* Logged-in: show avatar + name + "My Profile" */
                       <>
+                      <Link href='/profile'>
                         <button
                           onClick={handleProfileClick}
                           className="w-full flex items-center gap-3 px-5 py-4 hover:bg-gray-50 transition-colors border-b border-gray-100 text-left"
@@ -253,10 +262,11 @@ export default function Navbar() {
                             <p className="text-sm font-bold text-gray-900 truncate">{user.name || 'My Account'}</p>
                             {user.email && <p className="text-xs text-gray-400 truncate">{user.email}</p>}
                           </div>
-                          <Link href='/profile'>
+                          
                           <span className="text-xs font-bold text-[#c23d6a] shrink-0">Profile →</span>
-                          </Link>
+                          
                         </button>
+                        </Link>
 
                         {/* Logout row */}
                         <button
@@ -537,6 +547,7 @@ export default function Navbar() {
                 {/* ── Profile row — dynamic based on auth state ── */}
                 {user ? (
                   <>
+                   <Link href='/profile'>
                     {/* Logged-in: avatar + name row → /profile */}
                     <button
                       onClick={handleProfileClick}
@@ -549,8 +560,11 @@ export default function Navbar() {
                         <p className="text-base font-bold text-gray-900 truncate">{user.name || 'My Account'}</p>
                         {user.email && <p className="text-xs text-gray-400 truncate">{user.email}</p>}
                       </div>
+                     
                       <span className="text-xs font-bold text-[#c23d6a]">Profile →</span>
+                      
                     </button>
+                     </Link>
 
                     {/* Logout */}
                     <button

@@ -57,7 +57,7 @@ export default function LoginPage() {
         {/* Header */}
         <div className="text-center mb-8">
 
-<div className="w-14 h-14 rounded-2xl  flex items-center justify-center mx-auto mb-4 shadow-[#c23d6a]/30">
+<div className="w-14 h-14 rounded-xl  flex items-center justify-center mx-auto mb-4 shadow-[#c23d6a]/30">
   <Image
     src="/images/logoimg.png"
     alt="Logo"
@@ -71,7 +71,7 @@ export default function LoginPage() {
         </div>
 
         {/* ── Card with visible border + shadow ── */}
-        <div className="bg-white rounded-3xl p-8 shadow-xl shadow-gray-200/80 border-2 border-gray-100">
+        <div className="bg-white rounded-xl p-8 shadow-xl shadow-gray-200/80 border-2 border-gray-100">
           <form onSubmit={handleLogin} className="flex flex-col gap-5">
 
             {/* Email */}

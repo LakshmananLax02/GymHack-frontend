@@ -925,7 +925,7 @@ export default function Navbar() {
 
           {/* Modal */}
           <div
-            className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 md:p-10 text-center"
+            className="relative w-full max-w-md bg-white rounded-xl shadow-2xl p-8 md:p-10 text-center"
             style={{ animation: 'popIn 0.3s cubic-bezier(.22,1,.36,1) forwards' }}
           >
             {/* Close button */}

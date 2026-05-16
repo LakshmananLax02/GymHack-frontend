@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import Link from 'next/link';
 import { Mail, Lock, Eye, EyeOff, Dumbbell, AlertCircle } from 'lucide-react';
+import Image from 'next/image';
 
 export default function LoginPage() {
   const [email,    setEmail]    = useState('');
@@ -55,9 +56,16 @@ export default function LoginPage() {
 
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-[#c23d6a] flex items-center justify-center mx-auto mb-4 shadow-lg shadow-[#c23d6a]/30">
-            <Dumbbell size={24} className="text-white" />
-          </div>
+
+<div className="w-14 h-14 rounded-2xl  flex items-center justify-center mx-auto mb-4 shadow-[#c23d6a]/30">
+  <Image
+    src="/images/logoimg.png"
+    alt="Logo"
+    width={42}
+    height={42}
+    className="object-contain"
+  />
+</div>
           <h1 className="text-2xl font-black text-gray-900 mb-1 tracking-tight">Welcome back</h1>
           <p className="text-sm text-gray-500 font-medium">Log in to sync your cart and orders</p>
         </div>
@@ -128,7 +136,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 bg-[#c23d6a] text-white text-sm font-black rounded-2xl
+              className="w-full py-3.5 bg-[#c23d6a] text-white text-sm font-black rounded-full
                          hover:bg-[#a8305a] active:scale-[0.98] transition-all mt-1
                          shadow-lg shadow-[#c23d6a]/25
                          disabled:opacity-60 disabled:cursor-not-allowed disabled:shadow-none"

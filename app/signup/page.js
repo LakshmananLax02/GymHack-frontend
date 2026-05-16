@@ -5,18 +5,20 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import Link from 'next/link';
 import {
-  Mail, Lock, Eye, EyeOff, Dumbbell, AlertCircle,
-  User, Phone, CheckCircle2,
+  Mail, Lock, Eye, EyeOff, AlertCircle,
+  User, Phone, CheckCircle2, X as XIcon,
 } from 'lucide-react';
+import Image from 'next/image';
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
-    firstName: '', lastName: '', email: '', phone: '', password: '',
+    firstName: '', lastName: '', email: '', phone: '', password: '', confirmPassword: '',
   });
-  const [showPw,  setShowPw]  = useState(false);
-  const [error,   setError]   = useState('');
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [showPw,        setShowPw]        = useState(false);
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
+  const [error,         setError]         = useState('');
+  const [loading,       setLoading]       = useState(false);
+  const [success,       setSuccess]       = useState(false);
 
   const router      = useRouter();
   const { setUser } = useAuth();
@@ -32,6 +34,8 @@ export default function SignupPage() {
       return 'Enter a valid 10-digit Indian mobile number.';
     if (formData.password.length < 8)
       return 'Password must be at least 8 characters.';
+    if (formData.password !== formData.confirmPassword)
+      return 'Passwords do not match.';
     return null;
   };
 
@@ -42,10 +46,12 @@ export default function SignupPage() {
     if (err) { setError(err); return; }
     setLoading(true);
     try {
+      // Don't send confirmPassword to the backend
+      const { confirmPassword, ...payload } = formData;
       const res  = await fetch('http://localhost:5000/api/auth/register', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(formData),
+        body:    JSON.stringify(payload),
       });
       const data = await res.json();
       if (res.ok) {
@@ -106,9 +112,25 @@ export default function SignupPage() {
 
   // ── Strength meter ──────────────────────────────────────────────────────────
   const pw = formData.password;
-  const strengthColor = pw.length === 0 ? '' : pw.length < 6 ? 'bg-red-400' : pw.length < 10 ? 'bg-amber-400' : 'bg-green-400';
-  const strengthLabel = pw.length === 0 ? '' : pw.length < 6 ? 'Weak' : pw.length < 10 ? 'Fair' : 'Strong';
-  const strengthLabelColor = pw.length === 0 ? '' : pw.length < 6 ? 'text-red-500' : pw.length < 10 ? 'text-amber-500' : 'text-green-500';
+  const cpw = formData.confirmPassword;
+  const strengthColor      = pw.length === 0 ? '' : pw.length < 6 ? 'bg-red-400'    : pw.length < 10 ? 'bg-amber-400'  : 'bg-green-400';
+  const strengthLabel      = pw.length === 0 ? '' : pw.length < 6 ? 'Weak'          : pw.length < 10 ? 'Fair'           : 'Strong';
+  const strengthLabelColor = pw.length === 0 ? '' : pw.length < 6 ? 'text-red-500'  : pw.length < 10 ? 'text-amber-500' : 'text-green-500';
+
+  // ── Match state for confirm password ────────────────────────────────────────
+  const matchState =
+    cpw.length === 0
+      ? 'idle'
+      : cpw === pw
+        ? 'match'
+        : 'mismatch';
+
+  const confirmBorder =
+    matchState === 'match'
+      ? 'border-green-400 focus:border-green-500 focus:ring-green-500/10'
+      : matchState === 'mismatch'
+        ? 'border-red-300 focus:border-red-400 focus:ring-red-400/10'
+        : '';
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12"
@@ -117,14 +139,14 @@ export default function SignupPage() {
 
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-[#c23d6a] flex items-center justify-center mx-auto mb-4 shadow-lg shadow-[#c23d6a]/30">
-            <Dumbbell size={24} className="text-white" />
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-[#c23d6a]/30">
+            <Image src="/images/logoimg.png" alt="Logo" width={42} height={42} className="object-contain" />
           </div>
           <h1 className="text-2xl font-black text-gray-900 mb-1 tracking-tight">Create your account</h1>
           <p className="text-sm text-gray-500 font-medium">Join GymHack and fuel your journey</p>
         </div>
 
-        {/* ── Card with visible border ── */}
+        {/* ── Card ── */}
         <div className="bg-white rounded-3xl p-8 shadow-xl shadow-gray-200/80 border-2 border-gray-100">
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
 
@@ -166,7 +188,6 @@ export default function SignupPage() {
 
             {/* Phone */}
             <Field label="Mobile Number">
-              {/* Outer border container so +91 chip and input share ONE border */}
               <div className="flex border-2 border-gray-200 rounded-xl overflow-hidden transition-all focus-within:border-[#c23d6a] focus-within:ring-4 focus-within:ring-[#c23d6a]/8 hover:border-gray-300">
                 <div className="flex items-center px-3 bg-gray-50 border-r-2 border-gray-200 text-sm font-bold text-gray-500 shrink-0 select-none">
                   🇮🇳 +91
@@ -218,6 +239,59 @@ export default function SignupPage() {
               )}
             </Field>
 
+            {/* Confirm Password */}
+            <Field label="Confirm Password">
+              <div className="relative">
+                <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <input
+                  type={showConfirmPw ? 'text' : 'password'}
+                  placeholder="Re-enter your password"
+                  value={formData.confirmPassword}
+                  onChange={set('confirmPassword')}
+                  required
+                  className={`${inputClass} pl-10 pr-20 ${confirmBorder}`}
+                />
+
+                {/* Status icon (match / mismatch) — sits left of the eye toggle */}
+                {matchState === 'match' && (
+                  <CheckCircle2
+                    size={16}
+                    className="absolute right-10 top-1/2 -translate-y-1/2 text-green-500 pointer-events-none"
+                  />
+                )}
+                {matchState === 'mismatch' && (
+                  <XIcon
+                    size={16}
+                    className="absolute right-10 top-1/2 -translate-y-1/2 text-red-400 pointer-events-none"
+                    strokeWidth={3}
+                  />
+                )}
+
+                {/* Show/hide toggle */}
+                <button
+                  type="button" onClick={() => setShowConfirmPw(v => !v)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors p-0.5"
+                  aria-label={showConfirmPw ? 'Hide password' : 'Show password'}
+                >
+                  {showConfirmPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+
+              {/* Match helper text */}
+              {matchState === 'mismatch' && (
+                <p className="text-[11px] font-bold text-red-500 mt-1.5 flex items-center gap-1">
+                  <AlertCircle size={12} />
+                  Passwords do not match
+                </p>
+              )}
+              {matchState === 'match' && (
+                <p className="text-[11px] font-bold text-green-600 mt-1.5 flex items-center gap-1">
+                  <CheckCircle2 size={12} />
+                  Passwords match
+                </p>
+              )}
+            </Field>
+
             {/* Error */}
             {error && (
               <div className="flex items-start gap-2.5 bg-red-50 border-2 border-red-200 rounded-xl px-3.5 py-3">
@@ -228,7 +302,8 @@ export default function SignupPage() {
 
             {/* Submit */}
             <button
-              type="submit" disabled={loading}
+              type="submit"
+              disabled={loading || matchState === 'mismatch'}
               className="w-full py-3.5 bg-[#c23d6a] text-white text-sm font-black rounded-2xl mt-1
                          hover:bg-[#a8305a] active:scale-[0.98] transition-all
                          shadow-lg shadow-[#c23d6a]/25

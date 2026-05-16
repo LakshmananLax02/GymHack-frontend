@@ -1,9 +1,11 @@
 'use client'
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
 import { useCartStore } from '../../store/useCartStore';
-import { ChevronDown } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { ChevronDown, AlertCircle, X } from 'lucide-react';
 
 const product = {
   id: 1,
@@ -107,6 +109,7 @@ const Accordion = ({ title, children }) => {
 export default function ProductViewPage() {
   const [selectedImg, setSelectedImg] = useState(0);
   const [showReviewPopup, setShowReviewPopup] = useState(false);
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
   const [reviews, setReviews] = useState(initialReviews);
   const [reviewRating, setReviewRating] = useState(0);
   const [hovered, setHovered] = useState(0);
@@ -115,7 +118,52 @@ export default function ProductViewPage() {
   const [reviewName, setReviewName] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
-  const addToCart = useCartStore((state) => state.addToCart);
+  const router = useRouter();
+  const { user, showToast } = useAuth();
+  const addToCartStore = useCartStore((state) => state.addToCart);
+
+  // Lock body scroll when login popup is open
+  useEffect(() => {
+    document.body.style.overflow = showLoginPopup ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [showLoginPopup]);
+
+  // ✅ Gated Add to Cart — show popup if not logged in
+  const handleAddToCart = () => {
+    if (!user) {
+      setShowLoginPopup(true);
+      return;
+    }
+    addToCartStore({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.images[0],
+    });
+    showToast(`${product.name} added to cart 🛒`, 'success', 2000);
+  };
+
+  // ✅ Gated Buy Now — show popup if not logged in, else add and go to checkout
+  const handleBuyNow = () => {
+    if (!user) {
+      setShowLoginPopup(true);
+      return;
+    }
+    addToCartStore({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.images[0],
+    });
+    showToast('Heading to checkout...', 'info', 1500);
+    router.push('/checkout');
+  };
+
+  const handleLoginNow = () => {
+    setShowLoginPopup(false);
+    showToast('Redirecting to login...', 'info', 1500);
+    router.push('/login');
+  };
 
   const handleSubmit = () => {
     if (!reviewRating || !reviewTitle || !reviewBody) return;
@@ -144,10 +192,10 @@ export default function ProductViewPage() {
       <div className="bg-white mb-3 p-4 md:p-24">
         <div className="flex flex-col md:flex-row gap-6">
 
-          {/* IMAGE GALLERY — 1. Reduced main image size */}
+          {/* IMAGE GALLERY */}
           <div className="w-full md:w-[380px] shrink-0">
 
-            {/* Main Image — reduced from full flex to fixed smaller size */}
+            {/* Main Image */}
             <div className="border border-gray-100 rounded-xl overflow-hidden bg-[#f9f9f9] mb-3 mx-auto"
               style={{ width: "100%", maxWidth: 360, aspectRatio: "1/1" }}
             >
@@ -158,7 +206,7 @@ export default function ProductViewPage() {
               />
             </div>
 
-            {/* 2. Thumbnail images — increased size */}
+            {/* Thumbnails */}
             <div className="flex gap-2 flex-wrap">
               {product.images.map((img, i) => (
                 <div
@@ -186,25 +234,23 @@ export default function ProductViewPage() {
 
             <p className="text-sm text-gray-500 leading-relaxed mb-5">{product.description}</p>
 
-            {/* BUY NOW + ADD TO CART */}
+            {/* BUY NOW + ADD TO CART — both gated on login */}
             <div className="flex gap-3 mb-6">
-              <button className="flex-1 bg-[#c23d6a] text-white rounded-lg py-3 px-5 text-sm font-bold hover:bg-[#a8305a] transition-colors">
+              <button
+                onClick={handleBuyNow}
+                className="flex-1 bg-[#c23d6a] text-white rounded-lg py-3 px-5 text-sm font-bold hover:bg-[#a8305a] transition-colors"
+              >
                 Buy Now
               </button>
               <button
-                onClick={() => addToCart({
-                  id: product.id,
-                  name: product.name,
-                  price: product.price,
-                  image: product.images[0],
-                })}
+                onClick={handleAddToCart}
                 className="flex-1 bg-white text-[#c23d6a] border-2 border-[#c23d6a] rounded-lg py-3 px-5 text-sm font-bold hover:bg-[#fff3f7] transition-colors"
               >
                 Add to Cart
               </button>
             </div>
 
-            {/* 3. Accordion style tabs */}
+            {/* Accordion */}
             <div className="flex flex-col gap-2">
               <Accordion title="Ingredients">
                 Ingredients: {product.ingredients}
@@ -356,6 +402,85 @@ export default function ProductViewPage() {
               >
                 Agree & Submit
               </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── LOGIN REQUIRED POPUP ── */}
+      <AnimatePresence>
+        {showLoginPopup && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[999999] flex items-center justify-center p-4"
+          >
+            <style>{`
+              @keyframes pulseRing {
+                0%,100% { box-shadow: 0 0 0 0 rgba(194,61,106,0.35); }
+                50%     { box-shadow: 0 0 0 14px rgba(194,61,106,0); }
+              }
+            `}</style>
+
+            {/* Backdrop */}
+            <div
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              onClick={() => setShowLoginPopup(false)}
+            />
+
+            {/* Modal */}
+            <motion.div
+              initial={{ scale: 0.92, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.92, opacity: 0, y: 10 }}
+              transition={{ type: "spring", damping: 22, stiffness: 280 }}
+              className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 md:p-10 text-center"
+            >
+              {/* Close button */}
+              <button
+                onClick={() => setShowLoginPopup(false)}
+                className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
+                aria-label="Close"
+              >
+                <X size={20} className="text-gray-400" />
+              </button>
+
+              {/* Icon circle */}
+              <div className="flex justify-center mb-5">
+                <div
+                  className="w-20 h-20 rounded-full border-[3px] border-[#c23d6a]/40 flex items-center justify-center bg-[#fff3f7]"
+                  style={{ animation: 'pulseRing 2s ease-in-out infinite' }}
+                >
+                  <AlertCircle size={40} className="text-[#c23d6a]" strokeWidth={2.5} />
+                </div>
+              </div>
+
+              {/* Heading */}
+              <h3 className="text-2xl md:text-3xl font-bold font-primary text-black mb-2">
+                Login Required
+              </h3>
+
+              {/* Message */}
+              <p className="text-gray-500 font-secondary text-sm md:text-base mb-7 leading-relaxed">
+                Please login to add items to your cart
+              </p>
+
+              {/* Buttons */}
+              <div className="flex gap-3 justify-center">
+                <button
+                  onClick={handleLoginNow}
+                  className="flex-1 max-w-[160px] bg-[#c23d6a] text-white font-bold text-sm py-3 rounded-full font-secondary hover:bg-[#a8305a] active:scale-95 transition-all shadow-md"
+                >
+                  Login Now
+                </button>
+                <button
+                  onClick={() => setShowLoginPopup(false)}
+                  className="flex-1 max-w-[160px] bg-gray-100 text-gray-700 font-bold text-sm py-3 rounded-full font-secondary hover:bg-gray-200 active:scale-95 transition-all"
+                >
+                  Maybe later
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}

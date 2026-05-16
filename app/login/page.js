@@ -1,86 +1,171 @@
 'use client';
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import Link from 'next/link';
+import { Mail, Lock, Eye, EyeOff, Dumbbell, AlertCircle } from 'lucide-react';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
+  const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  
-  const router = useRouter();
-  const { setUser } = useAuth();
+  const [showPw,   setShowPw]   = useState(false);
+  const [error,    setError]    = useState('');
+  const [loading,  setLoading]  = useState(false);
+
+  const router         = useRouter();
+  const { loginUser }  = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-
     try {
-      const res = await fetch('http://localhost:5000/api/auth/login', {
-        method: 'POST',
+      const res  = await fetch('http://localhost:5000/api/auth/login', {
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body:    JSON.stringify({ email, password }),
       });
-
       const data = await res.json();
-
       if (res.ok) {
-        // 1. Save Token and User Data
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        
-        // 2. Update Global State
-        setUser(data.user);
-        
-        // 3. Redirect to Shop or Checkout
+        loginUser(data.user, data.token);
         router.push('/');
       } else {
-        setError(data.message || 'Login failed');
+        setError(data.message || 'Invalid email or password');
       }
-    } catch (err) {
-      setError('Connection to server failed');
+    } catch {
+      setError('Could not connect to server. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
+  const inputClass = [
+    'w-full py-3 text-sm font-medium text-gray-900 bg-white',
+    'border-2 border-gray-200 rounded-xl outline-none transition-all',
+    'placeholder:text-gray-400',
+    'focus:border-[#c23d6a] focus:ring-4 focus:ring-[#c23d6a]/8',
+    'hover:border-gray-300',
+  ].join(' ');
+
   return (
-    <div className="max-w-md mx-auto mt-20 p-8 bg-white rounded-3xl shadow-2xl border border-gray-100">
-      <h2 className="text-3xl font-black italic mb-2">WELCOME <span className="text-[#c23d6a]">BACK</span></h2>
-      <p className="text-gray-400 text-sm mb-8 font-medium">Log in to sync your individual cart.</p>
-      
-      <form onSubmit={handleLogin} className="space-y-5">
-        <input 
-          type="email" 
-          placeholder="Email Address" 
-          className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-[#c23d6a] transition-all"
-          onChange={(e) => setEmail(e.target.value)}
-          required 
-        />
-        <input 
-          type="password" 
-          placeholder="Password" 
-          className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-[#c23d6a] transition-all"
-          onChange={(e) => setPassword(e.target.value)}
-          required 
-        />
+    <div className="min-h-screen flex items-center justify-center px-4 py-12"
+      style={{ background: 'linear-gradient(135deg, #fdf4f7 0%, #f8f4f0 50%, #f0f4fd 100%)' }}>
+      <div className="w-full max-w-[440px]">
 
-        {error && <p className="text-red-500 text-xs font-bold bg-red-50 p-3 rounded-xl italic">! {error}</p>}
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="w-14 h-14 rounded-2xl bg-[#c23d6a] flex items-center justify-center mx-auto mb-4 shadow-lg shadow-[#c23d6a]/30">
+            <Dumbbell size={24} className="text-white" />
+          </div>
+          <h1 className="text-2xl font-black text-gray-900 mb-1 tracking-tight">Welcome back</h1>
+          <p className="text-sm text-gray-500 font-medium">Log in to sync your cart and orders</p>
+        </div>
 
-        <button 
-          disabled={loading}
-          className="w-full py-4 bg-[#c23d6a] text-white rounded-2xl font-black shadow-lg hover:shadow-pink-200 active:scale-95 transition-all"
-        >
-          {loading ? 'AUTHENTICATING...' : 'LOGIN NOW'}
-        </button>
-      </form>
+        {/* ── Card with visible border + shadow ── */}
+        <div className="bg-white rounded-3xl p-8 shadow-xl shadow-gray-200/80 border-2 border-gray-100">
+          <form onSubmit={handleLogin} className="flex flex-col gap-5">
 
-      <p className="text-center mt-6 text-sm text-gray-500">
-        New to Gym Hack? <Link href="/signup" className="text-[#c23d6a] font-bold underline">Create Account</Link>
-      </p>
+            {/* Email */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-black uppercase tracking-widest text-gray-500">
+                Email Address
+              </label>
+              <div className="relative">
+                <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <input
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
+                  className={`${inputClass} pl-10 pr-4`}
+                />
+              </div>
+            </div>
+
+            {/* Password */}
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-[11px] font-black uppercase tracking-widest text-gray-500">
+                  Password
+                </label>
+                <Link href="/forgot-password"
+                  className="text-[11px] font-bold text-[#c23d6a] hover:underline">
+                  Forgot password?
+                </Link>
+              </div>
+              <div className="relative">
+                <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <input
+                  type={showPw ? 'text' : 'password'}
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
+                  className={`${inputClass} pl-10 pr-11`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPw(v => !v)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors p-0.5"
+                  aria-label={showPw ? 'Hide password' : 'Show password'}
+                >
+                  {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Error */}
+            {error && (
+              <div className="flex items-start gap-2.5 bg-red-50 border-2 border-red-200 rounded-xl px-3.5 py-3">
+                <AlertCircle size={15} className="text-red-500 shrink-0 mt-0.5" />
+                <p className="text-xs text-red-700 font-semibold leading-snug">{error}</p>
+              </div>
+            )}
+
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 bg-[#c23d6a] text-white text-sm font-black rounded-2xl
+                         hover:bg-[#a8305a] active:scale-[0.98] transition-all mt-1
+                         shadow-lg shadow-[#c23d6a]/25
+                         disabled:opacity-60 disabled:cursor-not-allowed disabled:shadow-none"
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                  </svg>
+                  Authenticating…
+                </span>
+              ) : 'Log in'}
+            </button>
+
+          </form>
+
+          {/* Divider + signup */}
+          <div className="mt-6 pt-6 border-t-2 border-gray-100 text-center">
+            <p className="text-sm text-gray-500">
+              New to GymHack?{' '}
+              <Link href="/signup" className="text-[#c23d6a] font-black hover:underline">
+                Create an account
+              </Link>
+            </p>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <p className="text-center text-xs text-gray-400 mt-6 font-medium">
+          By logging in you agree to our{' '}
+          <Link href="/terms" className="underline hover:text-gray-600 font-semibold">Terms</Link>
+          {' '}and{' '}
+          <Link href="/privacy" className="underline hover:text-gray-600 font-semibold">Privacy policy</Link>
+        </p>
+
+      </div>
     </div>
   );
 }

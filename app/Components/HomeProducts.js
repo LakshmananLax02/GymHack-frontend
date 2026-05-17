@@ -90,7 +90,7 @@ export default function HomeProducts() {
   };
 
   return (
-    <section className="py-6 md:py-14 bg-white overflow-hidden font-sans">
+    <section className="py-3 md:py-14 bg-white overflow-hidden font-sans">
       <div className="max-w-[1440px] mx-auto px-4 md:px-6">
 
         {/* HEADER */}
@@ -107,7 +107,7 @@ export default function HomeProducts() {
         </div>
 
         {/* FILTER TABS */}
-        <div className="flex justify-center gap-3 md:gap-6 mb-10 md:mb-16">
+        <div className="flex justify-center gap-3 md:gap-6 mb-3 md:mb-4">
           <button
             onClick={() => handleTabChange('OATS')}
             className={`px-6 md:px-12 font-secondary py-2 rounded-full border-2 font-bold text-sm md:text-lg uppercase tracking-widest transition-all duration-300 ${
@@ -211,7 +211,7 @@ export default function HomeProducts() {
         </div>
 
         {/* SHOP ALL BUTTON */}
-        <div className="hidden md:flex justify-center mt-8 md:mt-10">
+        <div className="hidden md:flex justify-center">
           <Link href='/products'>
             <button className="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-xs shadow-lg bg-[#c23d6a] text-white hover:bg-[#f2eadf] hover:text-black border border-transparent hover:border-black transition-all duration-300 font-secondary">
               Shop all <ShoppingCart className="w-5 h-5 md:w-6 md:h-6" />

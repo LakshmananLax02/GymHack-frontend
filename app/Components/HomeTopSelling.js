@@ -71,7 +71,7 @@ export default function OurTopSelling() {
   };
 
   return (
-    <section className="py-16 bg-white overflow-hidden">
+    <section className="py-6 bg-white overflow-hidden">
       <div className="max-w-[1200px] mx-auto px-7">
 
         {/* Header Section */}

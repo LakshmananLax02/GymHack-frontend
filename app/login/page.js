@@ -71,7 +71,7 @@ export default function LoginPage() {
         </div>
 
         {/* ── Card with visible border + shadow ── */}
-        <div className="bg-white rounded-xl p-8 shadow-xl shadow-gray-200/80 border-2 border-gray-100">
+        <div className="bg-white rounded-xl p-8 shadow-xl shadow-gray-200/80 border-2 border-gray-300">
           <form onSubmit={handleLogin} className="flex flex-col gap-5">
 
             {/* Email */}
@@ -98,7 +98,7 @@ export default function LoginPage() {
                 <label className="text-[11px] font-black uppercase tracking-widest text-gray-500">
                   Password
                 </label>
-                <Link href="/forgot-password"
+                <Link href="/forgotpassword"
                   className="text-[11px] font-bold text-[#c23d6a] hover:underline">
                   Forgot password?
                 </Link>

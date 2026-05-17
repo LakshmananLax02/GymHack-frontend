@@ -775,11 +775,12 @@ export default function Navbar() {
             <Home size={22} strokeWidth={2} />
             <span className="text-[10px] font-semibold">Home</span>
           </Link>
-
-          <button onClick={() => setIsSidebarOpen(true)} className="flex flex-col items-center gap-1 flex-1 py-2 text-gray-500 transition-colors">
+         <Link href="/products">
+          <button className="flex flex-col items-center gap-1 flex-1 py-2 text-gray-500 transition-colors">
             <Store size={22} strokeWidth={2} />
             <span className="text-[10px] font-semibold">Shop</span>
           </button>
+          </Link>
 
           {/* ✅ Cart — popup if not logged in */}
           <button onClick={handleOpenCart} className="flex flex-col items-center justify-center flex-1 py-2 text-gray-500 transition-colors">

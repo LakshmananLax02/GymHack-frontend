@@ -18,6 +18,8 @@ import Philosophy from './Components/HomePhilosophy'
 
 import Testimonials from './Components/Testimonials'
 
+
+
 export default function Home() {
   return (
     <>
@@ -39,6 +41,9 @@ export default function Home() {
      <Philosophy/>
 
      <Testimonials/>
+
+  
+
     </>
   );
 }

@@ -25,6 +25,13 @@ const products = [
 const tabs = [
   { key: 'OATS',   label: 'Oats',   image: '/images/oatsimg.jpg' },
   { key: 'Muesli', label: 'Muesli', image: '/images/meusliimg.png' },
+    { key: 'Muesli', label: 'Muesli', image: '/images/meusliimg.png' },
+  { key: 'Muesli', label: 'Muesli', image: '/images/meusliimg.png' },
+  { key: 'Muesli', label: 'Muesli', image: '/images/meusliimg.png' },
+  { key: 'Muesli', label: 'Muesli', image: '/images/meusliimg.png' },
+  { key: 'Muesli', label: 'Muesli', image: '/images/meusliimg.png' },
+  { key: 'Muesli', label: 'Muesli', image: '/images/meusliimg.png' },
+
 ];
 
 export default function HomeProducts() {
@@ -80,26 +87,29 @@ export default function HomeProducts() {
             Fuel your body with the right choice for your routine
           </p>
         </div>
-
-        {/* ── Image Tabs ── */}
-        <div className="flex justify-center gap-4 mb-6">
-          {tabs.map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`flex items-center gap-3 px-5 py-3 rounded-xl border-2 transition-all duration-300 font-secondary font-bold text-lg
-                ${activeTab === tab.key
-                  ? 'bg-[#f0ece2] border text-black'
-                  : 'border-gray-200 bg-gray-50 text-gray-400'
-                }`}
-            >
-              <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
-                <Image src={tab.image} alt={tab.label} fill className="object-contain p-1" />
-              </div>
-              <span>{tab.label}</span>
-            </button>
-          ))}
+<div className="w-full mb-10">
+  <div className="flex justify-start md:justify-center gap-4 
+                  overflow-x-scroll pb-6 visible-scrollbar 
+                  scroll-smooth px-4">
+    {tabs.map(tab => (
+      <button
+        key={tab.key}
+        onClick={() => setActiveTab(tab.key)}
+        className={`flex items-center gap-3 px-6 py-3 rounded-2xl border-2 
+                   transition-all duration-300 flex-shrink-0
+          ${activeTab === tab.key
+            ? 'bg-[#ede9df] border-zinc-300 text-black'
+            : 'border-gray-100 bg-gray-50 text-gray-400'
+          }`}
+      >
+        <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-white shadow-sm">
+          <Image src={tab.image} alt={tab.label} fill className="object-contain p-2" />
         </div>
+        <span className="uppercase tracking-widest text-sm font-black">{tab.label}</span>
+      </button>
+    ))}
+  </div>
+</div>
 
         {/* ── Product Count ── */}
         <p className="text-center text-gray-400 font-secondary text-sm mb-8">

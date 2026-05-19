@@ -16,6 +16,23 @@ import { useAuth } from '../context/AuthContext';
 const navProducts = [
   { name: 'Oats',   imageUrl: '/images/oatshoverimg.png',   link: '/products?category=OATS'   },
   { name: 'Muesli', imageUrl: '/images/meuslihoverimg1.png', link: '/products?category=Muesli' },
+    { name: 'Muesli', imageUrl: '/images/meuslihoverimg1.png', link: '/products?category=Muesli' },
+
+      { name: 'Muesli', imageUrl: '/images/meuslihoverimg1.png', link: '/products?category=Muesli' },
+  { name: 'Muesli', imageUrl: '/images/meuslihoverimg1.png', link: '/products?category=Muesli' },
+
+    { name: 'Muesli', imageUrl: '/images/meuslihoverimg1.png', link: '/products?category=Muesli' },
+
+      { name: 'Muesli', imageUrl: '/images/meuslihoverimg1.png', link: '/products?category=Muesli' },
+
+        { name: 'Muesli', imageUrl: '/images/meuslihoverimg1.png', link: '/products?category=Muesli' },
+
+          { name: 'Muesli', imageUrl: '/images/meuslihoverimg1.png', link: '/products?category=Muesli' },
+
+            { name: 'Muesli', imageUrl: '/images/meuslihoverimg1.png', link: '/products?category=Muesli' },
+
+              { name: 'Muesli', imageUrl: '/images/meuslihoverimg1.png', link: '/products?category=Muesli' },
+
 ];
 
 const allProducts = [
@@ -362,22 +379,36 @@ export default function Navbar() {
                 Shop
                 <ChevronDown size={14} strokeWidth={3} className={`transition-transform duration-200 ${isShopOpen ? 'rotate-180' : ''}`} />
               </button>
-              {isShopOpen && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-4 z-50">
-                  <div className="bg-white shadow-xl rounded-xl border border-gray-100 p-4 min-w-max">
-                    <div className="flex flex-row items-center gap-6">
-                      {navProducts.map(item => (
-                        <Link key={item.name} href={item.link} className="flex flex-col items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors min-w-[120px]">
-                          <div className="relative w-20 h-20 bg-gray-100 rounded-lg overflow-hidden shrink-0">
-                            <Image src={item.imageUrl} alt={item.name} fill className="object-cover" />
-                          </div>
-                          <span className="text-sm font-bold uppercase tracking-tight">{item.name}</span>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
+         {isShopOpen && (
+  <div className="absolute top-full left-1/2 -translate-x-1/2 pt-4 z-50">
+    <div className="bg-white shadow-2xl rounded-3xl border border-gray-100 p-6 
+                    w-[90vw] max-w-[600px] max-h-[80vh] overflow-y-auto custom-scrollbar">
+      
+      {/* Change from flex-row to grid-cols-3 */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
+        {navProducts.map((item) => (
+          <Link 
+            key={item.name} 
+            href={item.link} 
+            className="flex flex-col items-center gap-3 p-3 hover:bg-gray-50 rounded-2xl transition-all group"
+          >
+            <div className="relative w-full aspect-square bg-gray-100 rounded-xl overflow-hidden shadow-sm">
+              <Image 
+                src={item.imageUrl} 
+                alt={item.name} 
+                fill 
+                className="object-cover group-hover:scale-110 transition-transform duration-500" 
+              />
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-center">
+              {item.name}
+            </span>
+          </Link>
+        ))}
+      </div>
+    </div>
+  </div>
+)}
             </div>
 
             <Link href="/about" className="text-xl font-bold tracking-tight hover:text-[#c23d6a] transition-colors">

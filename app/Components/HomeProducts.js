@@ -106,25 +106,24 @@ export default function HomeProducts() {
           </p>
         </div>
 
-        {/* FILTER TABS */}
-        <div className="flex justify-center gap-3 md:gap-6 mb-3 md:mb-4">
-          <button
-            onClick={() => handleTabChange('OATS')}
-            className={`px-6 md:px-12 font-secondary py-2 rounded-full border-2 font-bold text-sm md:text-lg uppercase tracking-widest transition-all duration-300 ${
-              activeTab === 'OATS' ? 'bg-[#f0ece2] border text-black' : 'border bg-gray-100 text-gray-400'
-            }`}
-          >
-            OATS
-          </button>
-          <button
-            onClick={() => handleTabChange('Muesli')}
-            className={`px-6 md:px-12 font-secondary py-2 rounded-full border-2 font-bold text-sm md:text-lg tracking-widest transition-all duration-300 ${
-              activeTab === 'Muesli' ? 'bg-[#f0ece2] border text-black' : 'border bg-gray-100 text-gray-400'
-            }`}
-          >
-            Muesli
-          </button>
-        </div>
+    {/* FILTER TABS (With Permanent Scrollbar) */}
+<div className="flex justify-start md:justify-center w-full mb-8">
+  <div className="flex gap-3 md:gap-6 overflow-x-scroll pb-6 px-4 visible-scrollbar max-w-full scroll-smooth">
+    {['OATS', 'Muesli', 'Protein Bar', 'Protein', 'Granola', 'Snacks'].map((category) => (
+      <button
+        key={category}
+        onClick={() => handleTabChange(category)}
+        className={`px-8 md:px-12 font-secondary py-2.5 rounded-full border-2 font-black text-xs md:text-sm uppercase tracking-[0.2em] transition-all duration-300 whitespace-nowrap shadow-sm flex-shrink-0
+          ${activeTab === category 
+            ? 'bg-[#f0ece2] border-zinc-300 text-black scale-105' 
+            : 'border-transparent bg-gray-100 text-gray-400 hover:bg-gray-200'
+          }`}
+      >
+        {category}
+      </button>
+    ))}
+  </div>
+</div>
 
         {/* SLIDER */}
         <div className="relative flex items-center justify-center min-h-[500px] md:min-h-[650px]">

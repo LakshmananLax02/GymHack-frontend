@@ -1,80 +1,32 @@
-// 'use client';
-// import { useState } from 'react';
-// import { useRouter } from 'next/navigation';
-// import { ShieldAlert, Loader2 } from 'lucide-react';
-
-// export default function AdminLogin() {
-//     const [form, setForm] = useState({ email: '', password: '', secretKey: '' });
-//     const [error, setError] = useState('');
-//     const [loading, setLoading] = useState(false);
-//     const router = useRouter();
-
-//     const handleLogin = async (e) => {
-//         e.preventDefault();
-//         setLoading(true);
-//         try {
-//             const res = await fetch(`${process.env.NEXT_PUBLIC_API}/api/admin/login`, {
-//                 method: 'POST',
-//                 headers: { 'Content-Type': 'application/json' },
-//                 body: JSON.stringify(form)
-//             });
-//             const data = await res.json();
-//             if (!res.ok) throw new Error(data.error);
-
-//             localStorage.setItem('adminToken', data.token);
-//             router.push('/Admin/Dashboard');
-//         } catch (err) {
-//             setError(err.message);
-//         } finally { setLoading(false); }
-//     };
-
-//     return (
-//         <div className="min-h-screen bg-black flex items-center justify-center p-6">
-//             <form onSubmit={handleLogin} className="w-full max-w-sm space-y-4 bg-zinc-900 p-8 rounded-3xl border border-white/5">
-//                 <div className="text-center mb-6">
-//                     <ShieldAlert className="text-red-600 mx-auto mb-2" size={40} />
-//                     <h1 className="text-white font-black uppercase tracking-widest text-lg">Vault Login</h1>
-//                 </div>
-//                 <input type="email" placeholder="Admin Email" className="w-full bg-black border border-zinc-800 p-4 rounded-xl text-white outline-none" onChange={(e) => setForm({...form, email: e.target.value})} />
-//                 <input type="password" placeholder="Passphrase" className="w-full bg-black border border-zinc-800 p-4 rounded-xl text-white outline-none" onChange={(e) => setForm({...form, password: e.target.value})} />
-//                 <input type="password" placeholder="System Master Key" className="w-full bg-black border border-zinc-800 p-4 rounded-xl text-white outline-none font-mono" onChange={(e) => setForm({...form, secretKey: e.target.value})} />
-//                 {error && <p className="text-red-500 text-xs font-bold text-center">{error}</p>}
-//                 <button className="w-full py-4 bg-red-600 text-white font-black rounded-xl hover:bg-red-500 transition-all">
-//                     {loading ? <Loader2 className="animate-spin mx-auto" /> : 'AUTHENTICATE'}
-//                 </button>
-//             </form>
-//         </div>
-//     );
-// }
-
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ShieldCheck, Loader2, User, Lock } from 'lucide-react';
+import { User, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import Image from 'next/image';
 
 export default function AdminLogin() {
-  const [form, setForm] = useState({ username: '', password: '' });
+  const [form,    setForm]    = useState({ username: '', password: '' });
+  const [showPw,  setShowPw]  = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error,   setError]   = useState('');
   const router = useRouter();
+
+  const set = (k) => (e) => setForm(p => ({ ...p, [k]: e.target.value }));
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/login`, {
-        method: 'POST',
+      const res  = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/login`, {
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body:    JSON.stringify(form),
       });
-
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-
+      if (!res.ok) throw new Error(data.error || 'Login failed');
       localStorage.setItem('adminToken', data.token);
-      router.push('/Admin/Dashboard');
+      router.push('/admin/dashboard');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -82,43 +34,107 @@ export default function AdminLogin() {
     }
   };
 
+  const inputClass = [
+    'w-full py-3 text-sm font-medium text-gray-900 bg-white',
+    'border-2 border-gray-200 rounded-xl outline-none transition-all',
+    'placeholder:text-gray-400',
+    'focus:border-[#2d7a3a] focus:ring-4 focus:ring-[#2d7a3a]/8',
+    'hover:border-gray-300',
+  ].join(' ');
+
   return (
-    <div className="min-h-screen bg-[#050505] flex items-center justify-center p-6 font-sans">
-      <div className="w-full max-w-sm bg-[#0f0f0f] border border-white/5 rounded-[40px] p-10 shadow-2xl">
-        <div className="text-center mb-10">
-          <ShieldCheck className="text-red-600 mx-auto mb-4" size={40} />
-          <h1 className="text-white text-xl font-black tracking-tighter">SECURE ACCESS</h1>
+    <div
+      className="min-h-screen flex items-center justify-center px-4 py-12"
+      style={{ background: 'linear-gradient(135deg, #f4fdf6 0%, #f8f4f0 50%, #f0f4fd 100%)' }}
+    >
+      <div className="w-full max-w-[440px]">
+
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-4">
+            <Image src="/images/logoimg.png" alt="Logo" width={42} height={42} className="object-contain" />
+          </div>
+          <h1 className="text-2xl font-black text-gray-900 mb-1 tracking-tight">Admin Portal</h1>
+          <p className="text-sm text-gray-500 font-medium">Restricted access — authorised personnel only</p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div className="relative">
-            <User className="absolute left-4 top-4 text-zinc-600" size={18} />
-            <input 
-              type="text" required placeholder="Username"
-              className="w-full bg-white/5 border border-white/10 p-4 pl-12 rounded-2xl text-white outline-none focus:border-red-600 transition-all"
-              onChange={(e) => setForm({...form, username: e.target.value})}
-            />
-          </div>
+        {/* Card */}
+        <div className="bg-white rounded-xl p-8 shadow-xl shadow-gray-200/80 border-2 border-gray-300">
+          <form onSubmit={handleLogin} className="flex flex-col gap-5">
 
-          <div className="relative">
-            <Lock className="absolute left-4 top-4 text-zinc-600" size={18} />
-            <input 
-              type="password" required placeholder="Password"
-              className="w-full bg-white/5 border border-white/10 p-4 pl-12 rounded-2xl text-white outline-none focus:border-red-600 transition-all"
-              onChange={(e) => setForm({...form, password: e.target.value})}
-              autoComplete="new-password"
-            />
-          </div>
+            {/* Username */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-black uppercase tracking-widest text-gray-500">
+                Username
+              </label>
+              <div className="relative">
+                <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <input
+                  type="text" required placeholder="Enter your username"
+                  value={form.username} onChange={set('username')}
+                  className={`${inputClass} pl-10 pr-4`}
+                />
+              </div>
+            </div>
 
-          {error && <p className="text-red-500 text-xs font-bold text-center bg-red-500/5 p-3 rounded-xl border border-red-500/10">{error}</p>}
+            {/* Password */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-black uppercase tracking-widest text-gray-500">
+                Password
+              </label>
+              <div className="relative">
+                <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <input
+                  type={showPw ? 'text' : 'password'} required placeholder="Enter your password"
+                  value={form.password} onChange={set('password')}
+                  autoComplete="current-password"
+                  className={`${inputClass} pl-10 pr-11`}
+                />
+                <button
+                  type="button" onClick={() => setShowPw(v => !v)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors p-0.5"
+                  aria-label={showPw ? 'Hide password' : 'Show password'}
+                >
+                  {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
 
-          <button 
-            type="submit" disabled={loading}
-            className="w-full py-4 bg-red-600 hover:bg-red-500 text-white font-black rounded-2xl transition-all flex items-center justify-center gap-2"
-          >
-            {loading ? <Loader2 className="animate-spin" /> : 'SIGN IN'}
-          </button>
-        </form>
+            {/* Error */}
+            {error && (
+              <div className="flex items-start gap-2.5 bg-red-50 border-2 border-red-200 rounded-xl px-3.5 py-3">
+                <AlertCircle size={15} className="text-red-500 shrink-0 mt-0.5" />
+                <p className="text-xs text-red-700 font-semibold leading-snug">{error}</p>
+              </div>
+            )}
+
+            {/* Submit */}
+            <button
+              type="submit" disabled={loading}
+              className="w-full py-3.5 bg-[#2d7a3a] text-white text-sm font-black rounded-full
+                         hover:bg-[#246331] active:scale-[0.98] transition-all mt-1
+                         shadow-lg shadow-[#2d7a3a]/25
+                         disabled:opacity-60 disabled:cursor-not-allowed disabled:shadow-none"
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                  </svg>
+                  Signing in…
+                </span>
+              ) : 'Sign In'}
+            </button>
+
+          </form>
+        </div>
+
+        {/* Footer */}
+        <p className="text-center text-xs text-gray-400 mt-6 font-medium">
+          Exploring Munnar &copy; {new Date().getFullYear()}
+        </p>
+
       </div>
     </div>
   );

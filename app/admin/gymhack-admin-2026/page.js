@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { User, Lock, Eye, EyeOff, AlertCircle, ShieldCheck } from 'lucide-react';
 import Image from 'next/image';
 
 export default function AdminLogin() {
@@ -38,28 +38,35 @@ export default function AdminLogin() {
     'w-full py-3 text-sm font-medium text-gray-900 bg-white',
     'border-2 border-gray-200 rounded-xl outline-none transition-all',
     'placeholder:text-gray-400',
-    'focus:border-[#2d7a3a] focus:ring-4 focus:ring-[#2d7a3a]/8',
+    'focus:border-[#c23d6a] focus:ring-4 focus:ring-[#c23d6a]/10',
     'hover:border-gray-300',
   ].join(' ');
 
   return (
     <div
       className="min-h-screen flex items-center justify-center px-4 py-12"
-      style={{ background: 'linear-gradient(135deg, #f4fdf6 0%, #f8f4f0 50%, #f0f4fd 100%)' }}
+      style={{ background: 'linear-gradient(135deg, #fdf4f7 0%, #f8f4f0 50%, #f0f4fd 100%)' }}
     >
       <div className="w-full max-w-[440px]">
 
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-4">
-            <Image src="/images/logoimg.png" alt="Logo" width={42} height={42} className="object-contain" />
+          <div className="w-14 h-14 rounded-2xl bg-[#c23d6a] flex items-center justify-center mx-auto mb-4 shadow-lg shadow-[#c23d6a]/30 relative overflow-hidden">
+            <Image src="/images/logoimg.png" alt="Logo" fill className="object-contain p-2" />
           </div>
           <h1 className="text-2xl font-black text-gray-900 mb-1 tracking-tight">Admin Portal</h1>
-          <p className="text-sm text-gray-500 font-medium">Restricted access — authorised personnel only</p>
+          <p className="text-sm text-gray-500 font-medium">Restricted — authorised personnel only</p>
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-xl p-8 shadow-xl shadow-gray-200/80 border-2 border-gray-300">
+        <div className="bg-white rounded-3xl p-8 shadow-xl shadow-gray-200/80 border-2 border-gray-100">
+
+          {/* Admin badge */}
+          <div className="flex items-center gap-2.5 bg-[#fff0f5] border-2 border-[#f0c0d0] rounded-2xl px-4 py-3 mb-6">
+            <ShieldCheck size={16} className="text-[#c23d6a] shrink-0" />
+            <p className="text-xs font-bold text-[#c23d6a]">Secure Admin Access</p>
+          </div>
+
           <form onSubmit={handleLogin} className="flex flex-col gap-5">
 
             {/* Username */}
@@ -68,7 +75,7 @@ export default function AdminLogin() {
                 Username
               </label>
               <div className="relative">
-                <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                 <input
                   type="text" required placeholder="Enter your username"
                   value={form.username} onChange={set('username')}
@@ -83,12 +90,13 @@ export default function AdminLogin() {
                 Password
               </label>
               <div className="relative">
-                <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                 <input
                   type={showPw ? 'text' : 'password'} required placeholder="Enter your password"
                   value={form.password} onChange={set('password')}
                   autoComplete="current-password"
                   className={`${inputClass} pl-10 pr-11`}
+                  autoComplete="new-password"
                 />
                 <button
                   type="button" onClick={() => setShowPw(v => !v)}
@@ -111,9 +119,9 @@ export default function AdminLogin() {
             {/* Submit */}
             <button
               type="submit" disabled={loading}
-              className="w-full py-3.5 bg-[#2d7a3a] text-white text-sm font-black rounded-full
-                         hover:bg-[#246331] active:scale-[0.98] transition-all mt-1
-                         shadow-lg shadow-[#2d7a3a]/25
+              className="w-full py-3.5 bg-[#c23d6a] text-white text-sm font-black rounded-2xl
+                         hover:bg-[#a8305a] active:scale-[0.98] transition-all mt-1
+                         shadow-lg shadow-[#c23d6a]/25
                          disabled:opacity-60 disabled:cursor-not-allowed disabled:shadow-none"
             >
               {loading ? (
@@ -124,7 +132,7 @@ export default function AdminLogin() {
                   </svg>
                   Signing in…
                 </span>
-              ) : 'Sign In'}
+              ) : 'Sign In to Admin'}
             </button>
 
           </form>
@@ -132,7 +140,7 @@ export default function AdminLogin() {
 
         {/* Footer */}
         <p className="text-center text-xs text-gray-400 mt-6 font-medium">
-          Exploring Munnar &copy; {new Date().getFullYear()}
+          GymHack Admin &copy; {new Date().getFullYear()}
         </p>
 
       </div>

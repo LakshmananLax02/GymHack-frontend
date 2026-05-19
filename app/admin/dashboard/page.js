@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Users, FolderPlus, PackagePlus,
-  TrendingUp, LogOut, Menu, X, Bell, ChevronDown,
-  Search, AlertCircle, Eye, EyeOff,
+  TrendingUp, LogOut, Menu, X, Bell,
+  Search, AlertCircle, ChevronRight,
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -22,23 +22,23 @@ function authHeaders() {
   return { Authorization: `Bearer ${localStorage.getItem('adminToken')}` };
 }
 
-// ─── Shared input class (matches LoginPage exactly) ───────────────────────────
+// ─── Shared input class — matches GymHack UI ──────────────────────────────────
 const inputClass = [
   'w-full py-3 text-sm font-medium text-gray-900 bg-white',
   'border-2 border-gray-200 rounded-xl outline-none transition-all',
   'placeholder:text-gray-400',
-  'focus:border-[#2d7a3a] focus:ring-4 focus:ring-[#2d7a3a]/8',
+  'focus:border-[#c23d6a] focus:ring-4 focus:ring-[#c23d6a]/10',
   'hover:border-gray-300',
 ].join(' ');
 
-// ─── Shared: submit button ────────────────────────────────────────────────────
+// ─── Shared components ────────────────────────────────────────────────────────
 function SubmitBtn({ loading, label, loadingLabel }) {
   return (
     <button
       type="submit" disabled={loading}
-      className="w-full py-3.5 bg-[#2d7a3a] text-white text-sm font-black rounded-full
-                 hover:bg-[#246331] active:scale-[0.98] transition-all mt-1
-                 shadow-lg shadow-[#2d7a3a]/25
+      className="w-full py-3.5 bg-[#c23d6a] text-white text-sm font-black rounded-2xl
+                 hover:bg-[#a8305a] active:scale-[0.98] transition-all mt-1
+                 shadow-lg shadow-[#c23d6a]/25
                  disabled:opacity-60 disabled:cursor-not-allowed disabled:shadow-none"
     >
       {loading ? (
@@ -54,7 +54,6 @@ function SubmitBtn({ loading, label, loadingLabel }) {
   );
 }
 
-// ─── Shared: error box ────────────────────────────────────────────────────────
 function ErrorBox({ error }) {
   if (!error) return null;
   return (
@@ -65,17 +64,15 @@ function ErrorBox({ error }) {
   );
 }
 
-// ─── Shared: success box ──────────────────────────────────────────────────────
 function SuccessBox({ message }) {
   if (!message) return null;
   return (
     <div className="flex items-start gap-2.5 bg-green-50 border-2 border-green-200 rounded-xl px-3.5 py-3">
-      <p className="text-xs text-green-700 font-semibold leading-snug">{message}</p>
+      <p className="text-xs text-green-700 font-semibold leading-snug">✓ {message}</p>
     </div>
   );
 }
 
-// ─── Shared: field label ──────────────────────────────────────────────────────
 function Label({ children }) {
   return (
     <label className="text-[11px] font-black uppercase tracking-widest text-gray-500">
@@ -84,25 +81,23 @@ function Label({ children }) {
   );
 }
 
-// ─── Shared: form card ────────────────────────────────────────────────────────
-function FormCard({ children }) {
+function FormCard({ title, children }) {
   return (
-    <div className="bg-white rounded-xl p-8 shadow-xl shadow-gray-200/80 border-2 border-gray-300 max-w-md">
+    <div className="bg-white rounded-3xl p-8 shadow-xl shadow-gray-100/80 border-2 border-gray-100 max-w-lg">
+      {title && <h2 className="text-base font-black text-gray-900 mb-6">{title}</h2>}
       {children}
     </div>
   );
 }
 
-// ─── Shared: table card ───────────────────────────────────────────────────────
 function TableCard({ children }) {
   return (
-    <div className="bg-white rounded-xl shadow-xl shadow-gray-200/80 border-2 border-gray-300 overflow-hidden">
+    <div className="bg-white rounded-3xl shadow-xl shadow-gray-100/80 border-2 border-gray-100 overflow-hidden">
       {children}
     </div>
   );
 }
 
-// ─── Shared: skeleton ────────────────────────────────────────────────────────
 function Skeleton() {
   return (
     <div className="p-5 space-y-3">
@@ -111,12 +106,13 @@ function Skeleton() {
   );
 }
 
-// ─── Shared: empty ────────────────────────────────────────────────────────────
 function Empty({ icon: Icon = AlertCircle, message = 'No data found' }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
-      <Icon size={40} className="text-gray-200 mb-3" />
-      <p className="text-sm font-semibold text-gray-400">{message}</p>
+      <div className="w-14 h-14 rounded-2xl bg-[#fff0f5] flex items-center justify-center mb-3">
+        <Icon size={24} className="text-[#c23d6a]" />
+      </div>
+      <p className="text-sm font-bold text-gray-400">{message}</p>
     </div>
   );
 }
@@ -125,23 +121,36 @@ function Empty({ icon: Icon = AlertCircle, message = 'No data found' }) {
 
 function DashboardView() {
   const stats = [
-    { label: 'Total Users', value: '—', icon: '👥', bg: 'bg-blue-50'   },
-    { label: 'Products',    value: '—', icon: '📦', bg: 'bg-green-50'  },
-    { label: 'Categories',  value: '—', icon: '🗂️', bg: 'bg-amber-50'  },
-    { label: 'Top Sellers', value: '—', icon: '🔥', bg: 'bg-red-50'    },
+    { label: 'Total Users',  value: '—', icon: '👥', color: 'bg-[#fff0f5]' },
+    { label: 'Products',     value: '—', icon: '📦', color: 'bg-blue-50'   },
+    { label: 'Categories',   value: '—', icon: '🗂️', color: 'bg-amber-50'  },
+    { label: 'Top Sellers',  value: '—', icon: '🔥', color: 'bg-green-50'  },
   ];
   return (
-    <div className="p-6 md:p-8">
+    <div className="p-6 md:p-8 space-y-6">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map(s => (
-          <div key={s.label} className="bg-white rounded-xl p-5 shadow-xl shadow-gray-200/80 border-2 border-gray-300 flex items-center gap-4">
-            <div className={`w-11 h-11 ${s.bg} rounded-xl flex items-center justify-center text-xl shrink-0`}>{s.icon}</div>
+          <div key={s.label} className="bg-white rounded-3xl p-5 shadow-sm border-2 border-gray-100 flex items-center gap-4">
+            <div className={`w-12 h-12 ${s.color} rounded-2xl flex items-center justify-center text-2xl shrink-0`}>
+              {s.icon}
+            </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">{s.label}</p>
-              <p className="text-2xl font-black text-gray-900 mt-0.5">{s.value}</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 leading-none">{s.label}</p>
+              <p className="text-2xl font-black text-gray-900 mt-1">{s.value}</p>
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Welcome card */}
+      <div className="bg-gradient-to-br from-[#c23d6a] to-[#8b1a42] rounded-3xl p-7 text-white relative overflow-hidden">
+        <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/5" />
+        <div className="absolute -bottom-4 -left-4 w-24 h-24 rounded-full bg-white/5" />
+        <div className="relative">
+          <p className="text-xs font-black uppercase tracking-widest text-white/60 mb-1">Welcome back</p>
+          <h2 className="text-xl font-black mb-1">Admin Dashboard</h2>
+          <p className="text-sm text-white/70 font-medium">Manage your GymHack store from here.</p>
+        </div>
       </div>
     </div>
   );
@@ -172,7 +181,7 @@ function UsersView() {
   return (
     <div className="p-6 md:p-8">
       <TableCard>
-        {/* Search */}
+        {/* Search bar */}
         <div className="p-4 border-b-2 border-gray-100">
           <div className="relative max-w-sm">
             <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
@@ -190,7 +199,7 @@ function UsersView() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b-2 border-gray-100">
+                <tr className="border-b-2 border-gray-100 bg-gray-50/60">
                   {['Name', 'Email', 'Phone', 'Joined', 'Status'].map(h => (
                     <th key={h} className="text-left text-[10px] font-black uppercase tracking-widest text-gray-400 px-5 py-3.5">{h}</th>
                   ))}
@@ -201,10 +210,10 @@ function UsersView() {
                   const name    = [u.firstName, u.lastName].filter(Boolean).join(' ') || u.name || '—';
                   const initial = name[0]?.toUpperCase() || 'U';
                   return (
-                    <tr key={u._id || u.id || i} className="hover:bg-gray-50/60 transition-colors">
+                    <tr key={u._id || u.id || i} className="hover:bg-[#fff8fb] transition-colors">
                       <td className="px-5 py-3.5">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-full bg-[#2d7a3a]/10 flex items-center justify-center text-xs font-black text-[#2d7a3a] shrink-0">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-[#fff0f5] flex items-center justify-center text-xs font-black text-[#c23d6a] shrink-0">
                             {initial}
                           </div>
                           <span className="font-semibold text-gray-900 whitespace-nowrap">{name}</span>
@@ -213,11 +222,15 @@ function UsersView() {
                       <td className="px-5 py-3.5 text-gray-500 text-xs whitespace-nowrap">{u.email || '—'}</td>
                       <td className="px-5 py-3.5 text-gray-500 text-xs whitespace-nowrap">{u.phone || '—'}</td>
                       <td className="px-5 py-3.5 text-gray-400 text-xs whitespace-nowrap">
-                        {u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
+                        {u.createdAt
+                          ? new Date(u.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+                          : '—'}
                       </td>
                       <td className="px-5 py-3.5">
                         <span className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider
-                          ${u.isActive !== false ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
+                          ${u.isActive !== false
+                            ? 'bg-green-50 text-green-600 border border-green-200'
+                            : 'bg-gray-100 text-gray-400 border border-gray-200'}`}>
                           {u.isActive !== false ? 'Active' : 'Inactive'}
                         </span>
                       </td>
@@ -250,7 +263,7 @@ function CreateCategoryView() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed');
-      setSuccess(`Category "${data.category?.name || name}" created!`);
+      setSuccess(`Category "${data.category?.name || name}" created successfully!`);
       setName('');
     } catch (e) { setError(e.message); }
     finally     { setLoading(false); }
@@ -258,7 +271,7 @@ function CreateCategoryView() {
 
   return (
     <div className="p-6 md:p-8">
-      <FormCard>
+      <FormCard title="Create New Category">
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <div className="flex flex-col gap-1.5">
             <Label>Category Name</Label>
@@ -307,7 +320,7 @@ function AddProductView() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed');
-      setSuccess(`Product "${form.name}" added!`);
+      setSuccess(`Product "${form.name}" added successfully!`);
       setForm({ name: '', price: '', category: '', description: '' });
     } catch (e) { setError(e.message); }
     finally     { setLoading(false); }
@@ -315,7 +328,7 @@ function AddProductView() {
 
   return (
     <div className="p-6 md:p-8">
-      <FormCard>
+      <FormCard title="Add New Product">
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
 
           <div className="flex flex-col gap-1.5">
@@ -332,13 +345,16 @@ function AddProductView() {
 
           <div className="flex flex-col gap-1.5">
             <Label>Category</Label>
-            <select value={form.category} onChange={set('category')} required
-              className={`${inputClass} px-4 cursor-pointer`}>
-              <option value="">Select a category</option>
-              {categories.map(c => (
-                <option key={c._id || c.id} value={c._id || c.id}>{c.name}</option>
-              ))}
-            </select>
+            <div className="relative">
+              <select value={form.category} onChange={set('category')} required
+                className={`${inputClass} px-4 cursor-pointer appearance-none`}>
+                <option value="">Select a category</option>
+                {categories.map(c => (
+                  <option key={c._id || c.id} value={c._id || c.id}>{c.name}</option>
+                ))}
+              </select>
+              <ChevronRight size={14} className="absolute right-3.5 top-1/2 -translate-y-1/2 rotate-90 text-gray-400 pointer-events-none" />
+            </div>
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -374,6 +390,12 @@ function HighSellingView() {
     })();
   }, []);
 
+  const rankStyle = [
+    'bg-amber-50 text-amber-600 border border-amber-200',
+    'bg-gray-100 text-gray-500 border border-gray-200',
+    'bg-orange-50 text-orange-500 border border-orange-200',
+  ];
+
   return (
     <div className="p-6 md:p-8">
       <TableCard>
@@ -383,7 +405,7 @@ function HighSellingView() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b-2 border-gray-100">
+                <tr className="border-b-2 border-gray-100 bg-gray-50/60">
                   {['Rank', 'Product', 'Category', 'Price', 'Units Sold', 'Revenue'].map(h => (
                     <th key={h} className="text-left text-[10px] font-black uppercase tracking-widest text-gray-400 px-5 py-3.5">{h}</th>
                   ))}
@@ -391,18 +413,21 @@ function HighSellingView() {
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {products.map((p, i) => (
-                  <tr key={p._id || p.id || i} className="hover:bg-gray-50/60 transition-colors">
+                  <tr key={p._id || p.id || i} className="hover:bg-[#fff8fb] transition-colors">
                     <td className="px-5 py-3.5">
-                      <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black
-                        ${i === 0 ? 'bg-amber-50 text-amber-600' : i === 1 ? 'bg-gray-100 text-gray-500' : 'bg-gray-50 text-gray-400'}`}>
+                      <div className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-black ${rankStyle[i] || 'bg-gray-50 text-gray-400 border border-gray-100'}`}>
                         {i + 1}
                       </div>
                     </td>
                     <td className="px-5 py-3.5 font-semibold text-gray-900 whitespace-nowrap">{p.name}</td>
-                    <td className="px-5 py-3.5 text-gray-500 text-xs">{p.category?.name || p.category || '—'}</td>
+                    <td className="px-5 py-3.5 text-xs">
+                      <span className="bg-[#fff0f5] text-[#c23d6a] font-bold px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider">
+                        {p.category?.name || p.category || '—'}
+                      </span>
+                    </td>
                     <td className="px-5 py-3.5 font-bold text-gray-900">₹{p.price}</td>
-                    <td className="px-5 py-3.5 text-gray-500">{p.unitsSold ?? p.sales ?? '—'}</td>
-                    <td className="px-5 py-3.5 font-black text-[#2d7a3a]">{p.revenue ? `₹${p.revenue}` : '—'}</td>
+                    <td className="px-5 py-3.5 text-gray-500 font-medium">{p.unitsSold ?? p.sales ?? '—'}</td>
+                    <td className="px-5 py-3.5 font-black text-[#c23d6a]">{p.revenue ? `₹${p.revenue}` : '—'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -423,7 +448,7 @@ const VIEWS = {
   'high-selling':    HighSellingView,
 };
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
+// ─── Main Dashboard ───────────────────────────────────────────────────────────
 export default function AdminDashboard() {
   const router = useRouter();
   const [auth,        setAuth]        = useState(false);
@@ -447,16 +472,19 @@ export default function AdminDashboard() {
   if (!auth) return null;
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
+    <div className="flex h-screen overflow-hidden" style={{ background: '#fdf8f9' }}>
 
       {/* Mobile overlay */}
       {sidebarOpen && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-30 lg:hidden" onClick={() => setSidebarOpen(false)} />
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-30 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
       )}
 
-      {/* ── Sidebar ── */}
+      {/* ── Sidebar ──────────────────────────────────────────────────────── */}
       <aside className={`
-        fixed top-0 left-0 h-full w-56 bg-white border-r-2 border-gray-200 z-40
+        fixed top-0 left-0 h-full w-60 bg-white border-r-2 border-gray-100 z-40
         flex flex-col transition-transform duration-300 ease-in-out
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0 lg:static lg:z-auto
@@ -464,32 +492,37 @@ export default function AdminDashboard() {
 
         {/* Logo */}
         <div className="px-5 py-5 border-b-2 border-gray-100 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 relative shrink-0">
-              <Image src="/images/logoimg.png" alt="Logo" fill className="object-contain" />
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#c23d6a] relative overflow-hidden shrink-0 shadow-md shadow-[#c23d6a]/30">
+              <Image src="/images/logoimg.png" alt="Logo" fill className="object-contain p-1.5" />
             </div>
             <div>
-              <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 leading-none mb-0.5">exploring</p>
-              <p className="text-lg font-black text-[#2d7a3a] leading-none italic tracking-tight">Munnar</p>
+              <p className="text-base font-black text-gray-900 tracking-tight leading-none">GYM HACK</p>
+              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">Admin</p>
             </div>
           </div>
-          <button onClick={() => setSidebarOpen(false)} className="lg:hidden p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 transition-colors">
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="lg:hidden p-1.5 hover:bg-gray-100 rounded-xl text-gray-400 transition-colors"
+          >
             <X size={17} />
           </button>
         </div>
 
         {/* Admin badge */}
         <div className="px-4 pt-4 pb-3 border-b-2 border-gray-100">
-          <div className="flex items-center gap-2.5 bg-gray-50 border-2 border-gray-200 rounded-xl px-3 py-2.5">
-            <div className="w-8 h-8 rounded-full bg-[#2d7a3a] flex items-center justify-center text-white text-sm font-black shrink-0">A</div>
+          <div className="flex items-center gap-3 bg-[#fff0f5] border-2 border-[#f0c0d0] rounded-2xl px-3.5 py-3">
+            <div className="w-9 h-9 rounded-full bg-[#c23d6a] flex items-center justify-center text-white text-sm font-black shrink-0 shadow-sm shadow-[#c23d6a]/30">
+              A
+            </div>
             <div>
               <p className="text-sm font-black text-gray-900 leading-none">Admin</p>
-              <p className="text-[10px] text-gray-400 font-medium mt-0.5">Administrator</p>
+              <p className="text-[10px] text-[#c23d6a] font-bold mt-0.5 uppercase tracking-wider">Administrator</p>
             </div>
           </div>
         </div>
 
-        {/* Nav */}
+        {/* Nav items */}
         <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
           {NAV.map(({ id, label, icon: Icon }) => {
             const active = activeView === id;
@@ -497,10 +530,10 @@ export default function AdminDashboard() {
               <button
                 key={id}
                 onClick={() => { setActiveView(id); setSidebarOpen(false); }}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all text-left
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-sm font-semibold transition-all text-left
                   ${active
-                    ? 'bg-[#2d7a3a] text-white shadow-md shadow-[#2d7a3a]/25'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
+                    ? 'bg-[#c23d6a] text-white shadow-md shadow-[#c23d6a]/25'
+                    : 'text-gray-600 hover:bg-[#fff0f5] hover:text-[#c23d6a]'}`}
               >
                 <Icon size={16} className={active ? 'text-white' : 'text-gray-400'} />
                 {label}
@@ -513,7 +546,7 @@ export default function AdminDashboard() {
         <div className="px-3 py-3 border-t-2 border-gray-100">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 transition-colors"
+            className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-sm font-semibold text-red-500 hover:bg-red-50 transition-colors"
           >
             <LogOut size={16} className="text-red-400" />
             Log Out
@@ -521,11 +554,11 @@ export default function AdminDashboard() {
         </div>
       </aside>
 
-      {/* ── Main ── */}
+      {/* ── Main area ────────────────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
         {/* Topbar */}
-        <header className="h-16 bg-white border-b-2 border-gray-200 flex items-center justify-between px-5 shrink-0">
+        <header className="h-16 bg-white border-b-2 border-gray-100 flex items-center justify-between px-5 shrink-0">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setSidebarOpen(true)}
@@ -537,22 +570,25 @@ export default function AdminDashboard() {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Bell */}
             <button className="relative p-2 hover:bg-gray-100 rounded-xl transition-colors">
               <Bell size={18} className="text-gray-500" />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full" />
+              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[#c23d6a] rounded-full" />
             </button>
+
+            {/* Admin pill */}
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2 bg-[#2d7a3a] hover:bg-[#246331] text-white px-4 py-2 rounded-full text-xs font-black transition-colors shadow-md shadow-[#2d7a3a]/20"
+              className="flex items-center gap-2 bg-[#c23d6a] hover:bg-[#a8305a] text-white px-4 py-2 rounded-full text-xs font-black transition-colors shadow-md shadow-[#c23d6a]/25"
             >
               <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px] font-black">A</div>
               Admin
-              <ChevronDown size={12} className="opacity-70" />
+              <LogOut size={11} className="opacity-70" />
             </button>
           </div>
         </header>
 
-        {/* Content */}
+        {/* Page content */}
         <main className="flex-1 overflow-y-auto">
           <ActiveView />
         </main>

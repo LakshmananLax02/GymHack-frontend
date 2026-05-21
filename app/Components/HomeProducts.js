@@ -211,7 +211,7 @@ export default function HomeProducts() {
 
         {/* SHOP ALL BUTTON */}
         <div className="hidden md:flex justify-center">
-          <Link href='/products'>
+          <Link href='/productsviewpage'>
             <button className="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-xs shadow-lg bg-[#c23d6a] text-white hover:bg-[#f2eadf] hover:text-black border border-transparent hover:border-black transition-all duration-300 font-secondary">
               Shop all <ShoppingCart className="w-5 h-5 md:w-6 md:h-6" />
             </button>

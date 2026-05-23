@@ -1,87 +1,100 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, ArrowRight, ShoppingCart, AlertCircle, X } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCartStore } from '../store/useCartStore';
 import { useAuth } from '../context/AuthContext';
 
-const product = [
-  { id: 1, category: 'OATS', name: 'Premium Rolled Oats - High Protein', price: 180, image: '/images/oatsimg.jpg' },
-  { id: 2, category: 'OATS', name: 'Instant Oats - Quick Energy', price: 150, image: '/images/oatsimg.jpg' },
-  { id: 3, category: 'Muesli', name: 'Gourmet Muesli-Rich fruits, Nuts & Seeds', price: 250, image: '/images/meusliimg.png' },
-  { id: 4, category: 'Muesli', name: 'Berries & Seeds Muesli Mix', price: 280, image: '/images/meusliimg.png' },
-  { id: 5, category: 'Muesli', name: 'Crunchy Nut Muesli', price: 240, image: '/images/meusliimg.png' },
-  { id: 6, category: 'Muesli', name: 'Berries & Seeds Muesli Mix', price: 280, image: '/images/meusliimg.png' },
-  { id: 7, category: 'OATS', name: 'Premium Rolled Oats - High Protein', price: 180, image: '/images/oatsimg.jpg' },
-  { id: 8, category: 'OATS', name: 'Instant Oats - Quick Energy', price: 150, image: '/images/oatsimg.jpg' },
-];
+const API_ROOT = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export default function HomeProducts() {
-  const [activeTab, setActiveTab] = useState('OATS');
+  const [categories, setCategories]     = useState([]);
+  const [products, setProducts]         = useState([]);
+  const [activeCatId, setActiveCatId]   = useState(null);
+  const [loadingCats, setLoadingCats]   = useState(true);
+  const [loadingProds, setLoadingProds] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [itemsToShow, setItemsToShow] = useState(3);
+  const [itemsToShow, setItemsToShow]   = useState(3);
   const [showLoginPopup, setShowLoginPopup] = useState(false);
 
   const router = useRouter();
   const { user } = useAuth();
   const addToCartStore = useCartStore((state) => state.addToCart);
 
-  const filteredProducts = product.filter(p => p.category === activeTab);
+  // Fetch categories on mount — builds the tab list
+  useEffect(() => {
+    fetch(`${API_ROOT}/api/categories`)
+      .then((r) => r.json())
+      .then((data) => {
+        const cats = Array.isArray(data) ? data : [];
+        setCategories(cats);
+        if (cats.length > 0) setActiveCatId(cats[0].id);
+      })
+      .catch(() => {})
+      .finally(() => setLoadingCats(false));
+  }, []);
 
+  // Fetch products whenever the active category changes
+  useEffect(() => {
+    if (!activeCatId) return;
+    setLoadingProds(true);
+    fetch(`${API_ROOT}/api/products?category_id=${activeCatId}`)
+      .then((r) => r.json())
+      .then((data) => setProducts(Array.isArray(data) ? data : []))
+      .catch(() => setProducts([]))
+      .finally(() => setLoadingProds(false));
+  }, [activeCatId]);
+
+  // Responsive items-to-show
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 768) {
-        setItemsToShow(1);
-      } else if (window.innerWidth < 1024) {
-        setItemsToShow(2);
-      } else {
-        setItemsToShow(3);
-      }
+      if (window.innerWidth < 768) setItemsToShow(1);
+      else if (window.innerWidth < 1024) setItemsToShow(2);
+      else setItemsToShow(3);
     };
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Lock body scroll when popup is open
+  // Lock scroll when popup is open
   useEffect(() => {
     document.body.style.overflow = showLoginPopup ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [showLoginPopup]);
 
+  const canSlide = products.length > itemsToShow;
+
   const nextSlide = (e) => {
     e.stopPropagation();
     setCurrentIndex((prev) =>
-      prev >= filteredProducts.length - itemsToShow ? 0 : prev + 1
+      prev >= products.length - itemsToShow ? 0 : prev + 1
     );
   };
 
   const prevSlide = (e) => {
     e.stopPropagation();
     setCurrentIndex((prev) =>
-      prev <= 0 ? Math.max(0, filteredProducts.length - itemsToShow) : prev - 1
+      prev <= 0 ? Math.max(0, products.length - itemsToShow) : prev - 1
     );
   };
 
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
+  const handleTabChange = (catId) => {
+    setActiveCatId(catId);
     setCurrentIndex(0);
   };
 
-  // ✅ Gated Add to Cart — show popup if not logged in
   const handleAddToCart = (item) => {
     if (!user) {
       setShowLoginPopup(true);
       return;
     }
-    addToCartStore({
-      id: item.id,
-      name: item.name,
-      price: item.price,
-      image: item.image,
-    });
+    const image =
+      Array.isArray(item.images) && item.images.length > 0
+        ? item.images[0]
+        : '/images/oatsimg.jpg';
+    addToCartStore({ id: item.id, name: item.name, price: item.price, image });
   };
 
   const handleLoginNow = () => {
@@ -106,112 +119,153 @@ export default function HomeProducts() {
           </p>
         </div>
 
-    {/* FILTER TABS (With Permanent Scrollbar) */}
-<div className="flex justify-start md:justify-center w-full mb-8">
-  <div className="flex gap-3 md:gap-6 overflow-x-scroll pb-6 px-4 visible-scrollbar max-w-full scroll-smooth">
-    {['OATS', 'Muesli', 'Protein Bar', 'Protein', 'Granola', 'Snacks'].map((category) => (
-      <button
-        key={category}
-        onClick={() => handleTabChange(category)}
-        className={`px-8 md:px-12 font-secondary py-2.5 rounded-full border-2 font-black text-xs md:text-sm uppercase tracking-[0.2em] transition-all duration-300 whitespace-nowrap shadow-sm flex-shrink-0
-          ${activeTab === category 
-            ? 'bg-[#f0ece2] border-zinc-300 text-black scale-105' 
-            : 'border-transparent bg-gray-100 text-gray-400 hover:bg-gray-200'
-          }`}
-      >
-        {category}
-      </button>
-    ))}
-  </div>
-</div>
+        {/* FILTER TABS */}
+        <div className="flex justify-start md:justify-center w-full mb-8">
+          <div className="flex gap-3 md:gap-6 overflow-x-scroll pb-6 px-4 visible-scrollbar max-w-full scroll-smooth">
+            {loadingCats
+              ? Array.from({ length: 4 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-10 w-28 rounded-full bg-gray-100 animate-pulse flex-shrink-0"
+                  />
+                ))
+              : categories.map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => handleTabChange(cat.id)}
+                    className={`px-8 md:px-12 font-secondary py-2.5 rounded-full border-2 font-black text-xs md:text-sm uppercase tracking-[0.2em] transition-all duration-300 whitespace-nowrap shadow-sm flex-shrink-0
+                      ${activeCatId === cat.id
+                        ? 'bg-[#f0ece2] border-zinc-300 text-black scale-105'
+                        : 'border-transparent bg-gray-100 text-gray-400 hover:bg-gray-200'
+                      }`}
+                  >
+                    {cat.name}
+                  </button>
+                ))}
+          </div>
+        </div>
 
         {/* SLIDER */}
         <div className="relative flex items-center justify-center min-h-[500px] md:min-h-[650px]">
-          <button
-            onClick={prevSlide}
-            className="absolute left-0 md:left-2 z-[100] w-10 h-10 md:w-14 md:h-14 bg-[#c23d6a] text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all"
-          >
-            <ArrowLeft className="w-5 h-5 md:w-8 md:h-8" strokeWidth={3} />
-          </button>
+          {canSlide && (
+            <button
+              onClick={prevSlide}
+              className="absolute left-0 md:left-2 z-[100] w-10 h-10 md:w-14 md:h-14 bg-[#c23d6a] text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all"
+            >
+              <ArrowLeft className="w-5 h-5 md:w-8 md:h-8" strokeWidth={3} />
+            </button>
+          )}
 
           <div className="w-full overflow-hidden px-2">
-            <div
-              className="flex transition-transform duration-700 ease-in-out"
-              style={{
-                transform: `translateX(-${currentIndex * (100 / itemsToShow)}%)`,
-              }}
-            >
-              {filteredProducts.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex-none px-4 md:px-8 flex flex-col group"
-                  style={{ width: `${100 / itemsToShow}%` }}
-                >
-                  {/* Product Image */}
-                  <Link href={`/productsviewpage/${item.id}`}>
-                    <div className="relative w-full aspect-[3/4] mb-4 md:mb-8 cursor-pointer rounded-[15px] overflow-hidden bg-[#f8f8f8] border border-black/5">
-                      <div className="absolute inset-0">
-                        <Image
-                          src={item.image}
-                          alt={item.name}
-                          fill
-                          className="object-contain p-6 md:p-10 transition-transform duration-500"
-                          sizes="(max-width: 768px) 100vw, 33vw"
-                        />
-                      </div>
-
-                      {/* Hover overlay — desktop only */}
-                      <div className="hidden md:flex absolute inset-0 z-20 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/40 backdrop-blur-[1px]">
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleAddToCart(item);
-                          }}
-                          className="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-xs shadow-lg bg-[#c23d6a] text-white hover:bg-[#f2eadf] hover:text-black border border-transparent hover:border-black transition-all duration-300 font-secondary"
-                        >
-                          Add to cart <ShoppingCart className="w-4 h-4 md:w-5 md:h-5" />
-                        </button>
-                      </div>
-                    </div>
-                  </Link>
-
-                  {/* Product Info */}
-                  <div className="flex justify-between items-start w-full px-2 gap-2 md:gap-4 mb-3">
-                    <div className="min-h-[60px] md:min-h-[80px]">
-                      <h3 className="text-lg md:text-xl font-secondary font-bold leading-tight text-black uppercase max-w-[150px] md:max-w-[200px]">
-                        {item.name}
-                      </h3>
-                    </div>
-                    <span className="text-2xl md:text-4xl font-secondary font-black text-black whitespace-nowrap">
-                      ₹{item.price}
-                    </span>
-                  </div>
-
-                  {/* Add to Cart — mobile only, always visible at bottom */}
-                  <button
-                    onClick={() => handleAddToCart(item)}
-                    className="md:hidden w-full flex items-center justify-center gap-2 py-3 rounded-full font-bold text-sm bg-[#c23d6a] text-white font-secondary transition-all active:scale-95"
+            {loadingProds ? (
+              /* Loading skeletons */
+              <div className="flex gap-4 md:gap-8 px-4">
+                {Array.from({ length: itemsToShow }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="flex-none animate-pulse"
+                    style={{ width: `${100 / itemsToShow}%` }}
                   >
-                    Add to Cart <ShoppingCart className="w-4 h-4" />
-                  </button>
-
+                    <div className="aspect-[3/4] rounded-[15px] bg-gray-100 mb-4" />
+                    <div className="h-5 bg-gray-100 rounded-lg mb-3 w-3/4" />
+                    <div className="h-10 bg-gray-100 rounded-full" />
+                  </div>
+                ))}
+              </div>
+            ) : products.length === 0 ? (
+              /* Empty state */
+              <div className="flex flex-col items-center justify-center py-16 text-center w-full">
+                <div className="w-16 h-16 rounded-2xl bg-[#fff0f5] flex items-center justify-center mb-4">
+                  <ShoppingCart size={28} className="text-[#c23d6a]" />
                 </div>
-              ))}
-            </div>
+                <p className="text-base font-bold text-gray-400 font-secondary">
+                  No products in this category yet
+                </p>
+              </div>
+            ) : (
+              <div
+                className="flex transition-transform duration-700 ease-in-out"
+                style={{ transform: `translateX(-${currentIndex * (100 / itemsToShow)}%)` }}
+              >
+                {products.map((item) => {
+                  const imgSrc =
+                    Array.isArray(item.images) && item.images.length > 0
+                      ? item.images[0]
+                      : '/images/oatsimg.jpg';
+
+                  return (
+                    <div
+                      key={item.id}
+                      className="flex-none px-4 md:px-8 flex flex-col group"
+                      style={{ width: `${100 / itemsToShow}%` }}
+                    >
+                      {/* Product Image */}
+                      <Link href={`/productsviewpage/${item.id}`}>
+                        <div className="relative w-full aspect-[3/4] mb-4 md:mb-8 cursor-pointer rounded-[15px] overflow-hidden bg-[#f8f8f8] border border-black/5">
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={imgSrc}
+                              alt={item.name}
+                              className="w-full h-full object-contain p-6 md:p-10 transition-transform duration-500"
+                            />
+                          </div>
+
+                          {/* Hover overlay — desktop only */}
+                          <div className="hidden md:flex absolute inset-0 z-20 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/40 backdrop-blur-[1px]">
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleAddToCart(item);
+                              }}
+                              className="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-xs shadow-lg bg-[#c23d6a] text-white hover:bg-[#f2eadf] hover:text-black border border-transparent hover:border-black transition-all duration-300 font-secondary"
+                            >
+                              Add to cart <ShoppingCart className="w-4 h-4 md:w-5 md:h-5" />
+                            </button>
+                          </div>
+                        </div>
+                      </Link>
+
+                      {/* Product Info */}
+                      <div className="flex justify-between items-start w-full px-2 gap-2 md:gap-4 mb-3">
+                        <div className="min-h-[60px] md:min-h-[80px]">
+                          <h3 className="text-lg md:text-xl font-secondary font-bold leading-tight text-black uppercase max-w-[150px] md:max-w-[200px]">
+                            {item.name}
+                          </h3>
+                        </div>
+                        <span className="text-2xl md:text-4xl font-secondary font-black text-black whitespace-nowrap">
+                          ₹{item.price}
+                        </span>
+                      </div>
+
+                      {/* Add to cart — mobile only */}
+                      <button
+                        onClick={() => handleAddToCart(item)}
+                        className="md:hidden w-full flex items-center justify-center gap-2 py-3 rounded-full font-bold text-sm bg-[#c23d6a] text-white font-secondary transition-all active:scale-95"
+                      >
+                        Add to Cart <ShoppingCart className="w-4 h-4" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
-          <button
-            onClick={nextSlide}
-            className="absolute right-0 md:right-2 z-[100] w-10 h-10 md:w-14 md:h-14 bg-[#c23d6a] text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all"
-          >
-            <ArrowRight className="w-5 h-5 md:w-8 md:h-8" strokeWidth={3} />
-          </button>
+          {canSlide && (
+            <button
+              onClick={nextSlide}
+              className="absolute right-0 md:right-2 z-[100] w-10 h-10 md:w-14 md:h-14 bg-[#c23d6a] text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all"
+            >
+              <ArrowRight className="w-5 h-5 md:w-8 md:h-8" strokeWidth={3} />
+            </button>
+          )}
         </div>
 
         {/* SHOP ALL BUTTON */}
         <div className="hidden md:flex justify-center">
-          <Link href='/productsviewpage'>
+          <Link href="/productsviewpage">
             <button className="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-xs shadow-lg bg-[#c23d6a] text-white hover:bg-[#f2eadf] hover:text-black border border-transparent hover:border-black transition-all duration-300 font-secondary">
               Shop all <ShoppingCart className="w-5 h-5 md:w-6 md:h-6" />
             </button>
@@ -220,30 +274,27 @@ export default function HomeProducts() {
 
       </div>
 
-      {/* ── Login Required Popup ───────────────────────────────────────────── */}
+      {/* ── Login Required Popup ──────────────────────────────────────── */}
       {showLoginPopup && (
         <div
           className="fixed inset-0 z-[999999] flex items-center justify-center p-4"
           style={{ animation: 'fadeIn 0.2s ease forwards' }}
         >
           <style>{`
-            @keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
-            @keyframes popIn   { from { opacity: 0; transform: scale(0.92) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+            @keyframes fadeIn    { from { opacity: 0; } to { opacity: 1; } }
+            @keyframes popIn     { from { opacity: 0; transform: scale(0.92) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
             @keyframes pulseRing { 0%,100% { box-shadow: 0 0 0 0 rgba(194,61,106,0.35); } 50% { box-shadow: 0 0 0 14px rgba(194,61,106,0); } }
           `}</style>
 
-          {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setShowLoginPopup(false)}
           />
 
-          {/* Modal */}
           <div
             className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 md:p-10 text-center"
             style={{ animation: 'popIn 0.3s cubic-bezier(.22,1,.36,1) forwards' }}
           >
-            {/* Close button */}
             <button
               onClick={() => setShowLoginPopup(false)}
               className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -252,7 +303,6 @@ export default function HomeProducts() {
               <X size={20} className="text-gray-400" />
             </button>
 
-            {/* Icon circle */}
             <div className="flex justify-center mb-5">
               <div
                 className="w-20 h-20 rounded-full border-[3px] border-[#c23d6a]/40 flex items-center justify-center bg-[#fff3f7]"
@@ -262,17 +312,13 @@ export default function HomeProducts() {
               </div>
             </div>
 
-            {/* Heading */}
             <h3 className="text-2xl md:text-3xl font-bold font-primary text-black mb-2">
               Login Required
             </h3>
-
-            {/* Message */}
             <p className="text-gray-500 font-secondary text-sm md:text-base mb-7 leading-relaxed">
               Please login to add items to your cart
             </p>
 
-            {/* Buttons */}
             <div className="flex gap-3 justify-center">
               <button
                 onClick={handleLoginNow}

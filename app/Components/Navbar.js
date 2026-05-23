@@ -720,9 +720,16 @@ export default function Navbar() {
 
       {/* ── Mobile Sidebar ─────────────────────────────────────────────────── */}
       {isSidebarOpen && (
-        <div className="fixed inset-0 flex" style={{ zIndex: 99999 }}>
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsSidebarOpen(false)} />
-          <div ref={sidebarRef} className="relative w-[80%] max-w-sm bg-white h-full shadow-2xl flex flex-col" style={{ animation: 'slideInLeft 0.3s ease forwards' }}>
+        <div className="fixed inset-0 flex justify-end" style={{ zIndex: 99999 }}>
+    <div
+      className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+      onClick={() => setIsSidebarOpen(false)}
+    />
+    <div
+      ref={sidebarRef}
+      className="relative w-[80%] max-w-sm bg-white h-full shadow-2xl flex flex-col"
+      style={{ animation: 'slideInRight 0.3s ease forwards' }}
+    >
 
             <div className="p-6 border-b border-gray-100 flex items-center justify-between">
               <span className="font-black text-xl tracking-tighter">MENU</span>

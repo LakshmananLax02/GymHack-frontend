@@ -1,48 +1,48 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, AlertCircle, X } from 'lucide-react';
-import Image from 'next/image';
+import { ShoppingCart, AlertCircle, X, Package } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCartStore } from '../store/useCartStore';
 import { useAuth } from '../context/AuthContext';
 
-const products = [
-  { id: 1,  category: 'OATS',   name: 'Premium Rolled Oats - High Protein',         price: 180, image: '/images/oatsimg.jpg' },
-  { id: 2,  category: 'OATS',   name: 'Instant Oats - Quick Energy',                price: 150, image: '/images/oatsimg.jpg' },
-  { id: 7,  category: 'OATS',   name: 'Premium Rolled Oats - High Protein',         price: 180, image: '/images/oatsimg.jpg' },
-  { id: 8,  category: 'OATS',   name: 'Instant Oats - Quick Energy',                price: 150, image: '/images/oatsimg.jpg' },
-  { id: 9,  category: 'OATS',   name: 'Steel Cut Oats - Pure Grain',                price: 200, image: '/images/oatsimg.jpg' },
-  { id: 10, category: 'OATS',   name: 'Oats & Honey Crunch',                        price: 190, image: '/images/oatsimg.jpg' },
-  { id: 3,  category: 'Muesli', name: 'Gourmet Muesli - Rich Fruits, Nuts & Seeds', price: 250, image: '/images/meusliimg.png' },
-  { id: 4,  category: 'Muesli', name: 'Berries & Seeds Muesli Mix',                 price: 280, image: '/images/meusliimg.png' },
-  { id: 5,  category: 'Muesli', name: 'Crunchy Nut Muesli',                         price: 240, image: '/images/meusliimg.png' },
-  { id: 6,  category: 'Muesli', name: 'Berries & Seeds Muesli Mix',                 price: 280, image: '/images/meusliimg.png' },
-  { id: 11, category: 'Muesli', name: 'Tropical Muesli Blend',                      price: 260, image: '/images/meusliimg.png' },
-  { id: 12, category: 'Muesli', name: 'Dark Chocolate Muesli',                      price: 290, image: '/images/meusliimg.png' },
-];
+const API_ROOT = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
-const tabs = [
-  { key: 'OATS',   label: 'Oats',   image: '/images/oatsimg.jpg' },
-  { key: 'Muesli', label: 'Muesli', image: '/images/meusliimg.png' },
-    { key: 'Muesli', label: 'Muesli', image: '/images/meusliimg.png' },
-  { key: 'Muesli', label: 'Muesli', image: '/images/meusliimg.png' },
-  { key: 'Muesli', label: 'Muesli', image: '/images/meusliimg.png' },
-  { key: 'Muesli', label: 'Muesli', image: '/images/meusliimg.png' },
-  { key: 'Muesli', label: 'Muesli', image: '/images/meusliimg.png' },
-  { key: 'Muesli', label: 'Muesli', image: '/images/meusliimg.png' },
-
-];
-
-export default function HomeProducts() {
-  const [activeTab, setActiveTab] = useState('OATS');
+export default function AllProducts() {
+  const [categories, setCategories]     = useState([]);
+  const [products, setProducts]         = useState([]);
+  const [activeCatId, setActiveCatId]   = useState(null);
+  const [loadingCats, setLoadingCats]   = useState(true);
+  const [loadingProds, setLoadingProds] = useState(false);
   const [showLoginPopup, setShowLoginPopup] = useState(false);
 
   const router = useRouter();
   const { user, showToast } = useAuth();
   const addToCartStore = useCartStore((state) => state.addToCart);
 
-  const filtered = products.filter(p => p.category === activeTab);
+  // Fetch categories on mount — builds tabs
+  useEffect(() => {
+    fetch(`${API_ROOT}/api/categories`)
+      .then((r) => r.json())
+      .then((data) => {
+        const cats = Array.isArray(data) ? data : [];
+        setCategories(cats);
+        if (cats.length > 0) setActiveCatId(cats[0].id);
+      })
+      .catch(() => {})
+      .finally(() => setLoadingCats(false));
+  }, []);
+
+  // Fetch products whenever active category changes
+  useEffect(() => {
+    if (!activeCatId) return;
+    setLoadingProds(true);
+    fetch(`${API_ROOT}/api/products?category_id=${activeCatId}`)
+      .then((r) => r.json())
+      .then((data) => setProducts(Array.isArray(data) ? data : []))
+      .catch(() => setProducts([]))
+      .finally(() => setLoadingProds(false));
+  }, [activeCatId]);
 
   // Lock body scroll when popup is open
   useEffect(() => {
@@ -50,18 +50,15 @@ export default function HomeProducts() {
     return () => { document.body.style.overflow = ''; };
   }, [showLoginPopup]);
 
-  // ✅ Gated Add to Cart — show popup if not logged in
+  const handleTabChange = (catId) => setActiveCatId(catId);
+
   const handleAddToCart = (item) => {
-    if (!user) {
-      setShowLoginPopup(true);
-      return;
-    }
-    addToCartStore({
-      id: item.id,
-      name: item.name,
-      price: item.price,
-      image: item.image,
-    });
+    if (!user) { setShowLoginPopup(true); return; }
+    const image =
+      Array.isArray(item.images) && item.images.length > 0
+        ? item.images[0]
+        : '/images/oatsimg.jpg';
+    addToCartStore({ id: item.id, name: item.name, price: item.price, image });
     showToast(`${item.name} added to cart 🛒`, 'success', 2000);
   };
 
@@ -87,93 +84,143 @@ export default function HomeProducts() {
             Fuel your body with the right choice for your routine
           </p>
         </div>
-<div className="w-full mb-10">
-  <div className="flex justify-start md:justify-center gap-4 
-                  overflow-x-scroll pb-6 visible-scrollbar 
-                  scroll-smooth px-4">
-    {tabs.map(tab => (
-      <button
-        key={tab.key}
-        onClick={() => setActiveTab(tab.key)}
-        className={`flex items-center gap-3 px-6 py-3 rounded-2xl border-2 
-                   transition-all duration-300 flex-shrink-0
-          ${activeTab === tab.key
-            ? 'bg-[#ede9df] border-zinc-300 text-black'
-            : 'border-gray-100 bg-gray-50 text-gray-400'
-          }`}
-      >
-        <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-white shadow-sm">
-          <Image src={tab.image} alt={tab.label} fill className="object-contain p-2" />
+
+        {/* ── Category Tabs ── */}
+        <div className="w-full mb-10">
+          <div className="flex justify-start md:justify-center gap-4 overflow-x-scroll pb-6 visible-scrollbar scroll-smooth px-4">
+            {loadingCats
+              ? /* skeleton tabs */
+                Array.from({ length: 4 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="flex-shrink-0 h-16 w-36 rounded-2xl bg-gray-100 animate-pulse"
+                  />
+                ))
+              : categories.map((cat) => {
+                  const isActive = activeCatId === cat.id;
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => handleTabChange(cat.id)}
+                      className={`flex items-center gap-3 px-6 py-3 rounded-2xl border-2 transition-all duration-300 flex-shrink-0
+                        ${isActive
+                          ? 'bg-[#ede9df] border-zinc-300 text-black'
+                          : 'border-gray-100 bg-gray-50 text-gray-400'
+                        }`}
+                    >
+                      {/* Category thumbnail */}
+                      <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-white shadow-sm shrink-0 flex items-center justify-center">
+                        {cat.image_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={cat.image_url}
+                            alt={cat.name}
+                            className="w-full h-full object-contain p-1"
+                          />
+                        ) : (
+                          <Package size={18} className="text-gray-300" />
+                        )}
+                      </div>
+                      <span className="uppercase tracking-widest text-sm font-black">{cat.name}</span>
+                    </button>
+                  );
+                })}
+          </div>
         </div>
-        <span className="uppercase tracking-widest text-sm font-black">{tab.label}</span>
-      </button>
-    ))}
-  </div>
-</div>
 
         {/* ── Product Count ── */}
-        <p className="text-center text-gray-400 font-secondary text-sm mb-8">
-          ({filtered.length} products)
-        </p>
+        {!loadingProds && (
+          <p className="text-center text-gray-400 font-secondary text-sm mb-8">
+            ({products.length} product{products.length !== 1 ? 's' : ''})
+          </p>
+        )}
 
         {/* ── Product Grid ── */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-          {filtered.map(item => (
-            <div key={item.id} className="group flex flex-col">
+        {loadingProds ? (
+          /* loading skeleton grid */
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="animate-pulse flex flex-col">
+                <div className="aspect-[3/4] rounded-2xl bg-gray-100 mb-3" />
+                <div className="h-4 bg-gray-100 rounded-lg mb-2 w-3/4" />
+                <div className="h-8 bg-gray-100 rounded-full" />
+              </div>
+            ))}
+          </div>
+        ) : products.length === 0 ? (
+          /* empty state */
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-[#fff0f5] flex items-center justify-center mb-4">
+              <Package size={28} className="text-[#c23d6a]" />
+            </div>
+            <p className="text-base font-bold text-gray-400 font-secondary">
+              No products in this category yet
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            {products.map((item) => {
+              const imgSrc =
+                Array.isArray(item.images) && item.images.length > 0
+                  ? item.images[0]
+                  : '/images/oatsimg.jpg';
 
-              {/* Image Card — links to product view */}
-              <Link href={`/productsviewpage/${item.id}`}>
-                <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-[#f8f8f8] border border-black/5 mb-3 cursor-pointer">
-                  <Image
-                    src={item.image}
-                    alt={item.name}
-                    fill
-                    className="object-contain p-5 md:p-8 transition-transform duration-500"
-                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                  />
+              return (
+                <div key={item.id} className="group flex flex-col">
 
-                  {/* Hover overlay — desktop only */}
-                  <div className="hidden md:flex absolute inset-0 z-10 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/40 backdrop-blur-[2px]">
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleAddToCart(item);
-                      }}
-                      className="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-xs shadow-lg bg-[#c23d6a] text-white hover:bg-[#f2eadf] hover:text-black border border-transparent hover:border-black transition-all duration-300 font-secondary"
-                    >
-                      Add to cart <ShoppingCart className="w-4 h-4" />
-                    </button>
+                  {/* Image card */}
+                  <Link href={`/productsviewpage/${item.id}`}>
+                    <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-[#f8f8f8] border border-black/5 mb-3 cursor-pointer">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={imgSrc}
+                        alt={item.name}
+                        className="absolute inset-0 w-full h-full object-contain p-5 md:p-8 transition-transform duration-500"
+                      />
+
+                      {/* Hover overlay — desktop only */}
+                      <div className="hidden md:flex absolute inset-0 z-10 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/40 backdrop-blur-[2px]">
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleAddToCart(item);
+                          }}
+                          className="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-xs shadow-lg bg-[#c23d6a] text-white hover:bg-[#f2eadf] hover:text-black border border-transparent hover:border-black transition-all duration-300 font-secondary"
+                        >
+                          Add to cart <ShoppingCart className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </Link>
+
+                  {/* Name + Price */}
+                  <div className="flex items-start justify-between gap-2 px-1 mb-3">
+                    <h3 className="font-secondary text-xs sm:text-sm font-semibold text-black leading-snug flex-1">
+                      {item.name}
+                    </h3>
+                    <span className="font-secondary text-base sm:text-lg font-black text-black whitespace-nowrap">
+                      ₹{item.price}
+                    </span>
                   </div>
 
+                  {/* Add to Cart — mobile only */}
+                  <button
+                    onClick={() => handleAddToCart(item)}
+                    className="flex md:hidden w-full items-center justify-center gap-2 py-2.5 rounded-full font-bold text-xs bg-[#c23d6a] text-white font-secondary transition-all active:scale-95"
+                  >
+                    Add to Cart <ShoppingCart className="w-4 h-4" />
+                  </button>
+
                 </div>
-              </Link>
-
-              {/* Name + Price */}
-              <div className="flex items-start justify-between gap-2 px-1 mb-3">
-                <h3 className="font-secondary text-xs sm:text-sm font-semibold text-black leading-snug flex-1">
-                  {item.name}
-                </h3>
-                <span className="font-secondary text-base sm:text-lg font-black text-black whitespace-nowrap">
-                  ₹{item.price}
-                </span>
-              </div>
-
-              {/* Add to Cart — mobile only, always visible at bottom of card */}
-              <button
-                onClick={() => handleAddToCart(item)}
-                className="flex md:hidden w-full items-center justify-center gap-2 py-2.5 rounded-full font-bold text-xs bg-[#c23d6a] text-white font-secondary transition-all active:scale-95"
-              >
-                Add to Cart <ShoppingCart className="w-4 h-4" />
-              </button>
-
-            </div>
-          ))}
-        </div>
+              );
+            })}
+          </div>
+        )}
 
       </div>
 
-      {/* ── Login Required Popup ───────────────────────────────────────────── */}
+      {/* ── Login Required Popup ──────────────────────────────────────── */}
       {showLoginPopup && (
         <div
           className="fixed inset-0 z-[999999] flex items-center justify-center p-4"
@@ -185,18 +232,15 @@ export default function HomeProducts() {
             @keyframes pulseRing { 0%,100% { box-shadow: 0 0 0 0 rgba(194,61,106,0.35); } 50% { box-shadow: 0 0 0 14px rgba(194,61,106,0); } }
           `}</style>
 
-          {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setShowLoginPopup(false)}
           />
 
-          {/* Modal */}
           <div
             className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 md:p-10 text-center"
             style={{ animation: 'popIn 0.3s cubic-bezier(.22,1,.36,1) forwards' }}
           >
-            {/* Close button */}
             <button
               onClick={() => setShowLoginPopup(false)}
               className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -205,7 +249,6 @@ export default function HomeProducts() {
               <X size={20} className="text-gray-400" />
             </button>
 
-            {/* Icon circle */}
             <div className="flex justify-center mb-5">
               <div
                 className="w-20 h-20 rounded-full border-[3px] border-[#c23d6a]/40 flex items-center justify-center bg-[#fff3f7]"
@@ -215,17 +258,13 @@ export default function HomeProducts() {
               </div>
             </div>
 
-            {/* Heading */}
             <h3 className="text-2xl md:text-3xl font-bold font-primary text-black mb-2">
               Login Required
             </h3>
-
-            {/* Message */}
             <p className="text-gray-500 font-secondary text-sm md:text-base mb-7 leading-relaxed">
               Please login to add items to your cart
             </p>
 
-            {/* Buttons */}
             <div className="flex gap-3 justify-center">
               <button
                 onClick={handleLoginNow}

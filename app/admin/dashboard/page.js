@@ -1,56 +1,54 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  LayoutDashboard, Users, FolderPlus, PackagePlus,
-  TrendingUp, LogOut, Menu, X, Bell,
-  Search, AlertCircle, ChevronRight,
-} from 'lucide-react';
 import Image from 'next/image';
+import {
+  LayoutDashboard, Users, FolderPlus, PackagePlus, MessageSquare,
+  LogOut, Menu, X, Bell, Search, AlertCircle, Edit3, Trash2,
+  Plus, Upload, Image as ImageIcon, Loader2, Star,
+} from 'lucide-react';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+// ─── API config ────────────────────────────────────────────────────────
+// If your server mounts routes under `/api/admin/...` instead of `/api/...`,
+// just change API_BASE below.
+const API_ROOT = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_BASE = `${API_ROOT}/api`;
+const USERS_URL = `${API_ROOT}/api/admin/users`; // adjust if your users endpoint differs
 
-const NAV = [
-  { id: 'dashboard',       label: 'Dashboard',       icon: LayoutDashboard },
-  { id: 'users',           label: 'Users',           icon: Users           },
-  { id: 'create-category', label: 'Create Category', icon: FolderPlus      },
-  { id: 'add-product',     label: 'Add New Product', icon: PackagePlus     },
-  { id: 'high-selling',    label: 'High Selling',    icon: TrendingUp      },
-];
+// ─── Auth helpers ──────────────────────────────────────────────────────
+const token = () => (typeof window !== 'undefined' ? localStorage.getItem('adminToken') : null);
+const bearer = () => ({ Authorization: `Bearer ${token()}` });
 
-function authHeaders() {
-  return { Authorization: `Bearer ${localStorage.getItem('adminToken')}` };
+async function apiForm(url, method, formData) {
+  // IMPORTANT: do NOT set Content-Type for FormData — the browser sets the boundary
+  const res = await fetch(url, { method, headers: { ...bearer() }, body: formData });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || data.message || `HTTP ${res.status}`);
+  return data;
 }
 
-// ─── Shared input class — matches GymHack UI ──────────────────────────────────
-const inputClass = [
-  'w-full py-3 text-sm font-medium text-gray-900 bg-white',
+// ─── Shared styles ─────────────────────────────────────────────────────
+const inputCls = [
+  'w-full py-3 px-4 text-sm font-medium text-gray-900 bg-white',
   'border-2 border-gray-200 rounded-xl outline-none transition-all',
   'placeholder:text-gray-400',
   'focus:border-[#c23d6a] focus:ring-4 focus:ring-[#c23d6a]/10',
   'hover:border-gray-300',
 ].join(' ');
 
-// ─── Shared components ────────────────────────────────────────────────────────
-function SubmitBtn({ loading, label, loadingLabel }) {
+const btnPrimary =
+  'inline-flex items-center justify-center gap-2 bg-[#c23d6a] hover:bg-[#a8305a] active:scale-[0.98] text-white text-sm font-bold px-4 py-2.5 rounded-2xl shadow-md shadow-[#c23d6a]/25 transition-all disabled:opacity-60 disabled:cursor-not-allowed';
+const btnGhost =
+  'inline-flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-bold px-4 py-2.5 rounded-2xl transition-all';
+const btnDanger =
+  'inline-flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white text-sm font-bold px-4 py-2.5 rounded-2xl transition-all disabled:opacity-60';
+
+// ─── Shared atoms ──────────────────────────────────────────────────────
+function Label({ children, required }) {
   return (
-    <button
-      type="submit" disabled={loading}
-      className="w-full py-3.5 bg-[#c23d6a] text-white text-sm font-black rounded-2xl
-                 hover:bg-[#a8305a] active:scale-[0.98] transition-all mt-1
-                 shadow-lg shadow-[#c23d6a]/25
-                 disabled:opacity-60 disabled:cursor-not-allowed disabled:shadow-none"
-    >
-      {loading ? (
-        <span className="flex items-center justify-center gap-2">
-          <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-          </svg>
-          {loadingLabel}
-        </span>
-      ) : label}
-    </button>
+    <label className="text-[11px] font-black uppercase tracking-widest text-gray-500 block mb-1.5">
+      {children} {required && <span className="text-[#c23d6a]">*</span>}
+    </label>
   );
 }
 
@@ -64,44 +62,12 @@ function ErrorBox({ error }) {
   );
 }
 
-function SuccessBox({ message }) {
-  if (!message) return null;
-  return (
-    <div className="flex items-start gap-2.5 bg-green-50 border-2 border-green-200 rounded-xl px-3.5 py-3">
-      <p className="text-xs text-green-700 font-semibold leading-snug">✓ {message}</p>
-    </div>
-  );
-}
-
-function Label({ children }) {
-  return (
-    <label className="text-[11px] font-black uppercase tracking-widest text-gray-500">
-      {children}
-    </label>
-  );
-}
-
-function FormCard({ title, children }) {
-  return (
-    <div className="bg-white rounded-3xl p-8 shadow-xl shadow-gray-100/80 border-2 border-gray-100 max-w-lg">
-      {title && <h2 className="text-base font-black text-gray-900 mb-6">{title}</h2>}
-      {children}
-    </div>
-  );
-}
-
-function TableCard({ children }) {
-  return (
-    <div className="bg-white rounded-3xl shadow-xl shadow-gray-100/80 border-2 border-gray-100 overflow-hidden">
-      {children}
-    </div>
-  );
-}
-
-function Skeleton() {
+function Skeleton({ rows = 5 }) {
   return (
     <div className="p-5 space-y-3">
-      {[1,2,3,4].map(i => <div key={i} className="h-12 bg-gray-100 rounded-xl animate-pulse" />)}
+      {Array.from({ length: rows }).map((_, i) => (
+        <div key={i} className="h-14 bg-gray-100 rounded-xl animate-pulse" />
+      ))}
     </div>
   );
 }
@@ -117,32 +83,213 @@ function Empty({ icon: Icon = AlertCircle, message = 'No data found' }) {
   );
 }
 
-// ─── VIEWS ────────────────────────────────────────────────────────────────────
+function TableCard({ children }) {
+  return (
+    <div className="bg-white rounded-3xl shadow-xl shadow-gray-100/80 border-2 border-gray-100 overflow-hidden">
+      {children}
+    </div>
+  );
+}
 
-function DashboardView() {
+// ─── Modal ─────────────────────────────────────────────────────────────
+function Modal({ open, onClose, title, children, size = 'lg' }) {
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => e.key === 'Escape' && onClose();
+    document.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = '';
+    };
+  }, [open, onClose]);
+
+  if (!open) return null;
+  const sizes = { sm: 'max-w-md', md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-3xl' };
+  return (
+    <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
+      <div className={`bg-white rounded-3xl shadow-2xl w-full ${sizes[size]} my-8 flex flex-col max-h-[calc(100vh-4rem)]`}>
+        <div className="flex items-center justify-between px-6 py-5 border-b-2 border-gray-100 shrink-0">
+          <h2 className="text-lg font-black text-gray-900">{title}</h2>
+          <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors">
+            <X size={18} />
+          </button>
+        </div>
+        <div className="overflow-y-auto p-6">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Confirm dialog ────────────────────────────────────────────────────
+function ConfirmDialog({ open, onClose, onConfirm, title, message, loading, confirmText = 'Delete' }) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6">
+        <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center mb-4 mx-auto">
+          <Trash2 size={22} className="text-red-500" />
+        </div>
+        <h3 className="text-base font-black text-gray-900 text-center mb-2">{title}</h3>
+        <p className="text-sm text-gray-500 text-center mb-6">{message}</p>
+        <div className="flex gap-2">
+          <button onClick={onClose} disabled={loading} className={`${btnGhost} flex-1`}>Cancel</button>
+          <button onClick={onConfirm} disabled={loading} className={`${btnDanger} flex-1`}>
+            {loading ? <Loader2 size={14} className="animate-spin" /> : confirmText}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Single image upload ──────────────────────────────────────────────
+function ImageUpload({ value, onChange, existingUrl, label = 'Upload image' }) {
+  const inputRef = useRef(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+
+  useEffect(() => {
+    if (!value) { setPreviewUrl(null); return; }
+    const url = URL.createObjectURL(value);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [value]);
+
+  const preview = previewUrl || existingUrl;
+  return (
+    <div className="flex items-center gap-4">
+      <div className="w-28 h-28 rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 overflow-hidden flex items-center justify-center shrink-0">
+        {preview ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={preview} alt="" className="w-full h-full object-cover" />
+        ) : (
+          <ImageIcon size={28} className="text-gray-300" />
+        )}
+      </div>
+      <div className="flex flex-col gap-2">
+        <input ref={inputRef} type="file" accept="image/*" hidden
+          onChange={(e) => onChange(e.target.files[0] || null)} />
+        <button type="button" onClick={() => inputRef.current?.click()}
+          className="text-sm font-bold text-[#c23d6a] hover:text-[#a8305a] flex items-center gap-1.5">
+          <Upload size={14} /> {preview ? 'Change image' : label}
+        </button>
+        {value && (
+          <button type="button" onClick={() => onChange(null)}
+            className="text-xs text-red-500 hover:underline self-start">Remove</button>
+        )}
+        <p className="text-[10px] text-gray-400">PNG, JPG up to ~5MB</p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Multi-image upload ────────────────────────────────────────────────
+function MultiImageUpload({ files, onChange, existingUrls = [], max = 5 }) {
+  const inputRef = useRef(null);
+  const [previews, setPreviews] = useState([]);
+
+  useEffect(() => {
+    const urls = files.map((f) => URL.createObjectURL(f));
+    setPreviews(urls);
+    return () => urls.forEach((u) => URL.revokeObjectURL(u));
+  }, [files]);
+
+  const handleAdd = (e) => {
+    const newFiles = Array.from(e.target.files || []);
+    onChange([...files, ...newFiles].slice(0, max));
+    e.target.value = '';
+  };
+
+  const removeAt = (i) => onChange(files.filter((_, idx) => idx !== i));
+  const showExisting = files.length === 0 && existingUrls.length > 0;
+
+  return (
+    <div className="space-y-3">
+      <input ref={inputRef} type="file" accept="image/*" multiple hidden onChange={handleAdd} />
+
+      {showExisting && (
+        <div>
+          <p className="text-[11px] font-bold text-gray-400 mb-2 uppercase tracking-wider">
+            Current images — uploading new ones will replace all
+          </p>
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+            {existingUrls.map((url, i) => (
+              <div key={i} className="aspect-square rounded-xl overflow-hidden border-2 border-gray-100 bg-gray-50">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={url} alt="" className="w-full h-full object-cover" />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {files.length > 0 && (
+        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+          {previews.map((url, i) => (
+            <div key={i} className="relative aspect-square rounded-xl overflow-hidden border-2 border-gray-100 bg-gray-50 group">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={url} alt="" className="w-full h-full object-cover" />
+              <button type="button" onClick={() => removeAt(i)}
+                className="absolute top-1 right-1 w-6 h-6 bg-black/60 hover:bg-red-500 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                <X size={12} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <button type="button" onClick={() => inputRef.current?.click()} disabled={files.length >= max}
+        className="w-full border-2 border-dashed border-gray-200 hover:border-[#c23d6a] hover:bg-[#fff8fb] rounded-2xl py-6 flex flex-col items-center justify-center gap-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+        <Upload size={18} className="text-gray-400" />
+        <span className="text-xs font-bold text-gray-500">
+          {files.length >= max ? `Max ${max} images` : `Click to upload (${files.length}/${max})`}
+        </span>
+      </button>
+    </div>
+  );
+}
+
+// ─── Dashboard View ────────────────────────────────────────────────────
+function DashboardView({ onNavigate }) {
+  const [counts, setCounts] = useState({ categories: null, products: null });
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const [cats, prods] = await Promise.all([
+          fetch(`${API_BASE}/categories`).then((r) => r.json()).catch(() => []),
+          fetch(`${API_BASE}/products`).then((r) => r.json()).catch(() => []),
+        ]);
+        setCounts({
+          categories: Array.isArray(cats) ? cats.length : 0,
+          products: Array.isArray(prods) ? prods.length : 0,
+        });
+      } catch {}
+    })();
+  }, []);
+
   const stats = [
-    { label: 'Total Users',  value: '—', icon: '👥', color: 'bg-[#fff0f5]' },
-    { label: 'Products',     value: '—', icon: '📦', color: 'bg-blue-50'   },
-    { label: 'Categories',   value: '—', icon: '🗂️', color: 'bg-amber-50'  },
-    { label: 'Top Sellers',  value: '—', icon: '🔥', color: 'bg-green-50'  },
+    { label: 'Categories', value: counts.categories ?? '—', icon: '🗂️', color: 'bg-amber-50', goto: 'categories' },
+    { label: 'Products',   value: counts.products ?? '—',   icon: '📦', color: 'bg-blue-50',  goto: 'products' },
+    { label: 'Reviews',    value: '—',                       icon: '⭐', color: 'bg-[#fff0f5]', goto: 'reviews' },
+    { label: 'Users',      value: '—',                       icon: '👥', color: 'bg-green-50', goto: 'users' },
   ];
+
   return (
     <div className="p-6 md:p-8 space-y-6">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map(s => (
-          <div key={s.label} className="bg-white rounded-3xl p-5 shadow-sm border-2 border-gray-100 flex items-center gap-4">
-            <div className={`w-12 h-12 ${s.color} rounded-2xl flex items-center justify-center text-2xl shrink-0`}>
-              {s.icon}
-            </div>
+        {stats.map((s) => (
+          <button key={s.label} onClick={() => onNavigate(s.goto)}
+            className="text-left bg-white rounded-3xl p-5 shadow-sm border-2 border-gray-100 hover:border-[#c23d6a]/30 hover:shadow-md flex items-center gap-4 transition-all">
+            <div className={`w-12 h-12 ${s.color} rounded-2xl flex items-center justify-center text-2xl shrink-0`}>{s.icon}</div>
             <div>
               <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 leading-none">{s.label}</p>
               <p className="text-2xl font-black text-gray-900 mt-1">{s.value}</p>
             </div>
-          </div>
+          </button>
         ))}
       </div>
 
-      {/* Welcome card */}
       <div className="bg-gradient-to-br from-[#c23d6a] to-[#8b1a42] rounded-3xl p-7 text-white relative overflow-hidden">
         <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/5" />
         <div className="absolute -bottom-4 -left-4 w-24 h-24 rounded-full bg-white/5" />
@@ -156,43 +303,574 @@ function DashboardView() {
   );
 }
 
-function UsersView() {
-  const [users,   setUsers]   = useState([]);
+// ─── Category form ─────────────────────────────────────────────────────
+function CategoryForm({ category, onSuccess, onCancel }) {
+  const isEdit = !!category;
+  const [name, setName] = useState(category?.name || '');
+  const [imageFile, setImageFile] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setLoading(true); setError('');
+    try {
+      const fd = new FormData();
+      fd.append('name', name);
+      if (imageFile) fd.append('image', imageFile);
+      const url = isEdit ? `${API_BASE}/categories/${category.id}` : `${API_BASE}/categories`;
+      const saved = await apiForm(url, isEdit ? 'PUT' : 'POST', fd);
+      onSuccess(saved);
+    } catch (e) { setError(e.message); }
+    finally { setLoading(false); }
+  };
+
+  return (
+    <form onSubmit={submit} className="flex flex-col gap-5">
+      <div>
+        <Label required>Category Name</Label>
+        <input className={inputCls} value={name} onChange={(e) => setName(e.target.value)}
+          required placeholder="e.g. Oats, Muesli" />
+      </div>
+      <div>
+        <Label>Category Image</Label>
+        <ImageUpload value={imageFile} onChange={setImageFile} existingUrl={category?.image_url} />
+      </div>
+      <ErrorBox error={error} />
+      <div className="flex gap-2 justify-end pt-2 border-t border-gray-100">
+        <button type="button" onClick={onCancel} className={btnGhost}>Cancel</button>
+        <button type="submit" disabled={loading} className={btnPrimary}>
+          {loading ? <><Loader2 size={14} className="animate-spin" />Saving...</> : isEdit ? 'Update Category' : 'Create Category'}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+// ─── Categories View ───────────────────────────────────────────────────
+function CategoriesView() {
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search,  setSearch]  = useState('');
-  const [error,   setError]   = useState('');
+  const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
+  const [showForm, setShowForm] = useState(false);
+  const [editing, setEditing] = useState(null);
+  const [deleting, setDeleting] = useState(null);
+  const [delLoading, setDelLoading] = useState(false);
+
+  const load = async () => {
+    setLoading(true); setError('');
+    try {
+      const res = await fetch(`${API_BASE}/categories`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed');
+      setItems(Array.isArray(data) ? data : []);
+    } catch (e) { setError(e.message); }
+    finally { setLoading(false); }
+  };
+  useEffect(() => { load(); }, []);
+
+  const handleDelete = async () => {
+    setDelLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/categories/${deleting.id}`, { method: 'DELETE', headers: bearer() });
+      if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Delete failed'); }
+      setItems((p) => p.filter((c) => c.id !== deleting.id));
+      setDeleting(null);
+    } catch (e) { setError(e.message); }
+    finally { setDelLoading(false); }
+  };
+
+  const filtered = items.filter((c) => (c.name || '').toLowerCase().includes(search.toLowerCase()));
+
+  return (
+    <div className="p-6 md:p-8 space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="relative max-w-sm flex-1 min-w-[200px]">
+          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          <input type="text" placeholder="Search categories..." value={search}
+            onChange={(e) => setSearch(e.target.value)} className={`${inputCls} pl-10`} />
+        </div>
+        <button onClick={() => { setEditing(null); setShowForm(true); }} className={btnPrimary}>
+          <Plus size={15} /> New Category
+        </button>
+      </div>
+
+      <TableCard>
+        {loading ? <Skeleton /> : error ? <Empty message={error} /> : filtered.length === 0 ? (
+          <Empty icon={FolderPlus} message="No categories yet" />
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b-2 border-gray-100 bg-gray-50/60">
+                  {['Image', 'Name', 'Slug', 'Created', ''].map((h) => (
+                    <th key={h} className="text-left text-[10px] font-black uppercase tracking-widest text-gray-400 px-5 py-3.5">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {filtered.map((c) => (
+                  <tr key={c.id} className="hover:bg-[#fff8fb] transition-colors">
+                    <td className="px-5 py-3">
+                      {c.image_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={c.image_url} alt={c.name} className="w-12 h-12 rounded-xl object-cover" />
+                      ) : (
+                        <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
+                          <ImageIcon size={16} className="text-gray-300" />
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-5 py-3 font-semibold text-gray-900 whitespace-nowrap">{c.name}</td>
+                    <td className="px-5 py-3 text-gray-500 text-xs font-mono whitespace-nowrap">{c.slug}</td>
+                    <td className="px-5 py-3 text-gray-400 text-xs whitespace-nowrap">
+                      {c.created_at ? new Date(c.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
+                    </td>
+                    <td className="px-5 py-3">
+                      <div className="flex gap-1 justify-end">
+                        <button onClick={() => { setEditing(c); setShowForm(true); }} title="Edit"
+                          className="p-2 hover:bg-blue-50 text-blue-600 rounded-xl transition-colors">
+                          <Edit3 size={14} />
+                        </button>
+                        <button onClick={() => setDeleting(c)} title="Delete"
+                          className="p-2 hover:bg-red-50 text-red-500 rounded-xl transition-colors">
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </TableCard>
+
+      <Modal open={showForm} onClose={() => setShowForm(false)}
+        title={editing ? 'Edit Category' : 'New Category'} size="md">
+        <CategoryForm category={editing} onCancel={() => setShowForm(false)}
+          onSuccess={(saved) => {
+            if (editing) setItems((p) => p.map((c) => (c.id === saved.id ? saved : c)));
+            else setItems((p) => [saved, ...p]);
+            setShowForm(false);
+          }}
+        />
+      </Modal>
+
+      <ConfirmDialog open={!!deleting} onClose={() => setDeleting(null)}
+        title="Delete Category?"
+        message={`This will permanently delete "${deleting?.name}". This cannot be undone.`}
+        onConfirm={handleDelete} loading={delLoading} />
+    </div>
+  );
+}
+
+// ─── Product form ──────────────────────────────────────────────────────
+function ProductForm({ product, categories, onSuccess, onCancel }) {
+  const isEdit = !!product;
+  const [form, setForm] = useState({
+    name:           product?.name           || '',
+    subtitle:       product?.subtitle       || '',
+    price:          product?.price          || '',
+    description:    product?.description    || '',
+    ingredients:    product?.ingredients    || '',
+    how_to_use:     product?.how_to_use     || '',
+    category_id:    product?.category_id    || '',
+    stock_quantity: product?.stock_quantity || '',
+  });
+  const [files, setFiles] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const set = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setLoading(true); setError('');
+    try {
+      const fd = new FormData();
+      Object.entries(form).forEach(([k, v]) => fd.append(k, v ?? ''));
+      files.forEach((f) => fd.append('images', f));
+      const url = isEdit ? `${API_BASE}/products/${product.id}` : `${API_BASE}/products`;
+      const saved = await apiForm(url, isEdit ? 'PUT' : 'POST', fd);
+      onSuccess(saved);
+    } catch (e) { setError(e.message); }
+    finally { setLoading(false); }
+  };
+
+  return (
+    <form onSubmit={submit} className="flex flex-col gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <Label required>Product Name</Label>
+          <input className={inputCls} value={form.name} onChange={set('name')} required placeholder="Premium Rolled Oats" />
+        </div>
+        <div>
+          <Label>Subtitle</Label>
+          <input className={inputCls} value={form.subtitle} onChange={set('subtitle')} placeholder="100% natural" />
+        </div>
+        <div>
+          <Label required>Price (₹)</Label>
+          <input type="number" step="0.01" min="0" className={inputCls} value={form.price} onChange={set('price')} required placeholder="180" />
+        </div>
+        <div>
+          <Label>Stock Quantity</Label>
+          <input type="number" min="0" className={inputCls} value={form.stock_quantity} onChange={set('stock_quantity')} placeholder="50" />
+        </div>
+      </div>
+
+      <div>
+        <Label required>Category</Label>
+        <select value={form.category_id} onChange={set('category_id')} required
+          className={`${inputCls} cursor-pointer appearance-none`}>
+          <option value="">Select a category</option>
+          {categories.map((c) => (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <Label>Description</Label>
+        <textarea rows={3} className={`${inputCls} resize-none`} value={form.description}
+          onChange={set('description')} placeholder="Short product description..." />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <Label>Ingredients</Label>
+          <textarea rows={3} className={`${inputCls} resize-none`} value={form.ingredients}
+            onChange={set('ingredients')} placeholder="Oats, vitamins..." />
+        </div>
+        <div>
+          <Label>How to Use</Label>
+          <textarea rows={3} className={`${inputCls} resize-none`} value={form.how_to_use}
+            onChange={set('how_to_use')} placeholder="Mix with milk..." />
+        </div>
+      </div>
+
+      <div>
+        <Label>Product Images (up to 5)</Label>
+        <MultiImageUpload files={files} onChange={setFiles}
+          existingUrls={Array.isArray(product?.images) ? product.images : []} max={5} />
+      </div>
+
+      <ErrorBox error={error} />
+
+      <div className="flex gap-2 justify-end pt-2 border-t border-gray-100">
+        <button type="button" onClick={onCancel} className={btnGhost}>Cancel</button>
+        <button type="submit" disabled={loading} className={btnPrimary}>
+          {loading ? <><Loader2 size={14} className="animate-spin" />Saving...</> : isEdit ? 'Update Product' : 'Create Product'}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+// ─── Products View ─────────────────────────────────────────────────────
+function ProductsView() {
+  const [items, setItems] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
+  const [showForm, setShowForm] = useState(false);
+  const [editing, setEditing] = useState(null);
+  const [deleting, setDeleting] = useState(null);
+  const [delLoading, setDelLoading] = useState(false);
+
+  const load = async () => {
+    setLoading(true); setError('');
+    try {
+      const [pRes, cRes] = await Promise.all([
+        fetch(`${API_BASE}/products`),
+        fetch(`${API_BASE}/categories`),
+      ]);
+      const [pData, cData] = await Promise.all([pRes.json(), cRes.json()]);
+      setItems(Array.isArray(pData) ? pData : []);
+      setCategories(Array.isArray(cData) ? cData : []);
+    } catch (e) { setError(e.message); }
+    finally { setLoading(false); }
+  };
+  useEffect(() => { load(); }, []);
+
+  const handleDelete = async () => {
+    setDelLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/products/${deleting.id}`, { method: 'DELETE', headers: bearer() });
+      if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Delete failed'); }
+      setItems((p) => p.filter((x) => x.id !== deleting.id));
+      setDeleting(null);
+    } catch (e) { setError(e.message); }
+    finally { setDelLoading(false); }
+  };
+
+  const categoryMap = Object.fromEntries(categories.map((c) => [c.id, c.name]));
+  const filtered = items.filter((p) => {
+    const q = search.toLowerCase();
+    const matchSearch = (p.name || '').toLowerCase().includes(q) || (p.subtitle || '').toLowerCase().includes(q);
+    const matchCat = !categoryFilter || String(p.category_id) === String(categoryFilter);
+    return matchSearch && matchCat;
+  });
+
+  return (
+    <div className="p-6 md:p-8 space-y-5">
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative max-w-sm flex-1 min-w-[200px]">
+          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          <input type="text" placeholder="Search products..." value={search}
+            onChange={(e) => setSearch(e.target.value)} className={`${inputCls} pl-10`} />
+        </div>
+        <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}
+          className={`${inputCls} max-w-[180px] cursor-pointer appearance-none`}>
+          <option value="">All Categories</option>
+          {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+        </select>
+        <button onClick={() => { setEditing(null); setShowForm(true); }} className={`${btnPrimary} ml-auto`}>
+          <Plus size={15} /> New Product
+        </button>
+      </div>
+
+      <TableCard>
+        {loading ? <Skeleton /> : error ? <Empty message={error} /> : filtered.length === 0 ? (
+          <Empty icon={PackagePlus} message="No products yet" />
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b-2 border-gray-100 bg-gray-50/60">
+                  {['Image', 'Name', 'Category', 'Price', 'Stock', ''].map((h) => (
+                    <th key={h} className="text-left text-[10px] font-black uppercase tracking-widest text-gray-400 px-5 py-3.5">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {filtered.map((p) => {
+                  const img = Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : null;
+                  return (
+                    <tr key={p.id} className="hover:bg-[#fff8fb] transition-colors">
+                      <td className="px-5 py-3">
+                        {img ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={img} alt={p.name} className="w-12 h-12 rounded-xl object-cover" />
+                        ) : (
+                          <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
+                            <ImageIcon size={16} className="text-gray-300" />
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-5 py-3">
+                        <p className="font-semibold text-gray-900 whitespace-nowrap">{p.name}</p>
+                        {p.subtitle && <p className="text-xs text-gray-400 mt-0.5">{p.subtitle}</p>}
+                      </td>
+                      <td className="px-5 py-3">
+                        <span className="bg-[#fff0f5] text-[#c23d6a] font-bold px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider whitespace-nowrap">
+                          {categoryMap[p.category_id] || '—'}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3 font-black text-gray-900 whitespace-nowrap">₹{p.price}</td>
+                      <td className="px-5 py-3">
+                        <span className={`text-xs font-bold ${Number(p.stock_quantity) > 0 ? 'text-green-600' : 'text-red-500'}`}>
+                          {p.stock_quantity ?? 0}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3">
+                        <div className="flex gap-1 justify-end">
+                          <button onClick={() => { setEditing(p); setShowForm(true); }} title="Edit"
+                            className="p-2 hover:bg-blue-50 text-blue-600 rounded-xl transition-colors">
+                            <Edit3 size={14} />
+                          </button>
+                          <button onClick={() => setDeleting(p)} title="Delete"
+                            className="p-2 hover:bg-red-50 text-red-500 rounded-xl transition-colors">
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </TableCard>
+
+      <Modal open={showForm} onClose={() => setShowForm(false)}
+        title={editing ? 'Edit Product' : 'New Product'} size="xl">
+        <ProductForm product={editing} categories={categories} onCancel={() => setShowForm(false)}
+          onSuccess={(saved) => {
+            if (editing) setItems((p) => p.map((x) => (x.id === saved.id ? saved : x)));
+            else setItems((p) => [saved, ...p]);
+            setShowForm(false);
+          }}
+        />
+      </Modal>
+
+      <ConfirmDialog open={!!deleting} onClose={() => setDeleting(null)}
+        title="Delete Product?"
+        message={`This will permanently delete "${deleting?.name}" and its images. This cannot be undone.`}
+        onConfirm={handleDelete} loading={delLoading} />
+    </div>
+  );
+}
+
+// ─── Reviews View ──────────────────────────────────────────────────────
+function ReviewsView() {
+  const [products, setProducts] = useState([]);
+  const [productId, setProductId] = useState('');
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [deleting, setDeleting] = useState(null);
+  const [delLoading, setDelLoading] = useState(false);
 
   useEffect(() => {
     (async () => {
       try {
-        const res  = await fetch(`${API}/api/admin/users`, { headers: authHeaders() });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
-        setUsers(data.users || []);
-      } catch (e) { setError(e.message); }
-      finally     { setLoading(false); }
+        const r = await fetch(`${API_BASE}/products`);
+        const d = await r.json();
+        const list = Array.isArray(d) ? d : [];
+        setProducts(list);
+        if (list.length > 0) setProductId(String(list[0].id));
+      } catch {}
     })();
   }, []);
 
-  const filtered = users.filter(u =>
-    `${u.firstName ?? ''} ${u.lastName ?? ''} ${u.email ?? ''}`.toLowerCase().includes(search.toLowerCase())
-  );
+  useEffect(() => {
+    if (!productId) { setReviews([]); return; }
+    (async () => {
+      setLoading(true); setError('');
+      try {
+        const r = await fetch(`${API_BASE}/reviews/${productId}`);
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || 'Failed');
+        setReviews(Array.isArray(d) ? d : []);
+      } catch (e) { setError(e.message); }
+      finally { setLoading(false); }
+    })();
+  }, [productId]);
+
+  const handleDelete = async () => {
+    setDelLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/reviews/${deleting.id}`, { method: 'DELETE', headers: bearer() });
+      if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Delete failed'); }
+      setReviews((p) => p.filter((r) => r.id !== deleting.id));
+      setDeleting(null);
+    } catch (e) { setError(e.message); }
+    finally { setDelLoading(false); }
+  };
 
   return (
-    <div className="p-6 md:p-8">
-      <TableCard>
-        {/* Search bar */}
-        <div className="p-4 border-b-2 border-gray-100">
-          <div className="relative max-w-sm">
-            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-            <input
-              type="text" placeholder="Search users…"
-              value={search} onChange={e => setSearch(e.target.value)}
-              className={`${inputClass} pl-10 pr-4`}
-            />
-          </div>
+    <div className="p-6 md:p-8 space-y-5">
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="flex-1 min-w-[220px] max-w-sm">
+          <Label>Product</Label>
+          <select value={productId} onChange={(e) => setProductId(e.target.value)}
+            className={`${inputCls} cursor-pointer appearance-none`}>
+            {products.length === 0 ? <option value="">No products available</option> : (
+              <>
+                <option value="">Select a product</option>
+                {products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+              </>
+            )}
+          </select>
         </div>
+        {reviews.length > 0 && (
+          <div className="text-xs font-bold text-gray-400 pb-3">
+            {reviews.length} review{reviews.length !== 1 ? 's' : ''}
+          </div>
+        )}
+      </div>
 
+      <TableCard>
+        {!productId ? <Empty icon={MessageSquare} message="Pick a product to view its reviews" />
+          : loading ? <Skeleton />
+          : error ? <Empty message={error} />
+          : reviews.length === 0 ? <Empty icon={MessageSquare} message="No reviews yet for this product" />
+          : (
+            <ul className="divide-y divide-gray-100">
+              {reviews.map((r) => (
+                <li key={r.id} className="p-5 hover:bg-[#fff8fb] transition-colors">
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-full bg-[#fff0f5] flex items-center justify-center text-sm font-black text-[#c23d6a] shrink-0">
+                      {(r.user_name || 'A')[0].toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <span className="font-bold text-gray-900 text-sm">{r.user_name || 'Anonymous'}</span>
+                        {r.is_verified && (
+                          <span className="bg-green-50 text-green-600 text-[10px] font-black px-2 py-0.5 rounded-full border border-green-200 uppercase tracking-wider">
+                            Verified Buyer
+                          </span>
+                        )}
+                        <span className="ml-auto text-[11px] text-gray-400">
+                          {r.created_at ? new Date(r.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-0.5 mb-2">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Star key={i} size={13} className={i < (r.rating || 0) ? 'fill-amber-400 text-amber-400' : 'text-gray-200'} />
+                        ))}
+                      </div>
+                      {r.title && <p className="font-bold text-gray-900 text-sm mb-1">{r.title}</p>}
+                      {r.body && <p className="text-sm text-gray-600 leading-relaxed">{r.body}</p>}
+                    </div>
+                    <button onClick={() => setDeleting(r)} title="Delete review"
+                      className="p-2 hover:bg-red-50 text-red-500 rounded-xl transition-colors shrink-0">
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+      </TableCard>
+
+      <ConfirmDialog open={!!deleting} onClose={() => setDeleting(null)}
+        title="Delete Review?"
+        message="This review will be permanently removed. This action cannot be undone."
+        onConfirm={handleDelete} loading={delLoading} />
+    </div>
+  );
+}
+
+// ─── Users View (read-only) ────────────────────────────────────────────
+function UsersView() {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(USERS_URL, { headers: bearer() });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed');
+        setUsers(data.users || (Array.isArray(data) ? data : []));
+      } catch (e) { setError(e.message); }
+      finally { setLoading(false); }
+    })();
+  }, []);
+
+  const filtered = users.filter((u) => {
+    const first = u.first_name || u.firstName || '';
+    const last  = u.last_name  || u.lastName  || '';
+    return `${first} ${last} ${u.email || ''}`.toLowerCase().includes(search.toLowerCase());
+  });
+
+  return (
+    <div className="p-6 md:p-8 space-y-5">
+      <div className="relative max-w-sm">
+        <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+        <input type="text" placeholder="Search users..." value={search}
+          onChange={(e) => setSearch(e.target.value)} className={`${inputCls} pl-10`} />
+      </div>
+
+      <TableCard>
         {loading ? <Skeleton /> : error ? <Empty message={error} /> : filtered.length === 0 ? (
           <Empty icon={Users} message="No users found" />
         ) : (
@@ -200,21 +878,23 @@ function UsersView() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b-2 border-gray-100 bg-gray-50/60">
-                  {['Name', 'Email', 'Phone', 'Joined', 'Status'].map(h => (
+                  {['Name', 'Email', 'Phone', 'Joined'].map((h) => (
                     <th key={h} className="text-left text-[10px] font-black uppercase tracking-widest text-gray-400 px-5 py-3.5">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {filtered.map((u, i) => {
-                  const name    = [u.firstName, u.lastName].filter(Boolean).join(' ') || u.name || '—';
-                  const initial = name[0]?.toUpperCase() || 'U';
+                  const first = u.first_name || u.firstName || '';
+                  const last  = u.last_name  || u.lastName  || '';
+                  const name  = `${first} ${last}`.trim() || u.name || '—';
+                  const joined = u.created_at || u.createdAt;
                   return (
-                    <tr key={u._id || u.id || i} className="hover:bg-[#fff8fb] transition-colors">
+                    <tr key={u.id || i} className="hover:bg-[#fff8fb]">
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-[#fff0f5] flex items-center justify-center text-xs font-black text-[#c23d6a] shrink-0">
-                            {initial}
+                            {(name[0] || 'U').toUpperCase()}
                           </div>
                           <span className="font-semibold text-gray-900 whitespace-nowrap">{name}</span>
                         </div>
@@ -222,17 +902,7 @@ function UsersView() {
                       <td className="px-5 py-3.5 text-gray-500 text-xs whitespace-nowrap">{u.email || '—'}</td>
                       <td className="px-5 py-3.5 text-gray-500 text-xs whitespace-nowrap">{u.phone || '—'}</td>
                       <td className="px-5 py-3.5 text-gray-400 text-xs whitespace-nowrap">
-                        {u.createdAt
-                          ? new Date(u.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-                          : '—'}
-                      </td>
-                      <td className="px-5 py-3.5">
-                        <span className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider
-                          ${u.isActive !== false
-                            ? 'bg-green-50 text-green-600 border border-green-200'
-                            : 'bg-gray-100 text-gray-400 border border-gray-200'}`}>
-                          {u.isActive !== false ? 'Active' : 'Inactive'}
-                        </span>
+                        {joined ? new Date(joined).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
                       </td>
                     </tr>
                   );
@@ -246,190 +916,131 @@ function UsersView() {
   );
 }
 
-function CreateCategoryView() {
-  const [name,    setName]    = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState('');
-  const [success, setSuccess] = useState('');
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true); setError(''); setSuccess('');
-    try {
-      const res  = await fetch(`${API}/api/admin/categories`, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body:    JSON.stringify({ name }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed');
-      setSuccess(`Category "${data.category?.name || name}" created successfully!`);
-      setName('');
-    } catch (e) { setError(e.message); }
-    finally     { setLoading(false); }
-  };
-
-  return (
-    <div className="p-6 md:p-8">
-      <FormCard title="Create New Category">
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-          <div className="flex flex-col gap-1.5">
-            <Label>Category Name</Label>
-            <input
-              type="text" required placeholder="e.g. Oats, Muesli…"
-              value={name} onChange={e => setName(e.target.value)}
-              className={`${inputClass} px-4`}
-            />
-          </div>
-          <ErrorBox error={error} />
-          <SuccessBox message={success} />
-          <SubmitBtn loading={loading} label="Create Category" loadingLabel="Creating…" />
-        </form>
-      </FormCard>
-    </div>
-  );
-}
-
-function AddProductView() {
-  const [form,       setForm]       = useState({ name: '', price: '', category: '', description: '' });
-  const [categories, setCategories] = useState([]);
-  const [loading,    setLoading]    = useState(false);
-  const [error,      setError]      = useState('');
-  const [success,    setSuccess]    = useState('');
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const res  = await fetch(`${API}/api/admin/categories`, { headers: authHeaders() });
-        const data = await res.json();
-        setCategories(data.categories || []);
-      } catch {}
-    })();
-  }, []);
-
-  const set = (k) => (e) => setForm(p => ({ ...p, [k]: e.target.value }));
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true); setError(''); setSuccess('');
-    try {
-      const res  = await fetch(`${API}/api/admin/products`, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body:    JSON.stringify(form),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed');
-      setSuccess(`Product "${form.name}" added successfully!`);
-      setForm({ name: '', price: '', category: '', description: '' });
-    } catch (e) { setError(e.message); }
-    finally     { setLoading(false); }
-  };
-
-  return (
-    <div className="p-6 md:p-8">
-      <FormCard title="Add New Product">
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-
-          <div className="flex flex-col gap-1.5">
-            <Label>Product Name</Label>
-            <input type="text" required placeholder="e.g. Premium Rolled Oats"
-              value={form.name} onChange={set('name')} className={`${inputClass} px-4`} />
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <Label>Price (₹)</Label>
-            <input type="number" required placeholder="e.g. 180"
-              value={form.price} onChange={set('price')} className={`${inputClass} px-4`} />
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <Label>Category</Label>
-            <div className="relative">
-              <select value={form.category} onChange={set('category')} required
-                className={`${inputClass} px-4 cursor-pointer appearance-none`}>
-                <option value="">Select a category</option>
-                {categories.map(c => (
-                  <option key={c._id || c.id} value={c._id || c.id}>{c.name}</option>
-                ))}
-              </select>
-              <ChevronRight size={14} className="absolute right-3.5 top-1/2 -translate-y-1/2 rotate-90 text-gray-400 pointer-events-none" />
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <Label>Description</Label>
-            <textarea rows={3} placeholder="Short product description…"
-              value={form.description} onChange={set('description')}
-              className={`${inputClass} px-4 resize-none`} />
-          </div>
-
-          <ErrorBox error={error} />
-          <SuccessBox message={success} />
-          <SubmitBtn loading={loading} label="Add Product" loadingLabel="Adding…" />
-        </form>
-      </FormCard>
-    </div>
-  );
-}
-
-function HighSellingView() {
+// ─── Highlights View ──────────────────────────────────────────────────
+// Backend requirements:
+//   1. ALTER TABLE products ADD COLUMN is_highlighted BOOLEAN DEFAULT false;
+//   2. PATCH /api/products/:id/highlight  →  { is_highlighted: bool }
+//   3. GET  /api/products?is_highlighted=true  (used by homepage carousel)
+function HighlightsView() {
   const [products, setProducts] = useState([]);
-  const [loading,  setLoading]  = useState(true);
-  const [error,    setError]    = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [toggling, setToggling] = useState(null);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const res  = await fetch(`${API}/api/admin/products/high-selling`, { headers: authHeaders() });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
-        setProducts(data.products || []);
-      } catch (e) { setError(e.message); }
-      finally     { setLoading(false); }
-    })();
-  }, []);
+  const load = async () => {
+    setLoading(true); setError('');
+    try {
+      const res = await fetch(`${API_BASE}/products`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed');
+      setProducts(Array.isArray(data) ? data : []);
+    } catch (e) { setError(e.message); }
+    finally { setLoading(false); }
+  };
+  useEffect(() => { load(); }, []);
 
-  const rankStyle = [
-    'bg-amber-50 text-amber-600 border border-amber-200',
-    'bg-gray-100 text-gray-500 border border-gray-200',
-    'bg-orange-50 text-orange-500 border border-orange-200',
-  ];
+  const toggle = async (product) => {
+    setToggling(product.id);
+    try {
+      const res = await fetch(`${API_BASE}/products/${product.id}/highlight`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', ...bearer() },
+        body: JSON.stringify({ is_highlighted: !product.is_highlighted }),
+      });
+      if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Toggle failed'); }
+      setProducts((p) =>
+        p.map((x) => (x.id === product.id ? { ...x, is_highlighted: !product.is_highlighted } : x))
+      );
+    } catch (e) { setError(e.message); }
+    finally { setToggling(null); }
+  };
+
+  const highlightedCount = products.filter((p) => p.is_highlighted).length;
+  const sorted = [...products].sort((a, b) => (b.is_highlighted ? 1 : 0) - (a.is_highlighted ? 1 : 0));
 
   return (
-    <div className="p-6 md:p-8">
+    <div className="p-6 md:p-8 space-y-5">
+      <div className="bg-[#fff0f5] border-2 border-[#f0c0d0] rounded-3xl p-5 flex items-center justify-between">
+        <div>
+          <p className="text-sm font-black text-[#c23d6a]">
+            {highlightedCount} product{highlightedCount !== 1 ? 's' : ''} highlighted
+          </p>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Highlighted products appear in the &ldquo;Our Top Selling&rdquo; carousel on the homepage.
+          </p>
+        </div>
+        <Star size={28} className="text-[#c23d6a] fill-[#c23d6a]/20 shrink-0" />
+      </div>
+
+      <ErrorBox error={error} />
+
       <TableCard>
-        {loading ? <Skeleton /> : error ? <Empty message={error} /> : products.length === 0 ? (
-          <Empty icon={TrendingUp} message="No high selling products yet" />
+        {loading ? <Skeleton /> : products.length === 0 ? (
+          <Empty icon={Star} message="No products yet — add some in the Products tab" />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b-2 border-gray-100 bg-gray-50/60">
-                  {['Rank', 'Product', 'Category', 'Price', 'Units Sold', 'Revenue'].map(h => (
+                  {['Image', 'Product', 'Price', 'Stock', 'Show in Highlights'].map((h) => (
                     <th key={h} className="text-left text-[10px] font-black uppercase tracking-widest text-gray-400 px-5 py-3.5">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {products.map((p, i) => (
-                  <tr key={p._id || p.id || i} className="hover:bg-[#fff8fb] transition-colors">
-                    <td className="px-5 py-3.5">
-                      <div className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-black ${rankStyle[i] || 'bg-gray-50 text-gray-400 border border-gray-100'}`}>
-                        {i + 1}
-                      </div>
-                    </td>
-                    <td className="px-5 py-3.5 font-semibold text-gray-900 whitespace-nowrap">{p.name}</td>
-                    <td className="px-5 py-3.5 text-xs">
-                      <span className="bg-[#fff0f5] text-[#c23d6a] font-bold px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider">
-                        {p.category?.name || p.category || '—'}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5 font-bold text-gray-900">₹{p.price}</td>
-                    <td className="px-5 py-3.5 text-gray-500 font-medium">{p.unitsSold ?? p.sales ?? '—'}</td>
-                    <td className="px-5 py-3.5 font-black text-[#c23d6a]">{p.revenue ? `₹${p.revenue}` : '—'}</td>
-                  </tr>
-                ))}
+                {sorted.map((p) => {
+                  const img = Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : null;
+                  const isOn = !!p.is_highlighted;
+                  const busy = toggling === p.id;
+                  return (
+                    <tr key={p.id} className={`transition-colors ${isOn ? 'bg-[#fff8fb] hover:bg-[#fff4f8]' : 'hover:bg-gray-50/60'}`}>
+                      <td className="px-5 py-3.5">
+                        {img ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={img} alt={p.name} className="w-12 h-12 rounded-xl object-cover" />
+                        ) : (
+                          <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
+                            <ImageIcon size={16} className="text-gray-300" />
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-2">
+                          {isOn && <Star size={12} className="text-[#c23d6a] fill-[#c23d6a] shrink-0" />}
+                          <div>
+                            <p className="font-semibold text-gray-900 whitespace-nowrap">{p.name}</p>
+                            {p.subtitle && <p className="text-xs text-gray-400 mt-0.5">{p.subtitle}</p>}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-5 py-3.5 font-black text-gray-900 whitespace-nowrap">₹{p.price}</td>
+                      <td className="px-5 py-3.5">
+                        <span className={`text-xs font-bold ${Number(p.stock_quantity) > 0 ? 'text-green-600' : 'text-red-500'}`}>
+                          {p.stock_quantity ?? 0}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <button
+                          onClick={() => toggle(p)}
+                          disabled={busy}
+                          title={isOn ? 'Remove from highlights' : 'Add to highlights'}
+                          className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-200 focus:outline-none
+                            ${isOn ? 'bg-[#c23d6a]' : 'bg-gray-200'}
+                            ${busy ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                        >
+                          {busy ? (
+                            <span className="absolute inset-0 flex items-center justify-center">
+                              <Loader2 size={12} className="animate-spin text-white" />
+                            </span>
+                          ) : (
+                            <span className={`inline-block w-5 h-5 rounded-full bg-white shadow-md transform transition-transform duration-200
+                              ${isOn ? 'translate-x-6' : 'translate-x-1'}`} />
+                          )}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -439,58 +1050,65 @@ function HighSellingView() {
   );
 }
 
-// ─── View map ─────────────────────────────────────────────────────────────────
-const VIEWS = {
-  'dashboard':       DashboardView,
-  'users':           UsersView,
-  'create-category': CreateCategoryView,
-  'add-product':     AddProductView,
-  'high-selling':    HighSellingView,
-};
+// ─── Nav config ────────────────────────────────────────────────────────
+const NAV = [
+  { id: 'dashboard',  label: 'Dashboard',  icon: LayoutDashboard },
+  { id: 'categories', label: 'Categories', icon: FolderPlus      },
+  { id: 'products',   label: 'Products',   icon: PackagePlus     },
+  { id: 'highlights', label: 'Highlights', icon: Star            },
+  { id: 'reviews',    label: 'Reviews',    icon: MessageSquare   },
+  { id: 'users',      label: 'Users',      icon: Users           },
+];
 
-// ─── Main Dashboard ───────────────────────────────────────────────────────────
+// ─── Main Dashboard ────────────────────────────────────────────────────
 export default function AdminDashboard() {
   const router = useRouter();
-  const [auth,        setAuth]        = useState(false);
-  const [activeView,  setActiveView]  = useState('dashboard');
+  const [auth, setAuth] = useState(false);
+  const [activeView, setActiveView] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('adminToken');
-    if (!token) router.replace('/admin/login');
+    const t = localStorage.getItem('adminToken');
+    if (!t) router.replace('/admin/gymhack-admin-2026');
     else setAuth(true);
   }, [router]);
 
   const handleLogout = () => {
     localStorage.removeItem('adminToken');
-    router.push('/admin/login');
+    router.push('/admin/gymhack-admin-2026');
   };
 
-  const activeLabel = NAV.find(n => n.id === activeView)?.label ?? 'Dashboard';
-  const ActiveView  = VIEWS[activeView];
+  const activeLabel = NAV.find((n) => n.id === activeView)?.label ?? 'Dashboard';
 
   if (!auth) return null;
 
+  const renderView = () => {
+    switch (activeView) {
+      case 'dashboard':  return <DashboardView onNavigate={setActiveView} />;
+      case 'categories': return <CategoriesView />;
+      case 'products':   return <ProductsView />;
+      case 'highlights': return <HighlightsView />;
+      case 'reviews':    return <ReviewsView />;
+      case 'users':      return <UsersView />;
+      default:           return <DashboardView onNavigate={setActiveView} />;
+    }
+  };
+
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: '#fdf8f9' }}>
-
       {/* Mobile overlay */}
       {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-30 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-30 lg:hidden"
+          onClick={() => setSidebarOpen(false)} />
       )}
 
-      {/* ── Sidebar ──────────────────────────────────────────────────────── */}
+      {/* Sidebar */}
       <aside className={`
         fixed top-0 left-0 h-full w-60 bg-white border-r-2 border-gray-100 z-40
         flex flex-col transition-transform duration-300 ease-in-out
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0 lg:static lg:z-auto
       `}>
-
-        {/* Logo */}
         <div className="px-5 py-5 border-b-2 border-gray-100 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[#c23d6a] relative overflow-hidden shrink-0 shadow-md shadow-[#c23d6a]/30">
@@ -501,20 +1119,14 @@ export default function AdminDashboard() {
               <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">Admin</p>
             </div>
           </div>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="lg:hidden p-1.5 hover:bg-gray-100 rounded-xl text-gray-400 transition-colors"
-          >
+          <button onClick={() => setSidebarOpen(false)} className="lg:hidden p-1.5 hover:bg-gray-100 rounded-xl text-gray-400">
             <X size={17} />
           </button>
         </div>
 
-        {/* Admin badge */}
         <div className="px-4 pt-4 pb-3 border-b-2 border-gray-100">
           <div className="flex items-center gap-3 bg-[#fff0f5] border-2 border-[#f0c0d0] rounded-2xl px-3.5 py-3">
-            <div className="w-9 h-9 rounded-full bg-[#c23d6a] flex items-center justify-center text-white text-sm font-black shrink-0 shadow-sm shadow-[#c23d6a]/30">
-              A
-            </div>
+            <div className="w-9 h-9 rounded-full bg-[#c23d6a] flex items-center justify-center text-white text-sm font-black shrink-0 shadow-sm shadow-[#c23d6a]/30">A</div>
             <div>
               <p className="text-sm font-black text-gray-900 leading-none">Admin</p>
               <p className="text-[10px] text-[#c23d6a] font-bold mt-0.5 uppercase tracking-wider">Administrator</p>
@@ -522,19 +1134,14 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Nav items */}
         <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
           {NAV.map(({ id, label, icon: Icon }) => {
             const active = activeView === id;
             return (
-              <button
-                key={id}
-                onClick={() => { setActiveView(id); setSidebarOpen(false); }}
+              <button key={id} onClick={() => { setActiveView(id); setSidebarOpen(false); }}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-sm font-semibold transition-all text-left
-                  ${active
-                    ? 'bg-[#c23d6a] text-white shadow-md shadow-[#c23d6a]/25'
-                    : 'text-gray-600 hover:bg-[#fff0f5] hover:text-[#c23d6a]'}`}
-              >
+                  ${active ? 'bg-[#c23d6a] text-white shadow-md shadow-[#c23d6a]/25'
+                           : 'text-gray-600 hover:bg-[#fff0f5] hover:text-[#c23d6a]'}`}>
                 <Icon size={16} className={active ? 'text-white' : 'text-gray-400'} />
                 {label}
               </button>
@@ -542,45 +1149,32 @@ export default function AdminDashboard() {
           })}
         </nav>
 
-        {/* Logout */}
         <div className="px-3 py-3 border-t-2 border-gray-100">
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-sm font-semibold text-red-500 hover:bg-red-50 transition-colors"
-          >
+          <button onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-sm font-semibold text-red-500 hover:bg-red-50 transition-colors">
             <LogOut size={16} className="text-red-400" />
             Log Out
           </button>
         </div>
       </aside>
 
-      {/* ── Main area ────────────────────────────────────────────────────── */}
+      {/* Main area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-
-        {/* Topbar */}
         <header className="h-16 bg-white border-b-2 border-gray-100 flex items-center justify-between px-5 shrink-0">
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2 hover:bg-gray-100 rounded-xl text-gray-500 transition-colors"
-            >
+            <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 hover:bg-gray-100 rounded-xl text-gray-500">
               <Menu size={20} />
             </button>
             <h1 className="text-base font-black text-gray-900 tracking-tight">{activeLabel}</h1>
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Bell */}
             <button className="relative p-2 hover:bg-gray-100 rounded-xl transition-colors">
               <Bell size={18} className="text-gray-500" />
               <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[#c23d6a] rounded-full" />
             </button>
-
-            {/* Admin pill */}
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 bg-[#c23d6a] hover:bg-[#a8305a] text-white px-4 py-2 rounded-full text-xs font-black transition-colors shadow-md shadow-[#c23d6a]/25"
-            >
+            <button onClick={handleLogout}
+              className="flex items-center gap-2 bg-[#c23d6a] hover:bg-[#a8305a] text-white px-4 py-2 rounded-full text-xs font-black transition-colors shadow-md shadow-[#c23d6a]/25">
               <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px] font-black">A</div>
               Admin
               <LogOut size={11} className="opacity-70" />
@@ -588,12 +1182,18 @@ export default function AdminDashboard() {
           </div>
         </header>
 
+        <main className="flex-1 overflow-y-auto">{renderView()}</main>
+      </div>
+    </div>
+  );
+}
+
         {/* Page content */}
         <main className="flex-1 overflow-y-auto">
           <ActiveView />
         </main>
-      </div>
+//       </div>
 
-    </div>
-  );
-}
+//     </div>
+//   );
+// }

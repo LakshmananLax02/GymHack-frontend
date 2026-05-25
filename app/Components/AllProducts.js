@@ -58,7 +58,15 @@ export default function AllProducts() {
       Array.isArray(item.images) && item.images.length > 0
         ? item.images[0]
         : '/images/oatsimg.jpg';
-    addToCartStore({ id: item.id, name: item.name, price: item.price, image });
+    const variants = Array.isArray(item.variants) ? item.variants : [];
+    const firstVariant = variants[0] || null;
+    addToCartStore({
+      id: item.id,
+      name: item.name,
+      price: firstVariant ? Number(firstVariant.price) : item.price,
+      variant_label: firstVariant?.label || null,
+      image,
+    });
     showToast(`${item.name} added to cart 🛒`, 'success', 2000);
   };
 
@@ -200,9 +208,16 @@ export default function AllProducts() {
                       {item.name}
                     </h3>
                     <span className="font-secondary text-base sm:text-lg font-black text-black whitespace-nowrap">
-                      ₹{item.price}
+                      {Array.isArray(item.variants) && item.variants.length > 0
+                        ? `₹${item.variants[0].price}`
+                        : `₹${item.price}`}
                     </span>
                   </div>
+                  {Array.isArray(item.variants) && item.variants.length > 1 && (
+                    <p className="text-[10px] text-gray-400 font-secondary px-1 -mt-1 mb-2">
+                      {item.variants.map(v => v.label).join(' / ')}
+                    </p>
+                  )}
 
                   {/* Add to Cart — mobile only */}
                   <button

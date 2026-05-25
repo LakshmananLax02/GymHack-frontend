@@ -94,7 +94,15 @@ export default function HomeProducts() {
       Array.isArray(item.images) && item.images.length > 0
         ? item.images[0]
         : '/images/oatsimg.jpg';
-    addToCartStore({ id: item.id, name: item.name, price: item.price, image });
+    const variants = Array.isArray(item.variants) ? item.variants : [];
+    const firstVariant = variants[0] || null;
+    addToCartStore({
+      id: item.id,
+      name: item.name,
+      price: firstVariant ? Number(firstVariant.price) : Number(item.price),
+      variant_label: firstVariant?.label || null,
+      image,
+    });
   };
 
   const handleLoginNow = () => {
@@ -233,9 +241,16 @@ export default function HomeProducts() {
                           <h3 className="text-lg md:text-xl font-secondary font-bold leading-tight text-black uppercase max-w-[150px] md:max-w-[200px]">
                             {item.name}
                           </h3>
+                          {Array.isArray(item.variants) && item.variants.length > 1 && (
+                            <p className="text-[10px] text-gray-400 mt-1">
+                              {item.variants.map(v => v.label).join(' / ')}
+                            </p>
+                          )}
                         </div>
                         <span className="text-2xl md:text-4xl font-secondary font-black text-black whitespace-nowrap">
-                          ₹{item.price}
+                          {Array.isArray(item.variants) && item.variants.length > 0
+                            ? `₹${item.variants[0].price}`
+                            : `₹${item.price}`}
                         </span>
                       </div>
 

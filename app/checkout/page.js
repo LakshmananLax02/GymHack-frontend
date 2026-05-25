@@ -26,6 +26,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Script from 'next/script';
+import { useCartStore } from '../store/useCartStore';
 import {
   ChevronDown, MapPin, Phone, User, CreditCard, Truck,
   ShieldCheck, Lock, CheckCircle2, ArrowLeft, Package,
@@ -33,21 +34,9 @@ import {
   Star, Tag, Copy, XCircle, RotateCcw, Info,
 } from 'lucide-react';
 
-// <<<<<<< HEAD
-// // ─────────────────────────────────────────────────────────────────────────────
-// // ██  CONFIG  — replace before going live
-// // ─────────────────────────────────────────────────────────────────────────────
-// const RAZORPAY_KEY_ID    = 'rzp_test_Soo247cVBCqXX3'; // your key
-// const TELEGRAM_BOT_TOKEN = 'YOUR_BOT_TOKEN';
-// const TELEGRAM_CHAT_ID   = 'YOUR_CHAT_ID';
-// // NOTE: In production the Razorpay order must be created server-side via
-// // POST /v1/orders using your key_secret. The client only receives order_id.
-// // ─────────────────────────────────────────────────────────────────────────────
-// =======
-// // ─── ENV CONFIG ───────────────────────────────────────────────────────────────
-// const API     = process.env.NEXT_PUBLIC_API_BASE_URL    || 'http://localhost:5000';
-// const RZP_KEY = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '';
-// >>>>>>> a2d05f784cca0a751133457b44c8435607587960
+// ─── ENV CONFIG ───────────────────────────────────────────────────────────────
+const API     = process.env.NEXT_PUBLIC_API_URL         || 'http://localhost:5000';
+const RZP_KEY = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '';
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const STATES = [
@@ -59,11 +48,6 @@ const STATES = [
   'Delhi','Chandigarh','Puducherry','Jammu & Kashmir','Ladakh',
 ];
 
-// Replace with: const cart = useCartStore(s => s.cart);
-const MOCK_CART = [
-  { id: 1, name: 'Premium Rolled Oats',   qty: 2, price: 180, image: '/images/oatsimg.jpg' },
-  { id: 3, name: 'Dark Chocolate Muesli', qty: 1, price: 290, image: '/images/meusliimg.png' },
-];
 
 const RZP_ERROR_MESSAGES = {
   'BAD_REQUEST_ERROR':   'Your bank declined the payment. Please try a different card or UPI.',
@@ -92,6 +76,58 @@ const makeIdempotencyKey = () =>
 
 const friendlyRzpError = code =>
   RZP_ERROR_MESSAGES[code] || RZP_ERROR_MESSAGES.DEFAULT;
+
+// ─── TELEGRAM NOTIFICATION ────────────────────────────────────────────────────
+// Called on the frontend when the user clicks Place Order (COD) or Pay Online.
+// Fire-and-forget — never blocks the checkout flow.
+async function sendTelegramOrderAlert(form, cart, method) {
+  const token  = process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.NEXT_PUBLIC_TELEGRAM_CHAT_ID;
+  if (!token || !chatId) return;
+
+  const { total } = calcTotals(cart);
+  const itemLines = cart
+    .map(i =>
+      `  • ${i.name}${i.variant_label ? ` (${i.variant_label})` : ''} × ${i.qty} = ₹${i.price * i.qty}`
+    )
+    .join('\n');
+
+  const addr = [
+    form.address,
+    form.apartment,
+    form.city,
+    form.state,
+    form.pincode,
+  ].filter(Boolean).join(', ');
+
+  const isCOD  = method === 'cod';
+  const emoji  = isCOD ? '🚚' : '💳';
+  const label  = isCOD ? 'New COD Order!' : 'Online Payment Initiated!';
+
+  const lines = [
+    `${emoji} <b>${label}</b>`,
+    ``,
+    `👤 <b>Customer:</b> ${form.firstName} ${form.lastName}`,
+    `📞 <b>Phone:</b> ${form.phone}`,
+    form.email ? `📧 <b>Email:</b> ${form.email}` : null,
+    ``,
+    `🛒 <b>Items:</b>`,
+    itemLines,
+    ``,
+    `💰 <b>Total:</b> ₹${total}`,
+    `📍 <b>Address:</b> ${addr}`,
+  ].filter(l => l !== null).join('\n');
+
+  try {
+    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ chat_id: chatId, text: lines, parse_mode: 'HTML' }),
+    });
+  } catch (e) {
+    console.warn('[Telegram] Alert failed:', e.message);
+  }
+}
 
 // ─── API LAYER ────────────────────────────────────────────────────────────────
 const api = {
@@ -311,10 +347,13 @@ function OrderSummary({ items, startOpen = false }) {
       {open && (
         <div className="border-t border-[#f0e4eb] px-4 pb-4 pt-3">
           {items.map((item, i) => (
-            <div key={item.id}
+            <div key={`${item.id}-${item.variant_label || ''}`}
               className={`flex justify-between items-center py-2.5 ${i < items.length - 1 ? 'border-b border-dashed border-[#f5e8ef]' : ''}`}>
               <div>
                 <p className="text-[12.5px] font-semibold text-gray-800 leading-snug">{item.name}</p>
+                {item.variant_label && (
+                  <span className="inline-block text-[10px] font-bold text-[#c23d6a] bg-[#fff0f5] px-1.5 py-0.5 rounded-full mt-0.5 mb-0.5">{item.variant_label}</span>
+                )}
                 <p className="text-[11px] text-gray-400 mt-0.5">Qty: {item.qty} × ₹{item.price}</p>
               </div>
               <span className="font-bold text-[13px] text-gray-600 shrink-0 ml-4">₹{item.price * item.qty}</span>
@@ -1002,9 +1041,9 @@ function SuccessScreen({ cart, form, payInfo, isCOD }) {
 
 // ─── ROOT PAGE ────────────────────────────────────────────────────────────────
 export default function CheckoutPage() {
-  // ── Swap MOCK_CART with your real store: ──
-  //    const cart = useCartStore(s => s.cart);
-  const cart = MOCK_CART;
+  const rawCart   = useCartStore(s => s.cart);
+  const clearCart = useCartStore(s => s.clearCart);
+  const cart      = rawCart.map(i => ({ ...i, qty: i.quantity }));
 
   const [step,       setStep]   = useState(0);
   const [form,       setForm]   = useState(null);
@@ -1022,12 +1061,15 @@ export default function CheckoutPage() {
     try {
       if (f.paymentMethod === 'cod') {
         setIsCOD(true);
+        sendTelegramOrderAlert(f, cart, 'cod');        // fire-and-forget
         const res = await api.placeCOD(cart, f);
         if (!res.success) throw new Error(res.message || 'COD order failed');
         setPayInfo({ dbOrderId: res.order_id });
+        clearCart();
         setStep(3);
       } else {
         setIsCOD(false);
+        sendTelegramOrderAlert(f, cart, 'razorpay');   // fire-and-forget
         await api.sendOTP(f.phone);
         setStep(1);
       }
@@ -1099,7 +1141,7 @@ export default function CheckoutPage() {
                 cart={cart}
                 form={form}
                 total={total}
-                onSuccess={info => { setPayInfo(info); setStep(3); }}
+                onSuccess={info => { setPayInfo(info); clearCart(); setStep(3); }}
                 onFail={code => console.warn('[Checkout] Payment failed:', code)}
                 onBack={() => setStep(0)}
               />

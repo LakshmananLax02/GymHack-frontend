@@ -235,7 +235,7 @@ export default function ProductViewPage() {
           body: reviewBody,
         }),
       });
-     const data = await res.json();
+ const data = await res.json();
 if (!res.ok) throw new Error(data.error || 'Failed to submit');
 
 // Re-fetch from DB instead of optimistic update
@@ -247,6 +247,7 @@ setShowReviewPopup(false);
 setReviewRating(0); setReviewTitle(""); setReviewBody(""); setReviewName("");
 setSubmitted(true);
 setTimeout(() => setSubmitted(false), 3000);
+
 
     } catch (e) {
       setReviewError(e.message);

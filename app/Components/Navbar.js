@@ -13,38 +13,7 @@ import {
 import { useCartStore } from '../store/useCartStore';
 import { useAuth } from '../context/AuthContext';
 
-const navProducts = [
-  { name: 'Oats',   imageUrl: '/images/oatshoverimg.png',   link: '/products?category=OATS'   },
-  { name: 'Muesli', imageUrl: '/images/meuslihoverimg1.png', link: '/products?category=Muesli' },
-    { name: 'Muesli', imageUrl: '/images/meuslihoverimg1.png', link: '/products?category=Muesli' },
-
-      { name: 'Muesli', imageUrl: '/images/meuslihoverimg1.png', link: '/products?category=Muesli' },
-  { name: 'Muesli', imageUrl: '/images/meuslihoverimg1.png', link: '/products?category=Muesli' },
-
-    { name: 'Muesli', imageUrl: '/images/meuslihoverimg1.png', link: '/products?category=Muesli' },
-
-      { name: 'Muesli', imageUrl: '/images/meuslihoverimg1.png', link: '/products?category=Muesli' },
-
-        { name: 'Muesli', imageUrl: '/images/meuslihoverimg1.png', link: '/products?category=Muesli' },
-
-          { name: 'Muesli', imageUrl: '/images/meuslihoverimg1.png', link: '/products?category=Muesli' },
-
-            { name: 'Muesli', imageUrl: '/images/meuslihoverimg1.png', link: '/products?category=Muesli' },
-
-              { name: 'Muesli', imageUrl: '/images/meuslihoverimg1.png', link: '/products?category=Muesli' },
-
-];
-
-const allProducts = [
-  { id: 1, category: 'OATS',   name: 'Premium Rolled Oats',    price: 180, image: '/images/oatsimg.jpg'   },
-  { id: 2, category: 'OATS',   name: 'Instant Oats',           price: 150, image: '/images/oatsimg.jpg'   },
-  { id: 7, category: 'OATS',   name: 'Steel Cut Oats',         price: 200, image: '/images/oatsimg.jpg'   },
-  { id: 8, category: 'OATS',   name: 'Oats & Honey Crunch',    price: 190, image: '/images/oatsimg.jpg'   },
-  { id: 3, category: 'Muesli', name: 'Gourmet Muesli',         price: 250, image: '/images/meusliimg.png' },
-  { id: 4, category: 'Muesli', name: 'Berries & Seeds Muesli', price: 280, image: '/images/meusliimg.png' },
-  { id: 5, category: 'Muesli', name: 'Crunchy Nut Muesli',     price: 240, image: '/images/meusliimg.png' },
-  { id: 6, category: 'Muesli', name: 'Dark Chocolate Muesli',  price: 290, image: '/images/meusliimg.png' },
-];
+const API_ROOT = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 const TICKER_ITEMS = [
   'Free Shipping on orders over ₹500',
@@ -146,9 +115,15 @@ export default function Navbar() {
   const [loginPopup, setLoginPopup] = useState({ open: false, message: '' });
 
   const [searchQuery,    setSearchQuery]    = useState('');
-  const [activeCategory, setActiveCategory] = useState('OATS');
+  const [activeCategory, setActiveCategory] = useState(null); // category ID
   const [mounted,        setMounted]        = useState(false);
   const [localToast,     setLocalToast]     = useState(null);
+
+  // Live data from API
+  const [apiCategories, setApiCategories] = useState([]);
+  const [apiProducts,   setApiProducts]   = useState([]);
+  const [modalProducts, setModalProducts] = useState([]);
+  const [modalLoading,  setModalLoading]  = useState(false);
 
   // Bulk Order form state
   const [bulkForm,    setBulkForm]    = useState({ name: '', phone: '', address: '' });
@@ -166,13 +141,43 @@ export default function Navbar() {
 
   useEffect(() => { setMounted(true); }, []);
 
+  // Fetch categories once for Shop dropdown + Add Products modal
+  useEffect(() => {
+    fetch(`${API_ROOT}/api/categories`)
+      .then(r => r.json())
+      .then(data => {
+        const cats = Array.isArray(data) ? data : [];
+        setApiCategories(cats);
+        if (cats.length > 0) setActiveCategory(cats[0].id);
+      })
+      .catch(() => {});
+  }, []);
+
+  // Fetch all products once for search bar
+  useEffect(() => {
+    fetch(`${API_ROOT}/api/products`)
+      .then(r => r.json())
+      .then(data => setApiProducts(Array.isArray(data) ? data : []))
+      .catch(() => {});
+  }, []);
+
+  // When Add Products modal opens or category tab changes, fetch products for that category
+  useEffect(() => {
+    if (!isAddProductsOpen || !activeCategory) return;
+    setModalLoading(true);
+    fetch(`${API_ROOT}/api/products?category_id=${activeCategory}`)
+      .then(r => r.json())
+      .then(data => setModalProducts(Array.isArray(data) ? data : []))
+      .catch(() => setModalProducts([]))
+      .finally(() => setModalLoading(false));
+  }, [isAddProductsOpen, activeCategory]);
+
   const totalItems    = cart.reduce((a, i) => a + i.quantity, 0);
   const totalPrice    = cart.reduce((a, i) => a + i.price * i.quantity, 0);
-  const filteredProds = allProducts.filter(p => p.category === activeCategory);
   const searchResults = searchQuery.trim()
-    ? allProducts.filter(p =>
+    ? apiProducts.filter(p =>
         p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.category.toLowerCase().includes(searchQuery.toLowerCase()))
+        (p.subtitle || '').toLowerCase().includes(searchQuery.toLowerCase()))
     : [];
 
   useEffect(() => {
@@ -381,31 +386,38 @@ export default function Navbar() {
               </button>
          {isShopOpen && (
   <div className="absolute top-full left-1/2 -translate-x-1/2 pt-4 z-50">
-    <div className="bg-white shadow-2xl rounded-3xl border border-gray-100 p-6 
-                    w-[90vw] max-w-[600px] max-h-[80vh] overflow-y-auto custom-scrollbar">
-      
-      {/* Change from flex-row to grid-cols-3 */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
-        {navProducts.map((item) => (
-          <Link 
-            key={item.name} 
-            href={item.link} 
-            className="flex flex-col items-center gap-3 p-3 hover:bg-gray-50 rounded-2xl transition-all group"
-          >
-            <div className="relative w-full aspect-square bg-gray-100 rounded-xl overflow-hidden shadow-sm">
-              <Image 
-                src={item.imageUrl} 
-                alt={item.name} 
-                fill 
-                className="object-cover group-hover:scale-110 transition-transform duration-500" 
-              />
-            </div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-center">
-              {item.name}
-            </span>
-          </Link>
-        ))}
-      </div>
+    <div className="bg-white shadow-2xl rounded-3xl border border-gray-100 p-6
+                    w-[90vw] max-w-[600px] max-h-[80vh] overflow-y-auto">
+      {apiCategories.length === 0 ? (
+        <p className="text-sm text-gray-400 text-center py-4">Loading categories…</p>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
+          {apiCategories.map((cat) => (
+            <Link
+              key={cat.id}
+              href="/products"
+              onClick={() => setIsShopOpen(false)}
+              className="flex flex-col items-center gap-3 p-3 hover:bg-gray-50 rounded-2xl transition-all group"
+            >
+              <div className="relative w-full aspect-square bg-gray-100 rounded-xl overflow-hidden shadow-sm">
+                {cat.image_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={cat.image_url}
+                    alt={cat.name}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-300 text-3xl">🛒</div>
+                )}
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-widest text-center">
+                {cat.name}
+              </span>
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   </div>
 )}
@@ -520,40 +532,45 @@ export default function Navbar() {
             <div className="flex-1 overflow-y-auto">
               {searchQuery.trim() === '' ? (
                 <div className="p-5">
-                  <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Popular Searches</p>
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    {['Rolled Oats', 'Muesli'].map(term => (
-                      <button key={term} onClick={() => setSearchQuery(term)} className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm font-semibold text-gray-800 transition-colors">
-                        {term}
-                      </button>
-                    ))}
-                  </div>
                   <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Browse Categories</p>
                   <div className="grid grid-cols-2 gap-3">
-                    {navProducts.map(item => (
-                      <Link key={item.name} href={item.link} onClick={closeSearch} className="flex items-center gap-3 p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors">
-                        <div className="relative w-12 h-12 bg-white rounded-lg overflow-hidden shrink-0">
-                          <Image src={item.imageUrl} alt={item.name} fill className="object-cover" />
+                    {apiCategories.map(cat => (
+                      <Link key={cat.id} href="/products" onClick={closeSearch}
+                        className="flex items-center gap-3 p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors">
+                        <div className="relative w-12 h-12 bg-white rounded-lg overflow-hidden shrink-0 border border-gray-100 flex items-center justify-center">
+                          {cat.image_url ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={cat.image_url} alt={cat.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-gray-300 text-xl">🛒</span>
+                          )}
                         </div>
-                        <span className="text-sm font-bold">{item.name}</span>
+                        <span className="text-sm font-bold">{cat.name}</span>
                       </Link>
                     ))}
                   </div>
                 </div>
               ) : searchResults.length > 0 ? (
                 <div className="divide-y divide-gray-100">
-                  {searchResults.map(p => (
-                    <Link key={p.id} href={`/products?category=${p.category}`} onClick={closeSearch} className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors">
-                      <div className="relative w-14 h-14 bg-[#f8f8f8] rounded-lg overflow-hidden shrink-0 border border-gray-100">
-                        <Image src={p.image} alt={p.name} fill className="object-contain p-1" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-gray-900 line-clamp-1">{p.name}</p>
-                        <p className="text-xs text-gray-400 mt-0.5">{p.category}</p>
-                      </div>
-                      <p className="text-sm font-black text-[#c23d6a] shrink-0">₹ {p.price}</p>
-                    </Link>
-                  ))}
+                  {searchResults.map(p => {
+                    const img = Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : '/images/oatsimg.jpg';
+                    const variants = Array.isArray(p.variants) ? p.variants : [];
+                    const displayPrice = variants.length > 0 ? variants[0].price : p.price;
+                    return (
+                      <Link key={p.id} href={`/productsviewpage/${p.id}`} onClick={closeSearch}
+                        className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors">
+                        <div className="relative w-14 h-14 bg-[#f8f8f8] rounded-lg overflow-hidden shrink-0 border border-gray-100">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={img} alt={p.name} className="w-full h-full object-contain p-1" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold text-gray-900 line-clamp-1">{p.name}</p>
+                          {p.subtitle && <p className="text-xs text-gray-400 mt-0.5">{p.subtitle}</p>}
+                        </div>
+                        <p className="text-sm font-black text-[#c23d6a] shrink-0">₹ {displayPrice}</p>
+                      </Link>
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="p-10 text-center">
@@ -596,24 +613,41 @@ export default function Navbar() {
                 <>
                   <div className="divide-y divide-gray-100 px-5">
                     {cart.map(item => (
-                      <div key={item.id} className="flex gap-3 py-4">
+                      <div key={`${item.id}-${item.variant_label || ''}`} className="flex gap-3 py-4">
                         <div className="relative w-20 h-20 bg-[#f8f8f8] rounded-xl overflow-hidden shrink-0 border border-gray-100">
                           {item.image && <Image src={item.image} alt={item.name} fill className="object-contain p-1" />}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2">
-                            <p className="text-sm font-bold text-gray-900 leading-snug line-clamp-2">{item.name}</p>
-                            <button onClick={() => removeFromCart(item.id)} className="p-1 text-gray-400 hover:text-red-400 hover:bg-red-50 rounded-full shrink-0">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-bold text-gray-900 leading-snug line-clamp-2">{item.name}</p>
+                              {item.variant_label && (
+                                <span className="inline-block text-[10px] font-bold bg-[#fff0f5] text-[#c23d6a] px-2 py-0.5 rounded-full mt-0.5 uppercase tracking-wider">
+                                  {item.variant_label}
+                                </span>
+                              )}
+                            </div>
+                            <button
+                              onClick={() => removeFromCart(item.id, item.variant_label || null)}
+                              className="p-1 text-gray-400 hover:text-red-400 hover:bg-red-50 rounded-full shrink-0"
+                            >
                               <X size={18} />
                             </button>
                           </div>
                           <p className="text-sm text-[#c23d6a] font-black mt-1 mb-2">₹ {item.price}</p>
                           <div className="flex items-center bg-[#f5f5f5] rounded-full px-1 py-0.5 gap-1 w-fit">
-                            <button onClick={() => updateQuantity(item.id, item.quantity - 1)} disabled={item.quantity <= 1} className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-white disabled:opacity-30">
+                            <button
+                              onClick={() => updateQuantity(item.id, item.quantity - 1, item.variant_label || null)}
+                              disabled={item.quantity <= 1}
+                              className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-white disabled:opacity-30"
+                            >
                               <Minus size={12} />
                             </button>
                             <span className="w-6 text-center text-sm font-bold select-none">{item.quantity}</span>
-                            <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-white">
+                            <button
+                              onClick={() => updateQuantity(item.id, item.quantity + 1, item.variant_label || null)}
+                              className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-white"
+                            >
                               <Plus size={12} />
                             </button>
                           </div>
@@ -668,46 +702,104 @@ export default function Navbar() {
               </div>
               <button onClick={() => setIsAddProductsOpen(false)} className="p-2 hover:bg-gray-100 rounded-full"><X size={20} /></button>
             </div>
-            <div className="flex gap-3 px-5 py-3 border-b border-gray-100 shrink-0">
-              {['OATS', 'Muesli'].map(cat => (
-                <button key={cat} onClick={() => setActiveCategory(cat)} className={`flex items-center gap-2 px-4 py-2 rounded-xl border-2 font-bold text-sm transition-all ${activeCategory === cat ? 'bg-[#f0ece2] border-[#c23d6a] text-black' : 'border-gray-200 bg-gray-50 text-gray-400'}`}>
-                  <div className="relative w-8 h-8 rounded-lg overflow-hidden bg-gray-100 shrink-0">
-                    <Image src={cat === 'OATS' ? '/images/oatsimg.jpg' : '/images/meusliimg.png'} alt={cat} fill className="object-contain p-0.5" />
+            {/* Category tabs */}
+            <div className="flex gap-3 px-5 py-3 border-b border-gray-100 shrink-0 overflow-x-auto">
+              {apiCategories.map(cat => (
+                <button
+                  key={cat.id}
+                  onClick={() => setActiveCategory(cat.id)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl border-2 font-bold text-sm transition-all shrink-0 ${
+                    activeCategory === cat.id
+                      ? 'bg-[#f0ece2] border-[#c23d6a] text-black'
+                      : 'border-gray-200 bg-gray-50 text-gray-400'
+                  }`}
+                >
+                  <div className="w-8 h-8 rounded-lg overflow-hidden bg-gray-100 shrink-0 flex items-center justify-center">
+                    {cat.image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={cat.image_url} alt={cat.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-gray-300 text-sm">🛒</span>
+                    )}
                   </div>
-                  {cat === 'OATS' ? 'Oats' : 'Muesli'}
+                  {cat.name}
                 </button>
               ))}
             </div>
+
+            {/* Product grid */}
             <div className="flex-1 overflow-y-auto p-4">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {filteredProds.map(item => {
-                  const inCart = cart.find(c => c.id === item.id);
-                  return (
-                    <div key={item.id} className="bg-[#fafafa] rounded-2xl p-3 border border-gray-100 flex flex-col">
-                      <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-white mb-2">
-                        <Image src={item.image} alt={item.name} fill className="object-contain p-3" />
-                      </div>
-                      <p className="text-xs font-bold text-gray-900 leading-snug mb-1 line-clamp-2">{item.name}</p>
-                      <p className="text-sm font-black text-[#c23d6a] mb-2">₹ {item.price}</p>
-                      {inCart ? (
-                        <div className="flex items-center justify-between bg-[#fff3f7] border border-[#c23d6a] rounded-xl px-2 py-1 mt-auto">
-                          <button onClick={() => updateQuantity(item.id, inCart.quantity - 1)} disabled={inCart.quantity <= 1} className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-white disabled:opacity-30">
-                            <Minus size={11} />
-                          </button>
-                          <span className="text-xs font-black text-[#c23d6a]">{inCart.quantity}</span>
-                          <button onClick={() => updateQuantity(item.id, inCart.quantity + 1)} className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-white">
-                            <Plus size={11} />
-                          </button>
+              {modalLoading ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="animate-pulse bg-gray-100 rounded-2xl aspect-[3/4]" />
+                  ))}
+                </div>
+              ) : modalProducts.length === 0 ? (
+                <p className="text-center text-gray-400 text-sm py-10">No products in this category yet</p>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {modalProducts.map(item => {
+                    const imgSrc = Array.isArray(item.images) && item.images.length > 0
+                      ? item.images[0]
+                      : '/images/oatsimg.jpg';
+                    const variants = Array.isArray(item.variants) ? item.variants : [];
+                    const firstVariant = variants[0] || null;
+                    const displayPrice = firstVariant ? Number(firstVariant.price) : Number(item.price);
+                    const variantLabel = firstVariant?.label || null;
+
+                    const inCart = cart.find(c =>
+                      Number(c.id) === Number(item.id) &&
+                      (c.variant_label || null) === variantLabel
+                    );
+
+                    return (
+                      <div key={item.id} className="bg-[#fafafa] rounded-2xl p-3 border border-gray-100 flex flex-col">
+                        <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-white mb-2">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={imgSrc} alt={item.name} className="w-full h-full object-contain p-3" />
                         </div>
-                      ) : (
-                        <button onClick={() => addToCart({ id: item.id, name: item.name, price: item.price, image: item.image })} className="w-full mt-auto bg-[#c23d6a] text-white text-xs font-bold py-2 rounded-xl hover:bg-[#a8305a] transition-colors active:scale-95">
-                          + Add
-                        </button>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+                        <p className="text-xs font-bold text-gray-900 leading-snug mb-1 line-clamp-2">{item.name}</p>
+                        <p className="text-sm font-black text-[#c23d6a] mb-2">₹ {displayPrice}</p>
+                        {variantLabel && (
+                          <span className="text-[10px] font-bold text-gray-400 mb-1">{variantLabel}</span>
+                        )}
+                        {inCart ? (
+                          <div className="flex items-center justify-between bg-[#fff3f7] border border-[#c23d6a] rounded-xl px-2 py-1 mt-auto">
+                            <button
+                              onClick={() => updateQuantity(item.id, inCart.quantity - 1, variantLabel)}
+                              disabled={inCart.quantity <= 1}
+                              className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-white disabled:opacity-30"
+                            >
+                              <Minus size={11} />
+                            </button>
+                            <span className="text-xs font-black text-[#c23d6a]">{inCart.quantity}</span>
+                            <button
+                              onClick={() => updateQuantity(item.id, inCart.quantity + 1, variantLabel)}
+                              className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-white"
+                            >
+                              <Plus size={11} />
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => addToCart({
+                              id: item.id,
+                              name: item.name,
+                              price: displayPrice,
+                              variant_label: variantLabel,
+                              image: imgSrc,
+                            })}
+                            className="w-full mt-auto bg-[#c23d6a] text-white text-xs font-bold py-2 rounded-xl hover:bg-[#a8305a] transition-colors active:scale-95"
+                          >
+                            + Add
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
             <div className="px-5 py-4 border-t border-gray-100 bg-[#fafafa] shrink-0">
               <button onClick={() => setIsAddProductsOpen(false)} className="w-full bg-[#c23d6a] text-white text-sm font-bold py-3.5 rounded-2xl hover:bg-[#a8305a] transition-colors">

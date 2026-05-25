@@ -30,10 +30,16 @@ async function callApi(path, options = {}) {
 const normalizeCart = (cart) =>
   (cart || []).map((item) => ({
     ...item,
-    id:       Number(item.id),
-    price:    Number(item.price),
-    quantity: Number(item.quantity),
+    id:            Number(item.id),
+    price:         Number(item.price),
+    quantity:      Number(item.quantity),
+    variant_label: item.variant_label || null,
   }));
+
+// Two cart rows differ when product id OR variant differ.
+const sameLine = (a, b) =>
+  Number(a.id) === Number(b.id) &&
+  (a.variant_label || null) === (b.variant_label || null);
 
 export const useCartStore = create((set, get) => ({
   cart: [],
@@ -42,46 +48,46 @@ export const useCartStore = create((set, get) => ({
   // ─── 1. ADD / INCREMENT ─────────────────────────────────────────────────
   addToCart: async (product) => {
     const previousCart = get().cart;
-    const existing = previousCart.find((item) => item.id === product.id);
+    const existing = previousCart.find((item) => sameLine(item, product));
 
-    // Optimistic update for instant UI feedback
     const optimisticCart = existing
       ? previousCart.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+          sameLine(item, product) ? { ...item, quantity: item.quantity + 1 } : item
         )
-      : [...previousCart, { ...product, quantity: 1 }];
+      : [...previousCart, { ...product, variant_label: product.variant_label || null, quantity: 1 }];
     set({ cart: optimisticCart });
 
-    // Sync to backend if logged in
     if (!getToken()) return;
 
     try {
       const data = await callApi('/api/cart/add', {
         method: 'POST',
         body: JSON.stringify({
-          productId: product.id,
-          name:      product.name,
-          price:     product.price,
-          image:     product.image,
-          quantity:  1,
+          productId:    product.id,
+          name:         product.name,
+          price:        product.price,
+          image:        product.image,
+          quantity:     1,
+          variantLabel: product.variant_label || null,
         }),
       });
-      // Server returns the full cart — use it as source of truth
       if (data?.cart) set({ cart: normalizeCart(data.cart) });
     } catch (err) {
       console.error('addToCart sync failed:', err);
-      set({ cart: previousCart }); // rollback
+      set({ cart: previousCart });
     }
   },
 
   // ─── 2. UPDATE QUANTITY ─────────────────────────────────────────────────
-  updateQuantity: async (productId, newQty) => {
+  updateQuantity: async (productId, newQty, variantLabel = null) => {
     if (newQty < 1) return;
 
     const previousCart = get().cart;
     set({
       cart: previousCart.map((item) =>
-        item.id === productId ? { ...item, quantity: newQty } : item
+        Number(item.id) === Number(productId) && (item.variant_label || null) === (variantLabel || null)
+          ? { ...item, quantity: newQty }
+          : item
       ),
     });
 
@@ -90,7 +96,7 @@ export const useCartStore = create((set, get) => ({
     try {
       const data = await callApi('/api/cart/update', {
         method: 'PUT',
-        body:   JSON.stringify({ productId, quantity: newQty }),
+        body:   JSON.stringify({ productId, quantity: newQty, variantLabel }),
       });
       if (data?.cart) set({ cart: normalizeCart(data.cart) });
     } catch (err) {
@@ -100,16 +106,20 @@ export const useCartStore = create((set, get) => ({
   },
 
   // ─── 3. REMOVE ITEM ─────────────────────────────────────────────────────
-  removeFromCart: async (productId) => {
+  removeFromCart: async (productId, variantLabel = null) => {
     const previousCart = get().cart;
-    set({ cart: previousCart.filter((item) => item.id !== productId) });
+    set({
+      cart: previousCart.filter(
+        (item) =>
+          !(Number(item.id) === Number(productId) && (item.variant_label || null) === (variantLabel || null))
+      ),
+    });
 
     if (!getToken()) return;
 
     try {
-      const data = await callApi(`/api/cart/remove/${productId}`, {
-        method: 'DELETE',
-      });
+      const qs = variantLabel ? `?variantLabel=${encodeURIComponent(variantLabel)}` : '';
+      const data = await callApi(`/api/cart/remove/${productId}${qs}`, { method: 'DELETE' });
       if (data?.cart) set({ cart: normalizeCart(data.cart) });
     } catch (err) {
       console.error('removeFromCart sync failed:', err);

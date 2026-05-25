@@ -124,6 +124,7 @@ export default function ProductViewPage() {
   const [notFound, setNotFound]           = useState(false);
 
   const [selectedImg, setSelectedImg]     = useState(0);
+  const [selectedVariantIdx, setSelectedVariantIdx] = useState(0);
   const [showReviewPopup, setShowReviewPopup] = useState(false);
   const [showLoginPopup, setShowLoginPopup]   = useState(false);
   const [reviewRating, setReviewRating]   = useState(0);
@@ -170,11 +171,18 @@ export default function ProductViewPage() {
     return () => { document.body.style.overflow = ''; };
   }, [showLoginPopup]);
 
+  // ── Variants ─────────────────────────────────────────────────
+  const variants = Array.isArray(product?.variants) ? product.variants : [];
+  const hasVariants = variants.length > 0;
+  const activeVariant = hasVariants ? variants[selectedVariantIdx] : null;
+  const displayPrice = activeVariant ? Number(activeVariant.price) : Number(product?.price);
+
   // ── Cart / Buy handlers ──────────────────────────────────────
   const getCartItem = () => ({
     id: product.id,
     name: product.name,
-    price: product.price,
+    price: displayPrice,
+    variant_label: activeVariant?.label || null,
     image: Array.isArray(product.images) && product.images.length > 0
       ? product.images[0]
       : '/images/oatsimg.jpg',
@@ -326,7 +334,7 @@ export default function ProductViewPage() {
 
             <div className="flex items-center gap-3 mb-4">
               <span className="text-2xl md:text-3xl font-extrabold text-gray-900">
-                ₹ {product.price}
+                ₹ {displayPrice}
               </span>
               {reviews.length > 0 && (
                 <span className="flex items-center gap-1.5">
@@ -337,6 +345,37 @@ export default function ProductViewPage() {
                 </span>
               )}
             </div>
+
+            {/* Weight / Size Variants */}
+            {hasVariants && (
+              <div className="mb-5">
+                <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">
+                  Select Weight
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {variants.map((v, i) => {
+                    const active = i === selectedVariantIdx;
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => setSelectedVariantIdx(i)}
+                        className={`px-4 py-2 rounded-full text-sm font-bold border-2 transition-all ${
+                          active
+                            ? 'bg-[#c23d6a] border-[#c23d6a] text-white shadow-md shadow-[#c23d6a]/25'
+                            : 'bg-white border-gray-200 text-gray-700 hover:border-[#c23d6a] hover:text-[#c23d6a]'
+                        }`}
+                      >
+                        {v.label}
+                        <span className={`ml-1.5 text-xs font-black ${active ? 'text-white/80' : 'text-gray-400'}`}>
+                          ₹{v.price}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {product.description && (
               <p className="text-sm text-gray-500 leading-relaxed mb-5">

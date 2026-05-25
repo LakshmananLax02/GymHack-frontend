@@ -467,6 +467,19 @@ function CategoriesView() {
 }
 
 // ─── Product form ──────────────────────────────────────────────────────
+const normalizeVariants = (raw) => {
+  if (!raw) return [];
+  let arr = raw;
+  if (typeof raw === 'string') {
+    try { arr = JSON.parse(raw); } catch { return []; }
+  }
+  if (!Array.isArray(arr)) return [];
+  return arr.map((v) => ({
+    label: String(v?.label ?? ''),
+    price: v?.price ?? '',
+  }));
+};
+
 function ProductForm({ product, categories, onSuccess, onCancel }) {
   const isEdit = !!product;
   const [form, setForm] = useState({
@@ -479,18 +492,32 @@ function ProductForm({ product, categories, onSuccess, onCancel }) {
     category_id:    product?.category_id    || '',
     stock_quantity: product?.stock_quantity || '',
   });
+  const [variants, setVariants] = useState(() => {
+    const v = normalizeVariants(product?.variants);
+    return v.length > 0 ? v : [{ label: '', price: '' }];
+  });
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const set = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
 
+  const updateVariant = (i, key, value) =>
+    setVariants((prev) => prev.map((v, idx) => (idx === i ? { ...v, [key]: value } : v)));
+  const addVariant = () => setVariants((prev) => [...prev, { label: '', price: '' }]);
+  const removeVariant = (i) => setVariants((prev) => prev.filter((_, idx) => idx !== i));
+
   const submit = async (e) => {
     e.preventDefault();
     setLoading(true); setError('');
     try {
+      const cleanVariants = variants
+        .map((v) => ({ label: String(v.label || '').trim(), price: Number(v.price) }))
+        .filter((v) => v.label && Number.isFinite(v.price) && v.price >= 0);
+
       const fd = new FormData();
       Object.entries(form).forEach(([k, v]) => fd.append(k, v ?? ''));
+      fd.append('variants', JSON.stringify(cleanVariants));
       files.forEach((f) => fd.append('images', f));
       const url = isEdit ? `${API_BASE}/products/${product.id}` : `${API_BASE}/products`;
       const saved = await apiForm(url, isEdit ? 'PUT' : 'POST', fd);
@@ -498,6 +525,8 @@ function ProductForm({ product, categories, onSuccess, onCancel }) {
     } catch (e) { setError(e.message); }
     finally { setLoading(false); }
   };
+
+  const hasVariants = variants.some((v) => v.label && v.price);
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-5">
@@ -511,8 +540,16 @@ function ProductForm({ product, categories, onSuccess, onCancel }) {
           <input className={inputCls} value={form.subtitle} onChange={set('subtitle')} placeholder="100% natural" />
         </div>
         <div>
-          <Label required>Price (₹)</Label>
-          <input type="number" step="0.01" min="0" className={inputCls} value={form.price} onChange={set('price')} required placeholder="180" />
+          <Label required={!hasVariants}>Base Price (₹)</Label>
+          <input
+            type="number" step="0.01" min="0" className={inputCls}
+            value={form.price} onChange={set('price')}
+            required={!hasVariants}
+            placeholder={hasVariants ? 'Auto from first variant' : '180'}
+          />
+          <p className="text-[10px] text-gray-400 mt-1">
+            {hasVariants ? 'Optional when variants are set — the first variant becomes the base.' : 'Required when no weight variants are defined.'}
+          </p>
         </div>
         <div>
           <Label>Stock Quantity</Label>
@@ -548,6 +585,51 @@ function ProductForm({ product, categories, onSuccess, onCancel }) {
           <textarea rows={3} className={`${inputCls} resize-none`} value={form.how_to_use}
             onChange={set('how_to_use')} placeholder="Mix with milk..." />
         </div>
+      </div>
+
+      <div>
+        <Label>Weight Variants</Label>
+        <p className="text-[11px] text-gray-400 mb-2">
+          Add weight options (e.g. 500g, 1kg) with their own prices. Leave empty if the product has no weight options.
+        </p>
+        <div className="space-y-2">
+          {variants.map((v, i) => (
+            <div key={i} className="flex items-start gap-2">
+              <input
+                className={`${inputCls} flex-1`}
+                value={v.label}
+                onChange={(e) => updateVariant(i, 'label', e.target.value)}
+                placeholder="e.g. 500g"
+              />
+              <div className="relative w-32">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-semibold">₹</span>
+                <input
+                  type="number" step="0.01" min="0"
+                  className={`${inputCls} pl-7`}
+                  value={v.price}
+                  onChange={(e) => updateVariant(i, 'price', e.target.value)}
+                  placeholder="180"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => removeVariant(i)}
+                disabled={variants.length === 1}
+                title="Remove variant"
+                className="p-3 hover:bg-red-50 text-red-500 rounded-xl transition-colors disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={addVariant}
+          className="mt-2 inline-flex items-center gap-1.5 text-sm font-bold text-[#c23d6a] hover:text-[#a8305a]"
+        >
+          <Plus size={14} /> Add Variant
+        </button>
       </div>
 
       <div>
@@ -670,7 +752,18 @@ function ProductsView() {
                           {categoryMap[p.category_id] || '—'}
                         </span>
                       </td>
-                      <td className="px-5 py-3 font-black text-gray-900 whitespace-nowrap">₹{p.price}</td>
+                      <td className="px-5 py-3 font-black text-gray-900 whitespace-nowrap">
+                        ₹{p.price}
+                        {Array.isArray(p.variants) && p.variants.length > 0 && (
+                          <div className="mt-0.5 flex flex-wrap gap-1">
+                            {p.variants.map((v, i) => (
+                              <span key={i} className="text-[10px] font-bold bg-[#fff0f5] text-[#c23d6a] px-1.5 py-0.5 rounded-md">
+                                {v.label} ₹{v.price}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </td>
                       <td className="px-5 py-3">
                         <span className={`text-xs font-bold ${Number(p.stock_quantity) > 0 ? 'text-green-600' : 'text-red-500'}`}>
                           {p.stock_quantity ?? 0}
@@ -1187,13 +1280,3 @@ export default function AdminDashboard() {
     </div>
   );
 }
-
-        {/* Page content */}
-        <main className="flex-1 overflow-y-auto">
-          <ActiveView />
-        </main>
-//       </div>
-
-//     </div>
-//   );
-// }

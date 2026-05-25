@@ -63,7 +63,15 @@ export default function OurTopSelling() {
     const image = Array.isArray(product.images) && product.images.length > 0
       ? product.images[0]
       : '/images/oatsimg.jpg';
-    addToCartStore({ id: product.id, name: product.name, price: product.price, image });
+    const variants = Array.isArray(product.variants) ? product.variants : [];
+    const firstVariant = variants[0] || null;
+    addToCartStore({
+      id: product.id,
+      name: product.name,
+      price: firstVariant ? Number(firstVariant.price) : Number(product.price),
+      variant_label: firstVariant?.label || null,
+      image,
+    });
     showToast(`${product.name} added to cart 🛒`, 'success', 2000);
   };
 
@@ -171,11 +179,20 @@ export default function OurTopSelling() {
 
                     {/* Text details */}
                     <div className="flex justify-between items-start mb-4 px-1">
-                      <p className="font-secondary text-[13px] font-bold text-gray-800 leading-tight max-w-[70%]">
-                        {product.name}
-                      </p>
-                      <span className="font-secondary text-xl font-black text-black">
-                        ₹{product.price}
+                      <div>
+                        <p className="font-secondary text-[13px] font-bold text-gray-800 leading-tight max-w-[70%]">
+                          {product.name}
+                        </p>
+                        {Array.isArray(product.variants) && product.variants.length > 1 && (
+                          <p className="text-[10px] text-gray-400 mt-0.5">
+                            {product.variants.map(v => v.label).join(' / ')}
+                          </p>
+                        )}
+                      </div>
+                      <span className="font-secondary text-xl font-black text-black whitespace-nowrap">
+                        {Array.isArray(product.variants) && product.variants.length > 0
+                          ? `₹${product.variants[0].price}`
+                          : `₹${product.price}`}
                       </span>
                     </div>
 

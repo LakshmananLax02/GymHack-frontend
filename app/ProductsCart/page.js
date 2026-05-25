@@ -58,7 +58,7 @@ export default function CartPage() {
             ) : (
               cart.map((item) => (
                 <div
-                  key={item.id}
+                  key={`${item.id}-${item.variant_label || ''}`}
                   className="flex flex-wrap sm:flex-nowrap gap-4 bg-white p-5 rounded-3xl shadow-sm items-center transition-all"
                 >
                   <div className="w-24 h-24 bg-[#f8f8f8] rounded-2xl flex-shrink-0">
@@ -71,6 +71,11 @@ export default function CartPage() {
 
                   <div className="flex-1 min-w-[150px]">
                     <h4 className="font-primary text-lg uppercase leading-tight mb-1">{item.name}</h4>
+                    {item.variant_label && (
+                      <span className="inline-block text-[10px] font-bold bg-[#fff0f5] text-[#c23d6a] px-2 py-0.5 rounded-full mb-1 uppercase tracking-wider">
+                        {item.variant_label}
+                      </span>
+                    )}
                     <p className="font-secondary font-bold text-[#c23d6a] text-lg">₹ {item.price}</p>
                   </div>
 
@@ -81,7 +86,7 @@ export default function CartPage() {
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        updateQuantity(item.id, item.quantity - 1);
+                        updateQuantity(item.id, item.quantity - 1, item.variant_label || null);
                       }}
                       disabled={item.quantity <= 1}
                       className="w-8 h-8 flex items-center justify-center hover:bg-white rounded-full transition-colors disabled:opacity-30"
@@ -98,7 +103,7 @@ export default function CartPage() {
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        updateQuantity(item.id, item.quantity + 1);
+                        updateQuantity(item.id, item.quantity + 1, item.variant_label || null);
                       }}
                       className="w-8 h-8 flex items-center justify-center hover:bg-white rounded-full transition-colors"
                     >
@@ -111,7 +116,7 @@ export default function CartPage() {
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      removeFromCart(item.id);
+                      removeFromCart(item.id, item.variant_label || null);
                     }}
                     className="p-2 text-gray-400 hover:text-red-500 transition-colors"
                   >
@@ -145,9 +150,12 @@ export default function CartPage() {
                 </span>
               </div>
 
-              <button className="w-full bg-[#c23d6a] text-white py-5 rounded-xl font-bold uppercase tracking-[0.2em] hover:bg-black transition-all transform active:scale-95 shadow-lg shadow-[#c23d6a]/20">
+              <Link
+                href="/checkout"
+                className="block w-full bg-[#c23d6a] text-white py-5 rounded-xl font-bold uppercase tracking-[0.2em] hover:bg-black transition-all transform active:scale-95 shadow-lg shadow-[#c23d6a]/20 text-center"
+              >
                 Proceed to Checkout
-              </button>
+              </Link>
             </div>
           </div>
 

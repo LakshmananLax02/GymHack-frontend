@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import {
   LayoutDashboard, Users, FolderPlus, PackagePlus, MessageSquare,
-  LogOut, Menu, X, Bell, Search, AlertCircle, Edit3, Trash2,
+  LogOut, Menu, X, Search, AlertCircle, Edit3, Trash2,
   Plus, Upload, Image as ImageIcon, Loader2, Star,
 } from 'lucide-react';
 
@@ -1169,10 +1169,7 @@ export default function AdminDashboard() {
           </div>
 
           <div className="flex items-center gap-2">
-            <button className="relative p-2 hover:bg-gray-100 rounded-xl transition-colors">
-              <Bell size={18} className="text-gray-500" />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[#c23d6a] rounded-full" />
-            </button>
+           
             <button onClick={handleLogout}
               className="flex items-center gap-2 bg-[#c23d6a] hover:bg-[#a8305a] text-white px-4 py-2 rounded-full text-xs font-black transition-colors shadow-md shadow-[#c23d6a]/25">
               <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px] font-black">A</div>
@@ -1188,11 +1185,11 @@ export default function AdminDashboard() {
   );
 }
 
-        {/* Page content */}
-        <main className="flex-1 overflow-y-auto">
-          <ActiveView />
-        </main>
-//       </div>
+//         {/* Page content */}
+//         <main className="flex-1 overflow-y-auto">
+//           <ActiveView />
+//         </main>
+// //       </div>
 
 //     </div>
 //   );

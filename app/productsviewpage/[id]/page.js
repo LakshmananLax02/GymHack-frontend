@@ -227,20 +227,19 @@ export default function ProductViewPage() {
           body: reviewBody,
         }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to submit');
+     const data = await res.json();
+if (!res.ok) throw new Error(data.error || 'Failed to submit');
 
-      // Optimistically add the new review to the top
-      setReviews((prev) => [{
-        ...data,
-        user_name: user.firstName || user.first_name || reviewName || 'You',
-        is_verified: false,
-      }, ...prev]);
+// Re-fetch from DB instead of optimistic update
+const refreshed = await fetch(`${API_ROOT}/api/reviews/${id}`);
+const refreshedData = await refreshed.json();
+if (Array.isArray(refreshedData)) setReviews(refreshedData);
 
-      setShowReviewPopup(false);
-      setReviewRating(0); setReviewTitle(""); setReviewBody(""); setReviewName("");
-      setSubmitted(true);
-      setTimeout(() => setSubmitted(false), 3000);
+setShowReviewPopup(false);
+setReviewRating(0); setReviewTitle(""); setReviewBody(""); setReviewName("");
+setSubmitted(true);
+setTimeout(() => setSubmitted(false), 3000);
+
     } catch (e) {
       setReviewError(e.message);
     } finally {
@@ -473,9 +472,9 @@ export default function ProductViewPage() {
                   </div>
                   <div>
                     <div className="font-bold text-sm text-gray-900">{r.user_name || 'Anonymous'}</div>
-                    {r.is_verified && (
+                    {/* {r.is_verified && (
                       <div className="text-xs text-green-500 font-semibold">✓ Verified Buyer</div>
-                    )}
+                    )} */}
                   </div>
                   <div className="ml-auto text-xs text-gray-300">
                     {r.created_at

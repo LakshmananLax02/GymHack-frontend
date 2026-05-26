@@ -5,7 +5,7 @@ import Image from 'next/image';
 import {
   LayoutDashboard, Users, FolderPlus, PackagePlus, MessageSquare,
   LogOut, Menu, X, Search, AlertCircle, Edit3, Trash2,
-  Plus, Upload, Image as ImageIcon, Loader2, Star,
+  Plus, Upload, Image as ImageIcon, Loader2, Star, RefreshCw,
 } from 'lucide-react';
 
 // ─── API config ────────────────────────────────────────────────────────
@@ -250,7 +250,7 @@ function MultiImageUpload({ files, onChange, existingUrls = [], max = 5 }) {
 }
 
 // ─── Dashboard View ────────────────────────────────────────────────────
-function DashboardView({ onNavigate }) {
+function DashboardView({ onNavigate, refreshKey }) {
   const [counts, setCounts] = useState({ categories: null, products: null });
 
   useEffect(() => {
@@ -266,7 +266,7 @@ function DashboardView({ onNavigate }) {
         });
       } catch {}
     })();
-  }, []);
+  }, [refreshKey]);
 
   const stats = [
     { label: 'Categories', value: counts.categories ?? '—', icon: '🗂️', color: 'bg-amber-50', goto: 'categories' },
@@ -348,7 +348,7 @@ function CategoryForm({ category, onSuccess, onCancel }) {
 }
 
 // ─── Categories View ───────────────────────────────────────────────────
-function CategoriesView() {
+function CategoriesView({ refreshKey }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -368,20 +368,23 @@ function CategoriesView() {
     } catch (e) { setError(e.message); }
     finally { setLoading(false); }
   };
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [refreshKey]);
 
   const handleDelete = async () => {
+    if (!deleting) return;
+    const targetId = String(deleting.id);
     setDelLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/categories/${deleting.id}`, { method: 'DELETE', headers: bearer() });
+      const res = await fetch(`${API_BASE}/categories/${targetId}`, { method: 'DELETE', headers: bearer() });
       if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Delete failed'); }
-      setItems((p) => p.filter((c) => c.id !== deleting.id));
+      setItems((prev) => prev.filter((c) => String(c.id) !== targetId));
       setDeleting(null);
     } catch (e) { setError(e.message); }
     finally { setDelLoading(false); }
   };
 
-  const filtered = items.filter((c) => (c.name || '').toLowerCase().includes(search.toLowerCase()));
+  const q = search.trim().toLowerCase();
+  const filtered = q ? items.filter((c) => (c.name || '').toLowerCase().includes(q)) : items;
 
   return (
     <div className="p-6 md:p-8 space-y-5">
@@ -398,7 +401,7 @@ function CategoriesView() {
 
       <TableCard>
         {loading ? <Skeleton /> : error ? <Empty message={error} /> : filtered.length === 0 ? (
-          <Empty icon={FolderPlus} message="No categories yet" />
+          <Empty icon={FolderPlus} message={items.length === 0 ? 'No categories yet' : 'No categories match your search'} />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -651,7 +654,7 @@ function ProductForm({ product, categories, onSuccess, onCancel }) {
 }
 
 // ─── Products View ─────────────────────────────────────────────────────
-function ProductsView() {
+function ProductsView({ refreshKey }) {
   const [items, setItems] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -676,26 +679,29 @@ function ProductsView() {
     } catch (e) { setError(e.message); }
     finally { setLoading(false); }
   };
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [refreshKey]);
 
   const handleDelete = async () => {
+    if (!deleting) return;
+    const targetId = String(deleting.id);
     setDelLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/products/${deleting.id}`, { method: 'DELETE', headers: bearer() });
+      const res = await fetch(`${API_BASE}/products/${targetId}`, { method: 'DELETE', headers: bearer() });
       if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Delete failed'); }
-      setItems((p) => p.filter((x) => x.id !== deleting.id));
+      setItems((prev) => prev.filter((x) => String(x.id) !== targetId));
       setDeleting(null);
     } catch (e) { setError(e.message); }
     finally { setDelLoading(false); }
   };
 
   const categoryMap = Object.fromEntries(categories.map((c) => [c.id, c.name]));
+  const q = search.trim().toLowerCase();
   const filtered = items.filter((p) => {
-    const q = search.toLowerCase();
-    const matchSearch = (p.name || '').toLowerCase().includes(q) || (p.subtitle || '').toLowerCase().includes(q);
+    const matchSearch = !q || (p.name || '').toLowerCase().includes(q) || (p.subtitle || '').toLowerCase().includes(q);
     const matchCat = !categoryFilter || String(p.category_id) === String(categoryFilter);
     return matchSearch && matchCat;
   });
+  const hasFilter = !!q || !!categoryFilter;
 
   return (
     <div className="p-6 md:p-8 space-y-5">
@@ -717,7 +723,7 @@ function ProductsView() {
 
       <TableCard>
         {loading ? <Skeleton /> : error ? <Empty message={error} /> : filtered.length === 0 ? (
-          <Empty icon={PackagePlus} message="No products yet" />
+          <Empty icon={PackagePlus} message={items.length === 0 ? 'No products yet' : hasFilter ? 'No products match your filter' : 'No products yet'} />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -810,9 +816,12 @@ function ProductsView() {
 }
 
 // ─── Reviews View ──────────────────────────────────────────────────────
-function ReviewsView() {
+function ReviewsView({ refreshKey }) {
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [productId, setProductId] = useState('');
+  const [search, setSearch] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -822,14 +831,17 @@ function ReviewsView() {
   useEffect(() => {
     (async () => {
       try {
-        const r = await fetch(`${API_BASE}/products`);
-        const d = await r.json();
-        const list = Array.isArray(d) ? d : [];
-        setProducts(list);
-        if (list.length > 0) setProductId(String(list[0].id));
+        const [pRes, cRes] = await Promise.all([
+          fetch(`${API_BASE}/products`),
+          fetch(`${API_BASE}/categories`),
+        ]);
+        const [pData, cData] = await Promise.all([pRes.json(), cRes.json()]);
+        const pList = Array.isArray(pData) ? pData : [];
+        setProducts(pList);
+        setCategories(Array.isArray(cData) ? cData : []);
       } catch {}
     })();
-  }, []);
+  }, [refreshKey]);
 
   useEffect(() => {
     if (!productId) { setReviews([]); return; }
@@ -843,40 +855,94 @@ function ReviewsView() {
       } catch (e) { setError(e.message); }
       finally { setLoading(false); }
     })();
-  }, [productId]);
+  }, [productId, refreshKey]);
 
   const handleDelete = async () => {
+    if (!deleting) return;
+    const targetId = String(deleting.id);
     setDelLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/reviews/${deleting.id}`, { method: 'DELETE', headers: bearer() });
+      const res = await fetch(`${API_BASE}/reviews/${targetId}`, { method: 'DELETE', headers: bearer() });
       if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Delete failed'); }
-      setReviews((p) => p.filter((r) => r.id !== deleting.id));
+      setReviews((prev) => prev.filter((r) => String(r.id) !== targetId));
       setDeleting(null);
     } catch (e) { setError(e.message); }
     finally { setDelLoading(false); }
   };
 
+  const q = search.trim().toLowerCase();
+  const productMatchesFilters = (p, qStr, catId) => {
+    const matchSearch = !qStr || (p.name || '').toLowerCase().includes(qStr) || (p.subtitle || '').toLowerCase().includes(qStr);
+    const matchCat = !catId || String(p.category_id) === String(catId);
+    return matchSearch && matchCat;
+  };
+  const filteredProducts = products.filter((p) => productMatchesFilters(p, q, categoryFilter));
+
+  const handleSearchChange = (value) => {
+    setSearch(value);
+    if (!productId) return;
+    const product = products.find((p) => String(p.id) === String(productId));
+    if (product && !productMatchesFilters(product, value.trim().toLowerCase(), categoryFilter)) {
+      setProductId('');
+    }
+  };
+
+  const handleCategoryChange = (value) => {
+    setCategoryFilter(value);
+    if (!productId) return;
+    const product = products.find((p) => String(p.id) === String(productId));
+    if (product && !productMatchesFilters(product, q, value)) {
+      setProductId('');
+    }
+  };
+
+  const selectedProduct = products.find((p) => String(p.id) === String(productId));
+
   return (
     <div className="p-6 md:p-8 space-y-5">
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="flex-1 min-w-[220px] max-w-sm">
-          <Label>Product</Label>
-          <select value={productId} onChange={(e) => setProductId(e.target.value)}
-            className={`${inputCls} cursor-pointer appearance-none`}>
-            {products.length === 0 ? <option value="">No products available</option> : (
-              <>
-                <option value="">Select a product</option>
-                {products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-              </>
-            )}
-          </select>
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative max-w-sm flex-1 min-w-[200px]">
+          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          <input type="text" placeholder="Search products..." value={search}
+            onChange={(e) => handleSearchChange(e.target.value)} className={`${inputCls} pl-10`} />
         </div>
+        <select value={categoryFilter} onChange={(e) => handleCategoryChange(e.target.value)}
+          className={`${inputCls} max-w-[180px] cursor-pointer appearance-none`}>
+          <option value="">All Categories</option>
+          {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+        </select>
+        <select value={productId} onChange={(e) => setProductId(e.target.value)}
+          className={`${inputCls} max-w-[260px] cursor-pointer appearance-none`}>
+          {filteredProducts.length === 0 ? <option value="">No products match</option> : (
+            <>
+              <option value="">Select a product</option>
+              {filteredProducts.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </>
+          )}
+        </select>
         {reviews.length > 0 && (
-          <div className="text-xs font-bold text-gray-400 pb-3">
+          <div className="text-xs font-bold text-gray-400 ml-auto">
             {reviews.length} review{reviews.length !== 1 ? 's' : ''}
           </div>
         )}
       </div>
+
+      {selectedProduct && (
+        <div className="bg-white rounded-2xl border-2 border-gray-100 px-4 py-3 flex items-center gap-3">
+          {Array.isArray(selectedProduct.images) && selectedProduct.images[0] ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={selectedProduct.images[0]} alt={selectedProduct.name} className="w-10 h-10 rounded-xl object-cover shrink-0" />
+          ) : (
+            <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
+              <ImageIcon size={14} className="text-gray-300" />
+            </div>
+          )}
+          <div className="min-w-0">
+            <p className="text-sm font-bold text-gray-900 truncate">{selectedProduct.name}</p>
+            {selectedProduct.subtitle && <p className="text-xs text-gray-400 truncate">{selectedProduct.subtitle}</p>}
+          </div>
+        </div>
+      )}
 
       <TableCard>
         {!productId ? <Empty icon={MessageSquare} message="Pick a product to view its reviews" />
@@ -931,7 +997,7 @@ function ReviewsView() {
 }
 
 // ─── Users View (read-only) ────────────────────────────────────────────
-function UsersView() {
+function UsersView({ refreshKey }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -939,6 +1005,7 @@ function UsersView() {
 
   useEffect(() => {
     (async () => {
+      setLoading(true); setError('');
       try {
         const res = await fetch(USERS_URL, { headers: bearer() });
         const data = await res.json();
@@ -947,7 +1014,7 @@ function UsersView() {
       } catch (e) { setError(e.message); }
       finally { setLoading(false); }
     })();
-  }, []);
+  }, [refreshKey]);
 
   const filtered = users.filter((u) => {
     const first = u.first_name || u.firstName || '';
@@ -1014,42 +1081,58 @@ function UsersView() {
 //   1. ALTER TABLE products ADD COLUMN is_highlighted BOOLEAN DEFAULT false;
 //   2. PATCH /api/products/:id/highlight  →  { is_highlighted: bool }
 //   3. GET  /api/products?is_highlighted=true  (used by homepage carousel)
-function HighlightsView() {
+function HighlightsView({ refreshKey }) {
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [toggling, setToggling] = useState(null);
+  const [search, setSearch] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
 
   const load = async () => {
     setLoading(true); setError('');
     try {
-      const res = await fetch(`${API_BASE}/products`);
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed');
-      setProducts(Array.isArray(data) ? data : []);
+      const [pRes, cRes] = await Promise.all([
+        fetch(`${API_BASE}/products`),
+        fetch(`${API_BASE}/categories`),
+      ]);
+      const [pData, cData] = await Promise.all([pRes.json(), cRes.json()]);
+      if (!pRes.ok) throw new Error(pData.error || 'Failed');
+      setProducts(Array.isArray(pData) ? pData : []);
+      setCategories(Array.isArray(cData) ? cData : []);
     } catch (e) { setError(e.message); }
     finally { setLoading(false); }
   };
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [refreshKey]);
 
   const toggle = async (product) => {
+    const targetId = String(product.id);
+    const nextValue = !product.is_highlighted;
     setToggling(product.id);
     try {
-      const res = await fetch(`${API_BASE}/products/${product.id}/highlight`, {
+      const res = await fetch(`${API_BASE}/products/${targetId}/highlight`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', ...bearer() },
-        body: JSON.stringify({ is_highlighted: !product.is_highlighted }),
+        body: JSON.stringify({ is_highlighted: nextValue }),
       });
       if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Toggle failed'); }
-      setProducts((p) =>
-        p.map((x) => (x.id === product.id ? { ...x, is_highlighted: !product.is_highlighted } : x))
+      setProducts((prev) =>
+        prev.map((x) => (String(x.id) === targetId ? { ...x, is_highlighted: nextValue } : x))
       );
     } catch (e) { setError(e.message); }
     finally { setToggling(null); }
   };
 
   const highlightedCount = products.filter((p) => p.is_highlighted).length;
-  const sorted = [...products].sort((a, b) => (b.is_highlighted ? 1 : 0) - (a.is_highlighted ? 1 : 0));
+  const q = search.trim().toLowerCase();
+  const filtered = products.filter((p) => {
+    const matchSearch = !q || (p.name || '').toLowerCase().includes(q) || (p.subtitle || '').toLowerCase().includes(q);
+    const matchCat = !categoryFilter || String(p.category_id) === String(categoryFilter);
+    return matchSearch && matchCat;
+  });
+  const sorted = [...filtered].sort((a, b) => (b.is_highlighted ? 1 : 0) - (a.is_highlighted ? 1 : 0));
+  const hasFilter = !!q || !!categoryFilter;
 
   return (
     <div className="p-6 md:p-8 space-y-5">
@@ -1065,11 +1148,26 @@ function HighlightsView() {
         <Star size={28} className="text-[#c23d6a] fill-[#c23d6a]/20 shrink-0" />
       </div>
 
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative max-w-sm flex-1 min-w-[200px]">
+          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          <input type="text" placeholder="Search products..." value={search}
+            onChange={(e) => setSearch(e.target.value)} className={`${inputCls} pl-10`} />
+        </div>
+        <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}
+          className={`${inputCls} max-w-[180px] cursor-pointer appearance-none`}>
+          <option value="">All Categories</option>
+          {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+        </select>
+      </div>
+
       <ErrorBox error={error} />
 
       <TableCard>
         {loading ? <Skeleton /> : products.length === 0 ? (
           <Empty icon={Star} message="No products yet — add some in the Products tab" />
+        ) : sorted.length === 0 ? (
+          <Empty icon={Star} message={hasFilter ? 'No products match your filter' : 'No products yet'} />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -1159,6 +1257,8 @@ export default function AdminDashboard() {
   const [auth, setAuth] = useState(false);
   const [activeView, setActiveView] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     const t = localStorage.getItem('adminToken');
@@ -1171,19 +1271,25 @@ export default function AdminDashboard() {
     router.push('/admin/gymhack-admin-2026');
   };
 
+  const handleRefresh = () => {
+    setRefreshing(true);
+    setRefreshKey((k) => k + 1);
+    setTimeout(() => setRefreshing(false), 600);
+  };
+
   const activeLabel = NAV.find((n) => n.id === activeView)?.label ?? 'Dashboard';
 
   if (!auth) return null;
 
   const renderView = () => {
     switch (activeView) {
-      case 'dashboard':  return <DashboardView onNavigate={setActiveView} />;
-      case 'categories': return <CategoriesView />;
-      case 'products':   return <ProductsView />;
-      case 'highlights': return <HighlightsView />;
-      case 'reviews':    return <ReviewsView />;
-      case 'users':      return <UsersView />;
-      default:           return <DashboardView onNavigate={setActiveView} />;
+      case 'dashboard':  return <DashboardView onNavigate={setActiveView} refreshKey={refreshKey} />;
+      case 'categories': return <CategoriesView refreshKey={refreshKey} />;
+      case 'products':   return <ProductsView refreshKey={refreshKey} />;
+      case 'highlights': return <HighlightsView refreshKey={refreshKey} />;
+      case 'reviews':    return <ReviewsView refreshKey={refreshKey} />;
+      case 'users':      return <UsersView refreshKey={refreshKey} />;
+      default:           return <DashboardView onNavigate={setActiveView} refreshKey={refreshKey} />;
     }
   };
 
@@ -1262,7 +1368,11 @@ export default function AdminDashboard() {
           </div>
 
           <div className="flex items-center gap-2">
-           
+            <button onClick={handleRefresh} disabled={refreshing} title="Refresh data"
+              className="flex items-center gap-2 bg-white hover:bg-gray-50 border-2 border-gray-100 hover:border-[#c23d6a]/30 text-gray-700 hover:text-[#c23d6a] px-3.5 py-2 rounded-full text-xs font-black transition-all disabled:opacity-60 disabled:cursor-not-allowed">
+              <RefreshCw size={13} className={refreshing ? 'animate-spin' : ''} />
+              <span className="hidden sm:inline">Refresh</span>
+            </button>
             <button onClick={handleLogout}
               className="flex items-center gap-2 bg-[#c23d6a] hover:bg-[#a8305a] text-white px-4 py-2 rounded-full text-xs font-black transition-colors shadow-md shadow-[#c23d6a]/25">
               <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px] font-black">A</div>

@@ -1204,6 +1204,19 @@ const calcTotals = (items = []) => {
 const friendlyRzpError = code =>
   RZP_ERROR_MESSAGES[code] || RZP_ERROR_MESSAGES.DEFAULT;
 
+const makeIdempotencyKey = () =>
+  `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+
+async function waitForRazorpay(maxWaitMs = 6000) {
+  if (typeof window === 'undefined') return false;
+  const start = Date.now();
+  while (typeof window.Razorpay === 'undefined') {
+    if (Date.now() - start > maxWaitMs) return false;
+    await new Promise(r => setTimeout(r, 100));
+  }
+  return true;
+}
+
 // ─── TELEGRAM NOTIFICATION ────────────────────────────────────────────────────
 async function sendTelegramOrderAlert(form, cart, method) {
   const token  = process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN;
@@ -1245,14 +1258,18 @@ async function sendTelegramOrderAlert(form, cart, method) {
 
 // ─── API LAYER ────────────────────────────────────────────────────────────────
 const api = {
-  createOrder: async (cart, form) => {
+  createOrder: async (cart, form, idempotencyKey) => {
     const res = await fetch(`${API}/api/payment/create-order`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type':    'application/json',
+        'Idempotency-Key': idempotencyKey,
+      },
       body: JSON.stringify({
         cartItems:     cart.map(i => ({ id: i.id, qty: i.qty })),
         customerEmail: form.email || null,
         customerPhone: form.phone,
+        idempotencyKey,
       }),
     });
     const data = await res.json().catch(() => ({}));
@@ -1729,18 +1746,20 @@ function PaymentScreen({ cart, form, total, onSuccess, onFail, onBack }) {
   const [paying,       setPaying]     = useState(false);
   const [failureState, setFailure]    = useState(null);
   const [retryCount,   setRetryCount] = useState(0);
+  const idempotencyKey                = useRef(makeIdempotencyKey());
 
   const launchRazorpay = useCallback(async () => {
     setPaying(true);
     setFailure(null);
 
     try {
-      if (typeof window.Razorpay === 'undefined') {
-        throw { code: 'SDK_NOT_LOADED' };
-      }
+      const sdkReady = await waitForRazorpay();
+      if (!sdkReady) throw { code: 'SDK_NOT_LOADED' };
 
-      const orderData = await api.createOrder(cart, form);
+      const orderData = await api.createOrder(cart, form, idempotencyKey.current);
       if (!orderData.success) throw new Error(orderData.message || 'Order creation failed');
+      if (!orderData.order_id) throw new Error('Backend did not return a Razorpay order_id');
+      if (!orderData.key && !RZP_KEY) throw { code: 'SDK_NOT_LOADED', message: 'Razorpay key not configured. Set NEXT_PUBLIC_RAZORPAY_KEY_ID or have the backend return it.' };
 
       const options = {
         key:         orderData.key || RZP_KEY,
@@ -1822,6 +1841,7 @@ function PaymentScreen({ cart, form, total, onSuccess, onFail, onBack }) {
   }, [cart, form, total, onSuccess, onFail, retryCount]);
 
   const handleRetry = () => {
+    idempotencyKey.current = makeIdempotencyKey();
     setRetryCount(c => c + 1);
     setFailure(null);
   };
@@ -2082,7 +2102,7 @@ export default function CheckoutPage() {
 
   return (
     <>
-      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
 
       <style>{`
         .co-wrap *, .co-wrap *::before, .co-wrap *::after { box-sizing: border-box; }

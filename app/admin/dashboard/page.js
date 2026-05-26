@@ -8,6 +8,19 @@ import {
   Plus, Upload, Image as ImageIcon, Loader2, Star, RefreshCw,
 } from 'lucide-react';
 
+
+// Replace these two helpers at the top of your file:
+const getToken = () => {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('adminToken');
+};
+
+const bearer = () => {
+  const t = getToken();
+  if (!t) return {};
+  return { Authorization: `Bearer ${t}` };
+};
+
 // ─── API config ────────────────────────────────────────────────────────
 // If your server mounts routes under `/api/admin/...` instead of `/api/...`,
 // just change API_BASE below.
@@ -17,11 +30,23 @@ const USERS_URL = `${API_ROOT}/api/admin/users`; // adjust if your users endpoin
 
 // ─── Auth helpers ──────────────────────────────────────────────────────
 const token = () => (typeof window !== 'undefined' ? localStorage.getItem('adminToken') : null);
-const bearer = () => ({ Authorization: `Bearer ${token()}` });
+// const bearer = () => ({ Authorization: `Bearer ${token()}` });
+
+// async function apiForm(url, method, formData) {
+//   // IMPORTANT: do NOT set Content-Type for FormData — the browser sets the boundary
+//   const res = await fetch(url, { method, headers: { ...bearer() }, body: formData });
+//   const data = await res.json().catch(() => ({}));
+//   if (!res.ok) throw new Error(data.error || data.message || `HTTP ${res.status}`);
+//   return data;
+// }
 
 async function apiForm(url, method, formData) {
-  // IMPORTANT: do NOT set Content-Type for FormData — the browser sets the boundary
-  const res = await fetch(url, { method, headers: { ...bearer() }, body: formData });
+  const t = getToken();
+   console.log('[apiForm] token present:', !!t, '| first 20 chars:', t?.slice(0, 20));
+  const headers = {};
+  if (t) headers['Authorization'] = `Bearer ${t}`;
+  // Do NOT set Content-Type for FormData — browser sets the boundary
+  const res = await fetch(url, { method, headers, body: formData });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || data.message || `HTTP ${res.status}`);
   return data;

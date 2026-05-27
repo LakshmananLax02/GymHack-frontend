@@ -177,16 +177,18 @@ function TextInput({ error, icon: Icon, className = '', ...props }) {
   return (
     <div className="relative">
       {Icon && (
-        <Icon size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+        <Icon size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none transition-colors" />
       )}
       <input
         {...props}
         className={[
-          'w-full py-3 rounded-xl border-2 text-sm font-medium text-gray-900 bg-white outline-none transition-all',
-          'placeholder:text-gray-300',
-          'focus:ring-0 focus:border-[#c23d6a]',
-          Icon ? 'pl-9 pr-4' : 'px-4',
-          error ? 'border-red-400 bg-red-50' : 'border-gray-200 hover:border-gray-300',
+          'w-full py-3.5 rounded-xl border-2 text-sm font-semibold text-gray-900 bg-white outline-none transition-all',
+          'placeholder:text-gray-400 placeholder:font-normal',
+          'focus:ring-4 focus:ring-[#c23d6a]/10 focus:border-[#c23d6a]',
+          Icon ? 'pl-10 pr-4' : 'px-4',
+          error
+            ? 'border-red-400 bg-red-50 focus:ring-red-100 focus:border-red-500'
+            : 'border-gray-200 hover:border-gray-400',
           className,
         ].join(' ')}
       />
@@ -200,16 +202,18 @@ function StateSelect({ value, onChange, error }) {
       <select
         value={value} onChange={onChange}
         className={[
-          'w-full px-4 py-3 pr-8 rounded-xl border-2 text-sm font-medium bg-white outline-none appearance-none cursor-pointer transition-all',
-          'focus:border-[#c23d6a]',
-          error ? 'border-red-400 bg-red-50 text-gray-900' : 'border-gray-200 hover:border-gray-300',
+          'w-full px-4 py-3.5 pr-9 rounded-xl border-2 text-sm font-semibold bg-white outline-none appearance-none cursor-pointer transition-all',
+          'focus:ring-4 focus:ring-[#c23d6a]/10 focus:border-[#c23d6a]',
+          error
+            ? 'border-red-400 bg-red-50 text-gray-900 focus:ring-red-100 focus:border-red-500'
+            : 'border-gray-200 hover:border-gray-400',
           value ? 'text-gray-900' : 'text-gray-400',
         ].join(' ')}
       >
         <option value="" disabled>Select state</option>
         {STATES.map(s => <option key={s} value={s}>{s}</option>)}
       </select>
-      <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+      <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
     </div>
   );
 }
@@ -239,16 +243,16 @@ function Btn({ children, loading, disabled, onClick, variant = 'brand', small = 
 // ─── SECTION CARD ─────────────────────────────────────────────────────────────
 function SectionCard({ title, icon: Icon, children, step }) {
   return (
-    <div className="bg-white border-2 border-gray-100 rounded-2xl overflow-hidden">
+    <div className="bg-white border-2 border-gray-200 rounded-2xl overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_16px_rgba(194,61,106,0.08)] transition-shadow">
       {/* Card Header */}
-      <div className="flex items-center gap-3 px-5 py-3.5 border-b-2 border-gray-100 bg-gray-50">
+      <div className="flex items-center gap-3 px-5 py-4 border-b-2 border-gray-200 bg-gradient-to-r from-pink-50/60 via-pink-50/20 to-white">
         {step && (
-          <div className="w-6 h-6 rounded-full bg-[#c23d6a] flex items-center justify-center shrink-0">
-            <span className="text-white text-[10px] font-black">{step}</span>
+          <div className="w-7 h-7 rounded-full bg-[#c23d6a] flex items-center justify-center shrink-0 shadow-md shadow-[#c23d6a]/30 ring-2 ring-white">
+            <span className="text-white text-[11px] font-black">{step}</span>
           </div>
         )}
         <div className="flex items-center gap-2">
-          <Icon size={14} className="text-[#c23d6a]" />
+          <Icon size={15} className="text-[#c23d6a]" />
           <span className="font-black text-[13px] text-gray-800 tracking-wide uppercase">{title}</span>
         </div>
       </div>
@@ -265,9 +269,9 @@ function OrderSummary({ items, startOpen = false }) {
   const [open, setOpen] = useState(startOpen);
   const { subtotal, shipping, total } = calcTotals(items);
   return (
-    <div className="bg-white border-2 border-gray-100 rounded-2xl overflow-hidden">
+    <div className="bg-white border-2 border-gray-200 rounded-2xl overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
       <button onClick={() => setOpen(v => !v)}
-        className="w-full flex items-center justify-between px-5 py-4 cursor-pointer border-b-2 border-transparent data-[open=true]:border-gray-100"
+        className="w-full flex items-center justify-between px-5 py-4 cursor-pointer border-b-2 border-transparent data-[open=true]:border-gray-200"
         data-open={open}>
         <div className="flex items-center gap-2.5">
           <Package size={15} className="text-[#c23d6a]" />
@@ -424,7 +428,7 @@ function DeliveryScreen({ cart, onNext, submitting }) {
 
         <Field label="Mobile Number" error={E('phone')} hint="Used for delivery updates">
           <div className="flex gap-2">
-            <div className="flex items-center px-3.5 bg-gray-50 border-2 border-gray-200 rounded-xl text-sm font-bold text-gray-600 shrink-0 select-none gap-1.5">
+            <div className="flex items-center px-4 py-3.5 bg-gradient-to-b from-gray-50 to-gray-100 border-2 border-gray-200 rounded-xl text-sm font-black text-gray-700 shrink-0 select-none gap-1.5">
               🇮🇳 <span className="text-gray-500">+91</span>
             </div>
             <TextInput
@@ -497,8 +501,8 @@ function DeliveryScreen({ cart, onNext, submitting }) {
               className={[
                 'flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 cursor-pointer transition-all select-none',
                 f.paymentMethod === opt.v
-                  ? 'border-[#c23d6a] bg-pink-50'
-                  : 'border-gray-200 hover:border-gray-300 bg-white',
+                  ? 'border-[#c23d6a] bg-pink-50 shadow-sm ring-2 ring-[#c23d6a]/10'
+                  : 'border-gray-200 hover:border-gray-400 hover:bg-gray-50 bg-white',
               ].join(' ')}>
               <input type="radio" name="pm" value={opt.v}
                 checked={f.paymentMethod === opt.v} onChange={set('paymentMethod')}
@@ -702,8 +706,8 @@ const handleRetry = () => {
       <OrderSummary items={cart} />
 
       {/* Delivery recap */}
-      <div className="bg-white border-2 border-gray-100 rounded-2xl overflow-hidden">
-        <div className="flex items-center gap-2 px-5 py-3 border-b-2 border-gray-100 bg-gray-50">
+      <div className="bg-white border-2 border-gray-200 rounded-2xl overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+        <div className="flex items-center gap-2 px-5 py-3.5 border-b-2 border-gray-200 bg-gradient-to-r from-pink-50/60 via-pink-50/20 to-white">
           <MapPin size={13} className="text-[#c23d6a]" />
           <span className="font-black text-[11px] text-gray-600 uppercase tracking-widest">Delivering To</span>
         </div>

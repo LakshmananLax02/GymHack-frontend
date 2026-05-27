@@ -171,7 +171,7 @@ export default function OurTopSelling() {
                           <img
                             src={imgSrc}
                             alt={product.name}
-                            className="w-full h-full object-contain p-4"
+                            className="w-full h-full object-cover"
                           />
                         </div>
                       </div>

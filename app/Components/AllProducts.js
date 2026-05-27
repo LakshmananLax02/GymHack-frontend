@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, AlertCircle, X, Package } from 'lucide-react';
+import { ShoppingCart, AlertCircle, X, Package, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCartStore } from '../store/useCartStore';
@@ -15,6 +15,7 @@ export default function AllProducts() {
   const [loadingCats, setLoadingCats]   = useState(true);
   const [loadingProds, setLoadingProds] = useState(false);
   const [showLoginPopup, setShowLoginPopup] = useState(false);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
 
   const router = useRouter();
   const { user, showToast } = useAuth();
@@ -44,11 +45,13 @@ export default function AllProducts() {
       .finally(() => setLoadingProds(false));
   }, [activeCatId]);
 
-  // Lock body scroll when popup is open
+  // Lock body scroll when any popup is open
   useEffect(() => {
-    document.body.style.overflow = showLoginPopup ? 'hidden' : '';
+    document.body.style.overflow = (showLoginPopup || showCategoryModal) ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
-  }, [showLoginPopup]);
+  }, [showLoginPopup, showCategoryModal]);
+
+  const activeCategory = categories.find((c) => c.id === activeCatId);
 
   const handleTabChange = (catId) => setActiveCatId(catId);
 
@@ -93,47 +96,33 @@ export default function AllProducts() {
           </p>
         </div>
 
-        {/* ── Category Tabs ── */}
-        <div className="w-full mb-10">
-          <div className="flex justify-start md:justify-center gap-4 overflow-x-scroll pb-6 visible-scrollbar scroll-smooth px-4">
-            {loadingCats
-              ? /* skeleton tabs */
-                Array.from({ length: 4 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="flex-shrink-0 h-16 w-36 rounded-2xl bg-gray-100 animate-pulse"
+        {/* ── Category Selector ── */}
+        <div className="w-full mb-10 flex justify-center px-4">
+          {loadingCats ? (
+            <div className="h-16 w-64 rounded-2xl bg-gray-100 animate-pulse" />
+          ) : (
+            <button
+              onClick={() => setShowCategoryModal(true)}
+              className="flex items-center gap-3 px-6 py-3 rounded-2xl border-2 bg-[#ede9df] border-zinc-300 text-black hover:shadow-md active:scale-[0.98] transition-all"
+            >
+              <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-white shadow-sm shrink-0 flex items-center justify-center">
+                {activeCategory?.image_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={activeCategory.image_url}
+                    alt={activeCategory.name}
+                    className="w-full h-full object-contain p-1"
                   />
-                ))
-              : categories.map((cat) => {
-                  const isActive = activeCatId === cat.id;
-                  return (
-                    <button
-                      key={cat.id}
-                      onClick={() => handleTabChange(cat.id)}
-                      className={`flex items-center gap-3 px-6 py-3 rounded-2xl border-2 transition-all duration-300 flex-shrink-0
-                        ${isActive
-                          ? 'bg-[#ede9df] border-zinc-300 text-black'
-                          : 'border-gray-100 bg-gray-50 text-gray-400'
-                        }`}
-                    >
-                      {/* Category thumbnail */}
-                      <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-white shadow-sm shrink-0 flex items-center justify-center">
-                        {cat.image_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={cat.image_url}
-                            alt={cat.name}
-                            className="w-full h-full object-contain p-1"
-                          />
-                        ) : (
-                          <Package size={18} className="text-gray-300" />
-                        )}
-                      </div>
-                      <span className="uppercase tracking-widest text-sm font-black">{cat.name}</span>
-                    </button>
-                  );
-                })}
-          </div>
+                ) : (
+                  <Package size={18} className="text-gray-300" />
+                )}
+              </div>
+              <span className="uppercase tracking-widest text-sm font-black">
+                {activeCategory?.name || 'Select category'}
+              </span>
+              <ChevronDown size={18} className="text-gray-500" />
+            </button>
+          )}
         </div>
 
         {/* ── Product Count ── */}
@@ -183,7 +172,7 @@ export default function AllProducts() {
                       <img
                         src={imgSrc}
                         alt={item.name}
-                        className="absolute inset-0 w-full h-full object-contain p-5 md:p-8 transition-transform duration-500"
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
 
                       {/* Hover overlay — desktop only */}
@@ -293,6 +282,76 @@ export default function AllProducts() {
               >
                 Maybe later
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Category Modal ─────────────────────────────────────────────── */}
+      {showCategoryModal && (
+        <div
+          className="fixed inset-0 z-[999999] flex items-center justify-center p-4"
+          style={{ animation: 'fadeIn 0.2s ease forwards' }}
+        >
+          <style>{`
+            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+            @keyframes popIn  { from { opacity: 0; transform: scale(0.92) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+          `}</style>
+
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setShowCategoryModal(false)}
+          />
+
+          <div
+            className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-6 md:p-8"
+            style={{ animation: 'popIn 0.3s cubic-bezier(.22,1,.36,1) forwards' }}
+          >
+            <button
+              onClick={() => setShowCategoryModal(false)}
+              className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
+              aria-label="Close"
+            >
+              <X size={20} className="text-gray-400" />
+            </button>
+
+            <h3 className="text-xl md:text-2xl font-bold font-primary text-black mb-1">
+              Select a Category
+            </h3>
+            <p className="text-gray-500 font-secondary text-sm mb-6">
+              Pick a category to view its products
+            </p>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[60vh] overflow-y-auto pr-1">
+              {categories.map((cat) => {
+                const isActive = activeCatId === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => { handleTabChange(cat.id); setShowCategoryModal(false); }}
+                    className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all
+                      ${isActive
+                        ? 'bg-[#ede9df] border-zinc-400'
+                        : 'border-gray-100 bg-gray-50 hover:bg-gray-100'}`}
+                  >
+                    <div className="w-16 h-16 rounded-xl bg-white shadow-sm flex items-center justify-center overflow-hidden">
+                      {cat.image_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={cat.image_url}
+                          alt={cat.name}
+                          className="w-full h-full object-contain p-1"
+                        />
+                      ) : (
+                        <Package size={24} className="text-gray-300" />
+                      )}
+                    </div>
+                    <span className="text-xs font-black uppercase tracking-wider text-center">
+                      {cat.name}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>

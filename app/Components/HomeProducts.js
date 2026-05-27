@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, ArrowRight, ShoppingCart, AlertCircle, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ShoppingCart, AlertCircle, X, Package, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCartStore } from '../store/useCartStore';
@@ -17,6 +17,7 @@ export default function HomeProducts() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [itemsToShow, setItemsToShow]   = useState(3);
   const [showLoginPopup, setShowLoginPopup] = useState(false);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
 
   const router = useRouter();
   const { user } = useAuth();
@@ -58,11 +59,13 @@ export default function HomeProducts() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Lock scroll when popup is open
+  // Lock scroll when any popup is open
   useEffect(() => {
-    document.body.style.overflow = showLoginPopup ? 'hidden' : '';
+    document.body.style.overflow = (showLoginPopup || showCategoryModal) ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
-  }, [showLoginPopup]);
+  }, [showLoginPopup, showCategoryModal]);
+
+  const activeCategory = categories.find((c) => c.id === activeCatId);
 
   const canSlide = products.length > itemsToShow;
 
@@ -127,30 +130,31 @@ export default function HomeProducts() {
           </p>
         </div>
 
-        {/* FILTER TABS */}
-        <div className="flex justify-start md:justify-center w-full mb-8">
-          <div className="flex gap-3 md:gap-6 overflow-x-scroll pb-6 px-4 visible-scrollbar max-w-full scroll-smooth">
-            {loadingCats
-              ? Array.from({ length: 4 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="h-10 w-28 rounded-full bg-gray-100 animate-pulse flex-shrink-0"
+        {/* CATEGORY SELECTOR */}
+        <div className="flex justify-center w-full mb-8 px-4">
+          {loadingCats ? (
+            <div className="h-12 w-56 rounded-full bg-gray-100 animate-pulse" />
+          ) : (
+            <button
+              onClick={() => setShowCategoryModal(true)}
+              className="flex items-center gap-3 px-8 md:px-10 py-3 rounded-full border-2 font-secondary font-black text-xs md:text-sm uppercase tracking-[0.2em] bg-[#f0ece2] border-zinc-300 text-black hover:shadow-md active:scale-[0.98] transition-all"
+            >
+              <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center overflow-hidden shrink-0">
+                {activeCategory?.image_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={activeCategory.image_url}
+                    alt={activeCategory.name}
+                    className="w-full h-full object-contain p-1"
                   />
-                ))
-              : categories.map((cat) => (
-                  <button
-                    key={cat.id}
-                    onClick={() => handleTabChange(cat.id)}
-                    className={`px-8 md:px-12 font-secondary py-2.5 rounded-full border-2 font-black text-xs md:text-sm uppercase tracking-[0.2em] transition-all duration-300 whitespace-nowrap shadow-sm flex-shrink-0
-                      ${activeCatId === cat.id
-                        ? 'bg-[#f0ece2] border-zinc-300 text-black scale-105'
-                        : 'border-transparent bg-gray-100 text-gray-400 hover:bg-gray-200'
-                      }`}
-                  >
-                    {cat.name}
-                  </button>
-                ))}
-          </div>
+                ) : (
+                  <Package size={14} className="text-gray-300" />
+                )}
+              </div>
+              <span>{activeCategory?.name || 'Select category'}</span>
+              <ChevronDown size={16} className="text-gray-500" />
+            </button>
+          )}
         </div>
 
         {/* SLIDER */}
@@ -210,14 +214,12 @@ export default function HomeProducts() {
                       {/* Product Image */}
                       <Link href={`/productsviewpage/${item.id}`}>
                         <div className="relative w-full aspect-[3/4] mb-4 md:mb-8 cursor-pointer rounded-[15px] overflow-hidden bg-[#f8f8f8] border border-black/5">
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={imgSrc}
-                              alt={item.name}
-                              className="w-full h-full object-contain p-6 md:p-10 transition-transform duration-500"
-                            />
-                          </div>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={imgSrc}
+                            alt={item.name}
+                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
 
                           {/* Hover overlay — desktop only */}
                           <div className="hidden md:flex absolute inset-0 z-20 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/40 backdrop-blur-[1px]">
@@ -347,6 +349,76 @@ export default function HomeProducts() {
               >
                 Maybe later
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Category Modal ─────────────────────────────────────────────── */}
+      {showCategoryModal && (
+        <div
+          className="fixed inset-0 z-[999999] flex items-center justify-center p-4"
+          style={{ animation: 'fadeIn 0.2s ease forwards' }}
+        >
+          <style>{`
+            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+            @keyframes popIn  { from { opacity: 0; transform: scale(0.92) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+          `}</style>
+
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setShowCategoryModal(false)}
+          />
+
+          <div
+            className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-6 md:p-8"
+            style={{ animation: 'popIn 0.3s cubic-bezier(.22,1,.36,1) forwards' }}
+          >
+            <button
+              onClick={() => setShowCategoryModal(false)}
+              className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
+              aria-label="Close"
+            >
+              <X size={20} className="text-gray-400" />
+            </button>
+
+            <h3 className="text-xl md:text-2xl font-bold font-primary text-black mb-1">
+              Select a Category
+            </h3>
+            <p className="text-gray-500 font-secondary text-sm mb-6">
+              Pick a category to view its products
+            </p>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[60vh] overflow-y-auto pr-1">
+              {categories.map((cat) => {
+                const isActive = activeCatId === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => { handleTabChange(cat.id); setShowCategoryModal(false); }}
+                    className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all
+                      ${isActive
+                        ? 'bg-[#f0ece2] border-zinc-400'
+                        : 'border-gray-100 bg-gray-50 hover:bg-gray-100'}`}
+                  >
+                    <div className="w-16 h-16 rounded-xl bg-white shadow-sm flex items-center justify-center overflow-hidden">
+                      {cat.image_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={cat.image_url}
+                          alt={cat.name}
+                          className="w-full h-full object-contain p-1"
+                        />
+                      ) : (
+                        <Package size={24} className="text-gray-300" />
+                      )}
+                    </div>
+                    <span className="text-xs font-black uppercase tracking-wider text-center">
+                      {cat.name}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>

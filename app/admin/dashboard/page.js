@@ -276,18 +276,23 @@ function MultiImageUpload({ files, onChange, existingUrls = [], max = 5 }) {
 
 // ─── Dashboard View ────────────────────────────────────────────────────
 function DashboardView({ onNavigate, refreshKey }) {
-  const [counts, setCounts] = useState({ categories: null, products: null });
+  const [counts, setCounts] = useState({ categories: null, products: null, reviews: null, users: null });
 
   useEffect(() => {
     (async () => {
       try {
-        const [cats, prods] = await Promise.all([
+        const [cats, prods, revs, usrRes] = await Promise.all([
           fetch(`${API_BASE}/categories`).then((r) => r.json()).catch(() => []),
           fetch(`${API_BASE}/products`).then((r) => r.json()).catch(() => []),
+          fetch(`${API_BASE}/reviews`).then((r) => r.json()).catch(() => []),
+          fetch(USERS_URL, { headers: bearer() }).then((r) => r.json()).catch(() => ({ users: [] })),
         ]);
+        const usersArr = usrRes?.users || (Array.isArray(usrRes) ? usrRes : []);
         setCounts({
           categories: Array.isArray(cats) ? cats.length : 0,
-          products: Array.isArray(prods) ? prods.length : 0,
+          products:   Array.isArray(prods) ? prods.length : 0,
+          reviews:    Array.isArray(revs) ? revs.length : 0,
+          users:      Array.isArray(usersArr) ? usersArr.length : 0,
         });
       } catch {}
     })();
@@ -296,8 +301,8 @@ function DashboardView({ onNavigate, refreshKey }) {
   const stats = [
     { label: 'Categories', value: counts.categories ?? '—', icon: '🗂️', color: 'bg-amber-50', goto: 'categories' },
     { label: 'Products',   value: counts.products ?? '—',   icon: '📦', color: 'bg-blue-50',  goto: 'products' },
-    { label: 'Reviews',    value: '—',                       icon: '⭐', color: 'bg-[#fff0f5]', goto: 'reviews' },
-    { label: 'Users',      value: '—',                       icon: '👥', color: 'bg-green-50', goto: 'users' },
+    { label: 'Reviews',    value: counts.reviews ?? '—',    icon: '⭐', color: 'bg-[#fff0f5]', goto: 'reviews' },
+    { label: 'Users',      value: counts.users ?? '—',      icon: '👥', color: 'bg-green-50', goto: 'users' },
   ];
 
   return (
@@ -869,18 +874,21 @@ function ReviewsView({ refreshKey }) {
   }, [refreshKey]);
 
   useEffect(() => {
-    if (!productId) { setReviews([]); return; }
     (async () => {
       setLoading(true); setError('');
       try {
-        const r = await fetch(`${API_BASE}/reviews/${productId}`);
+        const params = new URLSearchParams();
+        if (productId) params.set('productId', productId);
+        else if (categoryFilter) params.set('categoryId', categoryFilter);
+        const qs = params.toString();
+        const r = await fetch(`${API_BASE}/reviews${qs ? `?${qs}` : ''}`);
         const d = await r.json();
         if (!r.ok) throw new Error(d.error || 'Failed');
         setReviews(Array.isArray(d) ? d : []);
       } catch (e) { setError(e.message); }
       finally { setLoading(false); }
     })();
-  }, [productId, refreshKey]);
+  }, [productId, categoryFilter, refreshKey]);
 
   const handleDelete = async () => {
     if (!deleting) return;
@@ -970,13 +978,20 @@ function ReviewsView({ refreshKey }) {
       )}
 
       <TableCard>
-        {!productId ? <Empty icon={MessageSquare} message="Pick a product to view its reviews" />
-          : loading ? <Skeleton />
+        {loading ? <Skeleton />
           : error ? <Empty message={error} />
-          : reviews.length === 0 ? <Empty icon={MessageSquare} message="No reviews yet for this product" />
+          : reviews.length === 0 ? (
+            <Empty icon={MessageSquare} message={
+              productId ? 'No reviews yet for this product'
+              : categoryFilter ? 'No reviews yet for this category'
+              : 'No reviews yet'
+            } />
+          )
           : (
             <ul className="divide-y divide-gray-100">
-              {reviews.map((r) => (
+              {reviews.map((r) => {
+                const productImg = Array.isArray(r.product_images) && r.product_images[0];
+                return (
                 <li key={r.id} className="p-5 hover:bg-[#fff8fb] transition-colors">
                   <div className="flex items-start gap-4">
                     <div className="w-10 h-10 rounded-full bg-[#fff0f5] flex items-center justify-center text-sm font-black text-[#c23d6a] shrink-0">
@@ -994,6 +1009,17 @@ function ReviewsView({ refreshKey }) {
                           {r.created_at ? new Date(r.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
                         </span>
                       </div>
+                      {r.product_name && !productId && (
+                        <div className="flex items-center gap-2 mb-2 bg-gray-50 border border-gray-100 rounded-lg px-2 py-1 w-fit">
+                          {productImg ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={productImg} alt={r.product_name} className="w-5 h-5 rounded object-cover" />
+                          ) : (
+                            <ImageIcon size={11} className="text-gray-300" />
+                          )}
+                          <span className="text-[11px] font-bold text-gray-600">{r.product_name}</span>
+                        </div>
+                      )}
                       <div className="flex items-center gap-0.5 mb-2">
                         {Array.from({ length: 5 }).map((_, i) => (
                           <Star key={i} size={13} className={i < (r.rating || 0) ? 'fill-amber-400 text-amber-400' : 'text-gray-200'} />
@@ -1008,7 +1034,7 @@ function ReviewsView({ refreshKey }) {
                     </button>
                   </div>
                 </li>
-              ))}
+              );})}
             </ul>
           )}
       </TableCard>

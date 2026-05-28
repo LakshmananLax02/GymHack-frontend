@@ -52,6 +52,7 @@ export default function AllProducts() {
   }, [showLoginPopup, showCategoryModal]);
 
   const activeCategory = categories.find((c) => c.id === activeCatId);
+  const isFewProducts  = products.length > 0 && products.length <= 2;
 
   const handleTabChange = (catId) => setActiveCatId(catId);
 
@@ -173,7 +174,9 @@ export default function AllProducts() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className={isFewProducts
+            ? "flex flex-wrap justify-center gap-4 md:gap-6"
+            : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6"}>
             {products.map((item) => {
               const imgSrc =
                 Array.isArray(item.images) && item.images.length > 0
@@ -181,7 +184,7 @@ export default function AllProducts() {
                   : '/images/oatsimg.jpg';
 
               return (
-                <div key={item.id} className="group flex flex-col">
+                <div key={item.id} className={`group flex flex-col ${isFewProducts ? 'w-full max-w-[280px] sm:w-[280px]' : ''}`}>
 
                   {/* Image card */}
                   <Link href={`/productsviewpage/${item.id}`}>

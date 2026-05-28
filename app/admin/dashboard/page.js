@@ -493,7 +493,7 @@ function CategoriesView({ refreshKey }) {
 
       <ConfirmDialog open={!!deleting} onClose={() => setDeleting(null)}
         title="Delete Category?"
-        message={`This will permanently delete "${deleting?.name}". This cannot be undone.`}
+        message={`This will permanently delete "${deleting?.name}" AND every product inside it (along with their reviews and cart entries). Order history will be preserved. This cannot be undone.`}
         onConfirm={handleDelete} loading={delLoading} />
     </div>
   );
@@ -839,7 +839,7 @@ function ProductsView({ refreshKey }) {
 
       <ConfirmDialog open={!!deleting} onClose={() => setDeleting(null)}
         title="Delete Product?"
-        message={`This will permanently delete "${deleting?.name}" and its images. This cannot be undone.`}
+        message={`This will permanently delete "${deleting?.name}", its images, and all reviews and cart entries for it. Order history will be preserved. This cannot be undone.`}
         onConfirm={handleDelete} loading={delLoading} />
     </div>
   );

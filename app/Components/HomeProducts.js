@@ -214,7 +214,7 @@ export default function HomeProducts() {
               </div>
             ) : (
               <div
-                className="flex transition-transform duration-700 ease-in-out"
+                className={`flex transition-transform duration-700 ease-in-out ${!canSlide ? 'justify-center' : ''}`}
                 style={{ transform: `translateX(-${currentIndex * (100 / itemsToShow)}%)` }}
               >
                 {products.map((item) => {

@@ -149,7 +149,7 @@ export default function OurTopSelling() {
           {/* Card container */}
           <div className="overflow-hidden">
             <div
-              className="flex transition-transform duration-500 ease-out"
+              className={`flex transition-transform duration-500 ease-out ${!canSlide ? 'justify-center' : ''}`}
               style={{ transform: `translateX(-${currentIndex * (100 / itemsToShow)}%)` }}
             >
               {products.map((product) => {
@@ -163,46 +163,49 @@ export default function OurTopSelling() {
                     className="flex-none px-2"
                     style={{ width: `${100 / itemsToShow}%` }}
                   >
-                    {/* Image — links to product page */}
-                    <Link href={`/productsviewpage/${product.id}`}>
-                      <div className="bg-[#f2eadf]/30 rounded-[15px] p-3 border-[10px] border-[#f2eadf] mb-4 aspect-[4/5] relative overflow-hidden cursor-pointer">
-                        <div className="relative w-full h-full bg-white rounded-[15px] overflow-hidden">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={imgSrc}
-                            alt={product.name}
-                            className="w-full h-full object-cover"
-                          />
+                    {/* ── Single card wrapping image + details + button ── */}
+                    <div className="group bg-white border-2 border-gray-100 rounded-2xl p-3 md:p-4 transition-all duration-300 hover:shadow-[0_12px_32px_rgba(194,61,106,0.16)] hover:border-[#c23d6a]/30 hover:-translate-y-1">
+                      {/* Image — links to product page */}
+                      <Link href={`/productsviewpage/${product.id}`}>
+                        <div className="bg-[#f2eadf]/30 rounded-[15px] p-3 border-[10px] border-[#f2eadf] mb-4 aspect-[4/5] relative overflow-hidden cursor-pointer">
+                          <div className="relative w-full h-full bg-white rounded-[15px] overflow-hidden">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={imgSrc}
+                              alt={product.name}
+                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            />
+                          </div>
                         </div>
-                      </div>
-                    </Link>
+                      </Link>
 
-                    {/* Text details */}
-                    <div className="flex justify-between items-start mb-4 px-1">
-                      <div>
-                        <p className="font-secondary text-[13px] font-bold text-gray-800 leading-tight max-w-[70%]">
-                          {product.name}
-                        </p>
-                        {Array.isArray(product.variants) && product.variants.length > 1 && (
-                          <p className="text-[10px] text-gray-400 mt-0.5">
-                            {product.variants.map(v => v.label).join(' / ')}
+                      {/* Text details */}
+                      <div className="flex justify-between items-start mb-4 px-1">
+                        <div>
+                          <p className="font-secondary text-[13px] font-bold text-gray-800 leading-tight max-w-[70%]">
+                            {product.name}
                           </p>
-                        )}
+                          {Array.isArray(product.variants) && product.variants.length > 1 && (
+                            <p className="text-[10px] text-gray-400 mt-0.5">
+                              {product.variants.map(v => v.label).join(' / ')}
+                            </p>
+                          )}
+                        </div>
+                        <span className="font-secondary text-xl font-black text-black whitespace-nowrap">
+                          {Array.isArray(product.variants) && product.variants.length > 0
+                            ? `₹${product.variants[0].price}`
+                            : `₹${product.price}`}
+                        </span>
                       </div>
-                      <span className="font-secondary text-xl font-black text-black whitespace-nowrap">
-                        {Array.isArray(product.variants) && product.variants.length > 0
-                          ? `₹${product.variants[0].price}`
-                          : `₹${product.price}`}
-                      </span>
-                    </div>
 
-                    {/* Add to cart (gated on login) */}
-                    <button
-                      onClick={() => handleAddToCart(product)}
-                      className="flex items-center justify-center w-full gap-2 px-5 py-2.5 rounded-full font-bold text-xs shadow-lg bg-[#c23d6a] text-white hover:bg-[#f2eadf] hover:text-black border border-transparent hover:border-black transition-all duration-300 font-secondary"
-                    >
-                      Add to Cart <ShoppingCart size={16} />
-                    </button>
+                      {/* Add to cart (gated on login) */}
+                      <button
+                        onClick={() => handleAddToCart(product)}
+                        className="flex items-center justify-center w-full gap-2 px-5 py-2.5 rounded-full font-bold text-xs shadow-lg bg-[#c23d6a] text-white hover:bg-[#f2eadf] hover:text-black border border-transparent hover:border-black transition-all duration-300 font-secondary"
+                      >
+                        Add to Cart <ShoppingCart size={16} />
+                      </button>
+                    </div>
                   </div>
                 );
               })}

@@ -99,6 +99,13 @@ async function sendTelegramOrderAlert(form, cart, method) {
   }
 }
 
+// Attach the user JWT (if logged in) so the backend can store user_id on the order.
+const authHeader = () => {
+  if (typeof window === 'undefined') return {};
+  const token = localStorage.getItem('token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 // ─── API LAYER ────────────────────────────────────────────────────────────────
 const api = {
   createOrder: async (cart, form, idempotencyKey) => {
@@ -107,6 +114,7 @@ const api = {
       headers: {
         'Content-Type':    'application/json',
         'Idempotency-Key': idempotencyKey,
+        ...authHeader(),
       },
       body: JSON.stringify({
         cartItems:     cart.map(i => ({ id: i.id, qty: i.qty })),
@@ -123,7 +131,7 @@ const api = {
   verifyPayment: async ({ razorpay_payment_id, razorpay_order_id, razorpay_signature, form, cart }) => {
     const res = await fetch(`${API}/api/payment/verify`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeader() },
       body: JSON.stringify({
         razorpay_payment_id, razorpay_order_id, razorpay_signature,
         deliveryAddress: form,
@@ -138,7 +146,7 @@ const api = {
   placeCOD: async (cart, form) => {
     const res = await fetch(`${API}/api/orders/cod`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeader() },
       body: JSON.stringify({
         cartItems:       cart.map(i => ({ id: i.id, qty: i.qty })),
         deliveryAddress: form,

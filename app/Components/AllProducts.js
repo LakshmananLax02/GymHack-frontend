@@ -96,34 +96,52 @@ export default function AllProducts() {
           </p>
         </div>
 
-        {/* ── Category Selector ── */}
-        <div className="w-full mb-10 flex justify-center px-4">
-          {loadingCats ? (
-            <div className="h-16 w-64 rounded-2xl bg-gray-100 animate-pulse" />
-          ) : (
-            <button
-              onClick={() => setShowCategoryModal(true)}
-              className="flex items-center gap-3 px-6 py-3 rounded-2xl border-2 bg-[#ede9df] border-zinc-300 text-black hover:shadow-md active:scale-[0.98] transition-all"
-            >
-              <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-white shadow-sm shrink-0 flex items-center justify-center">
-                {activeCategory?.image_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={activeCategory.image_url}
-                    alt={activeCategory.name}
-                    className="w-full h-full object-contain p-1"
-                  />
-                ) : (
-                  <Package size={18} className="text-gray-300" />
-                )}
-              </div>
-              <span className="uppercase tracking-widest text-sm font-black">
-                {activeCategory?.name || 'Select category'}
-              </span>
-              <ChevronDown size={18} className="text-gray-500" />
-            </button>
-          )}
-        </div>
+       {/* ── Category Selector ── */}
+<div className="w-full mb-10">
+  {loadingCats ? (
+    <div className="flex gap-3 px-4 overflow-hidden">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="h-12 w-40 rounded-2xl bg-gray-100 animate-pulse shrink-0" />
+      ))}
+    </div>
+  ) : (
+    <div className="flex items-center gap-3 overflow-x-auto visible-scrollbar px-4 md:justify-center md:flex-wrap">
+      {categories.map((cat) => {
+        const isActive = activeCatId === cat.id;
+        return (
+          <button
+            key={cat.id}
+            onClick={() => setActiveCatId(cat.id)}
+            className={`
+              flex items-center gap-3 px-6 py-3 rounded-2xl border-2
+              font-secondary font-black text-xs uppercase tracking-widest
+              whitespace-nowrap transition-all shrink-0 active:scale-[0.98]
+              ${isActive
+                ? 'bg-black border-black text-white shadow-lg'
+                : 'bg-[#f0ece2] border-zinc-200 text-black hover:border-zinc-300'}
+            `}
+          >
+            <div className={`
+              w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden shrink-0
+              ${isActive ? 'bg-white/20' : 'bg-white shadow-sm'}
+            `}>
+              {cat.image_url ? (
+                <img
+                  src={cat.image_url}
+                  alt={cat.name}
+                  className="w-full h-full object-contain p-1"
+                />
+              ) : (
+                <Package size={18} className={isActive ? 'text-white' : 'text-gray-300'} />
+              )}
+            </div>
+            <span>{cat.name}</span>
+          </button>
+        );
+      })}
+    </div>
+  )}
+</div>
 
         {/* ── Product Count ── */}
         {!loadingProds && (

@@ -130,33 +130,51 @@ export default function HomeProducts() {
           </p>
         </div>
 
-        {/* CATEGORY SELECTOR */}
-        <div className="flex justify-center w-full mb-8 px-4">
-          {loadingCats ? (
-            <div className="h-12 w-56 rounded-full bg-gray-100 animate-pulse" />
-          ) : (
-            <button
-              onClick={() => setShowCategoryModal(true)}
-              className="flex items-center gap-3 px-8 md:px-10 py-3 rounded-full border-2 font-secondary font-black text-xs md:text-sm uppercase tracking-[0.2em] bg-[#f0ece2] border-zinc-300 text-black hover:shadow-md active:scale-[0.98] transition-all"
-            >
-              <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center overflow-hidden shrink-0">
-                {activeCategory?.image_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={activeCategory.image_url}
-                    alt={activeCategory.name}
-                    className="w-full h-full object-contain p-1"
-                  />
-                ) : (
-                  <Package size={14} className="text-gray-300" />
-                )}
-              </div>
-              <span>{activeCategory?.name || 'Select category'}</span>
-              <ChevronDown size={16} className="text-gray-500" />
-            </button>
-          )}
-        </div>
-
+       {/* CATEGORY SELECTOR - CENTERED ON DESKTOP, SCROLLABLE ON MOBILE */}
+<div className="w-full mb-8">
+  {loadingCats ? (
+    <div className="flex gap-3 px-4 overflow-hidden">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="h-10 w-32 rounded-full bg-gray-100 animate-pulse shrink-0" />
+      ))}
+    </div>
+  ) : (
+<div className="flex items-center gap-3 overflow-x-auto visible-scrollbar px-4 md:justify-center md:flex-wrap">      {categories.map((cat) => {
+        const isActive = activeCatId === cat.id;
+        return (
+          <button
+            key={cat.id}
+            onClick={() => setActiveCatId(cat.id)}
+            className={`
+              flex items-center gap-3 px-6 py-2.5 rounded-full border-2 
+              font-secondary font-black text-[10px] md:text-xs uppercase tracking-widest
+              whitespace-nowrap transition-all shrink-0
+              ${isActive 
+                ? 'bg-black border-black text-white shadow-lg' 
+                : 'bg-[#f0ece2] border-zinc-200 text-black hover:border-zinc-300'}
+            `}
+          >
+            <div className={`
+              w-7 h-7 rounded-full flex items-center justify-center overflow-hidden shrink-0
+              ${isActive ? 'bg-white/20' : 'bg-white shadow-sm'}
+            `}>
+              {cat.image_url ? (
+                <img
+                  src={cat.image_url}
+                  alt={cat.name}
+                  className="w-full h-full object-contain p-0.5"
+                />
+              ) : (
+                <Package size={12} className={isActive ? 'text-white' : 'text-gray-300'} />
+              )}
+            </div>
+            <span>{cat.name}</span>
+          </button>
+        );
+      })}
+    </div>
+  )}
+</div>
         {/* SLIDER */}
         <div className="relative flex items-center justify-center min-h-[500px] md:min-h-[650px]">
           {canSlide && (
@@ -208,8 +226,8 @@ export default function HomeProducts() {
                   return (
                     <div
                       key={item.id}
-                      className="flex-none px-4 md:px-8 flex flex-col group"
-                      style={{ width: `${100 / itemsToShow}%` }}
+                      className="flex-none px-4 md:px-8 flex flex-col group justify"
+                      style={{ width: `${80 / itemsToShow}%` }}
                     >
                       {/* Product Image */}
                       <Link href={`/productsviewpage/${item.id}`}>

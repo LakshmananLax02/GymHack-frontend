@@ -60,7 +60,7 @@ async function waitForRazorpay(maxWaitMs = 6000) {
   return true;
 }
 
-// ─── TELEGRAM NOTIFICATION ────────────────────────────────────────────────────
+// ─── TELEGRAM NOTIFICATION ─────────────────────────────────────
 async function sendTelegramOrderAlert(form, cart, method) {
   const token  = process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN;
   const chatId = process.env.NEXT_PUBLIC_TELEGRAM_CHAT_ID;

@@ -899,49 +899,57 @@ export default function Navbar() {
       )}
 
       {/* ── Mobile Bottom Nav ──────────────────────────────────────────────── */}
-      <nav className="md:hidden bg-white border-t border-gray-200" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999, paddingBottom: 'env(safe-area-inset-bottom)', boxShadow: '0 -2px 16px rgba(0,0,0,0.08)' }}>
-        <div className="flex items-center justify-around h-16 px-2">
-          <Link href="/" className={`flex flex-col items-center gap-1 flex-1 py-2 transition-colors ${pathname === '/' ? 'text-[#c23d6a]' : 'text-gray-500'}`}>
-            <Home size={22} strokeWidth={2} />
-            <span className="text-[10px] font-semibold">Home</span>
-          </Link>
-         <Link href="/products">
-          <button className="flex flex-col items-center gap-1 flex-1 py-2 text-gray-500 transition-colors">
-            <Store size={22} strokeWidth={2} />
-            <span className="text-[10px] font-semibold">Shop</span>
-          </button>
-          </Link>
+<nav className="md:hidden bg-white border-t border-gray-200" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999, paddingBottom: 'env(safe-area-inset-bottom)', boxShadow: '0 -2px 16px rgba(0,0,0,0.08)' }}>
+  <div className="flex items-center justify-around h-16 px-2">
 
-          {/* ✅ Cart — popup if not logged in */}
-          <button onClick={handleOpenCart} className="flex flex-col items-center justify-center flex-1 py-2 text-gray-500 transition-colors">
-            <div className="relative w-fit h-fit flex items-center justify-center">
-              <ShoppingCart size={22} strokeWidth={2} />
-              {mounted && user && totalItems > 0 && (
-                <span className="absolute bg-[#c23d6a] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold leading-none border-2 border-white" style={{ top: '-6px', right: '-8px' }}>
-                  {totalItems}
-                </span>
-              )}
-            </div>
-            <span className="text-[10px] font-semibold mt-1">Cart</span>
-          </button>
+    {/* Home */}
+    <Link href="/" className={`flex flex-col items-center justify-center flex-1 py-2 transition-colors ${pathname === '/' ? 'text-[#c23d6a]' : 'text-gray-500'}`}>
+      <div className="flex items-center justify-center w-[22px] h-[22px]">
+        <Home size={22} strokeWidth={2} />
+      </div>
+      <span className="text-[10px] font-semibold mt-1">Home</span>
+    </Link>
 
-          {/* ✅ Profile — popup if not logged in */}
-          <button
-            onClick={handleProfileClick}
-            className={`flex flex-col items-center gap-1 flex-1 py-2 transition-colors ${pathname === '/profile' ? 'text-[#c23d6a]' : 'text-gray-500'}`}
-          >
-            {user ? (
-              <div className="w-6 h-6 rounded-full bg-[#c23d6a] flex items-center justify-center text-white font-black text-[10px]">
-                {userInitial}
-              </div>
-            ) : (
-              <User size={22} strokeWidth={2} />
-            )}
-            <span className="text-[10px] font-semibold">{user ? 'Profile' : 'Login'}</span>
-          </button>
-        </div>
-      </nav>
+    {/* Shop */}
+    <Link href="/products" className="flex flex-col items-center justify-center flex-1 py-2 text-gray-500 transition-colors">
+      <div className="flex items-center justify-center w-[22px] h-[22px]">
+        <Store size={22} strokeWidth={2} />
+      </div>
+      <span className="text-[10px] font-semibold mt-1">Shop</span>
+    </Link>
 
+    {/* Cart */}
+    <button onClick={handleOpenCart} className="flex flex-col items-center justify-center flex-1 py-2 text-gray-500 transition-colors">
+      <div className="relative flex items-center justify-center w-[22px] h-[22px]">
+        <ShoppingCart size={22} strokeWidth={2} />
+        {mounted && user && totalItems > 0 && (
+          <span className="absolute bg-[#c23d6a] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold leading-none border-2 border-white" style={{ top: '-6px', right: '-8px' }}>
+            {totalItems}
+          </span>
+        )}
+      </div>
+      <span className="text-[10px] font-semibold mt-1">Cart</span>
+    </button>
+
+    {/* Profile / Login */}
+    <button
+      onClick={handleProfileClick}
+      className={`flex flex-col items-center justify-center flex-1 py-2 transition-colors ${pathname === '/profile' ? 'text-[#c23d6a]' : 'text-gray-500'}`}
+    >
+      <div className="flex items-center justify-center w-[22px] h-[22px]">
+        {user ? (
+          <div className="w-6 h-6 rounded-full bg-[#c23d6a] flex items-center justify-center text-white font-black text-[10px]">
+            {userInitial}
+          </div>
+        ) : (
+          <User size={22} strokeWidth={2} />
+        )}
+      </div>
+      <span className="text-[10px] font-semibold mt-1">{user ? 'Profile' : 'Login'}</span>
+    </button>
+
+  </div>
+</nav>
       {/* ── BULK ORDER POPUP ───────────────────────────────────────────────── */}
       {isBulkOpen && (
         <div className="fixed inset-0 z-[9999999] flex items-center justify-center p-4">

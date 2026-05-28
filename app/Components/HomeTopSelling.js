@@ -164,11 +164,11 @@ export default function OurTopSelling() {
                     style={{ width: `${100 / itemsToShow}%` }}
                   >
                     {/* ── Single card wrapping image + details + button ── */}
-                    <div className="group bg-white border-2 border-gray-100 rounded-2xl p-3 md:p-4 transition-all duration-300 hover:shadow-[0_12px_32px_rgba(194,61,106,0.16)] hover:border-[#c23d6a]/30 hover:-translate-y-1">
+                    <div className="group bg-white border-2 border-gray-100 rounded-xl p-3 md:p-4 transition-all duration-300 hover:shadow-[0_12px_32px_rgba(194,61,106,0.16)] hover:border-[#c23d6a]/30">
                       {/* Image — links to product page */}
                       <Link href={`/productsviewpage/${product.id}`}>
-                        <div className="bg-[#f2eadf]/30 rounded-[15px] p-3 border-[10px] border-[#f2eadf] mb-4 aspect-[4/5] relative overflow-hidden cursor-pointer">
-                          <div className="relative w-full h-full bg-white rounded-[15px] overflow-hidden">
+                        <div className="bg-[#f2eadf]/30 rounded-[15px]  mb-4 aspect-[4/5] relative overflow-hidden cursor-pointer">
+                          <div className="relative w-full h-full bg-white rounded-[10px] overflow-hidden">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={imgSrc}

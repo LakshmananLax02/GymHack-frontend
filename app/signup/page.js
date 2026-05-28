@@ -297,7 +297,7 @@ export default function SignupPage() {
 
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-[#c23d6a] flex items-center justify-center mx-auto mb-4 shadow-lg shadow-[#c23d6a]/30 relative overflow-hidden">
+          <div className="w-14 h-14 rounded-xl bg-[#c23d6a] flex items-center justify-center mx-auto mb-4 shadow-lg shadow-[#c23d6a]/30 relative overflow-hidden">
             <Image src="/images/logoimg.png" alt="GymHack" fill className="object-contain p-2" />
           </div>
           <h1 className="text-2xl font-black text-gray-900 mb-1 tracking-tight">Create your account</h1>
@@ -305,7 +305,7 @@ export default function SignupPage() {
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-3xl p-8 shadow-xl shadow-gray-200/80 border-2 border-gray-300">
+        <div className="bg-white rounded-xl p-8 shadow-xl shadow-gray-200/80 border-2 border-gray-300">
 
           <StepBar step={step} />
 
@@ -318,7 +318,7 @@ export default function SignupPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <Field label="First Name">
+                <Field label={<span className="text-gray-900">First Name</span>}>
                   <div className="relative">
                     <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                     <input type="text" placeholder="First"
@@ -326,7 +326,7 @@ export default function SignupPage() {
                       className={`${inputClass} pl-10 pr-3`} />
                   </div>
                 </Field>
-                <Field label="Last Name">
+                <Field label={<span className="text-gray-900">Last Name</span>}>
                   <div className="relative">
                     <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                     <input type="text" placeholder="Last"
@@ -336,7 +336,7 @@ export default function SignupPage() {
                 </Field>
               </div>
 
-              <Field label="Mobile Number">
+              <Field label={<span className="text-gray-900">Mobile Number</span>}>
                 <div className="flex border-2 border-gray-200 rounded-xl overflow-hidden transition-all focus-within:border-[#c23d6a] focus-within:ring-4 focus-within:ring-[#c23d6a]/8 hover:border-gray-300">
                   <div className="flex items-center px-3 bg-gray-50 border-r-2 border-gray-200 text-sm font-bold text-gray-500 shrink-0 select-none">
                     🇮🇳 +91
@@ -358,7 +358,7 @@ export default function SignupPage() {
               )}
 
               <button onClick={goToStep2}
-                className="w-full py-3.5 bg-[#c23d6a] text-white text-sm font-black rounded-2xl
+                className="w-full py-3.5 bg-[#c23d6a] text-white text-sm font-black rounded-full
                            hover:bg-[#a8305a] active:scale-[0.98] transition-all
                            shadow-lg shadow-[#c23d6a]/25 flex items-center justify-center gap-2">
                 Continue <ArrowRight size={17} />
@@ -380,7 +380,7 @@ export default function SignupPage() {
               </div>
 
               {/* Email + send button */}
-              <Field label="Email Address">
+              <Field label={<span className="text-gray-900">Email Address</span>}>
                 <div className="flex gap-2">
                   <div className="relative flex-1">
                     <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
@@ -451,7 +451,7 @@ export default function SignupPage() {
 
               {otpSent && (
                 <button onClick={verifyOTP} disabled={formData.otp.length < 6 || loading}
-                  className="w-full py-3.5 bg-[#c23d6a] text-white text-sm font-black rounded-2xl
+                  className="w-full py-3.5 bg-[#c23d6a] text-white text-sm font-black rounded-full
                              hover:bg-[#a8305a] active:scale-[0.98] transition-all
                              shadow-lg shadow-[#c23d6a]/25 disabled:opacity-60 disabled:cursor-not-allowed
                              flex items-center justify-center gap-2">
@@ -506,7 +506,7 @@ export default function SignupPage() {
               </div>
 
               {/* Password */}
-              <Field label="Password">
+              <Field label={<span className="text-gray-900">Password</span>}>
                 <div className="relative">
                   <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                   <input type={showPw ? 'text' : 'password'} placeholder="Min. 8 characters"
@@ -530,7 +530,7 @@ export default function SignupPage() {
               </Field>
 
               {/* Confirm password */}
-              <Field label="Confirm Password">
+              <Field label={<span className="text-gray-900">Confirm Password</span>}>
                 <div className="relative">
                   <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                   <input type={showCpw ? 'text' : 'password'} placeholder="Re-enter your password"
@@ -568,7 +568,7 @@ export default function SignupPage() {
               )}
 
               <button type="submit" disabled={loading || matchState === 'mismatch'}
-                className="w-full py-3.5 bg-[#c23d6a] text-white text-sm font-black rounded-2xl
+                className="w-full py-3.5 bg-[#c23d6a] text-white text-sm font-black rounded-full
                            hover:bg-[#a8305a] active:scale-[0.98] transition-all
                            shadow-lg shadow-[#c23d6a]/25 disabled:opacity-60 disabled:cursor-not-allowed disabled:shadow-none
                            flex items-center justify-center gap-2">

@@ -29,13 +29,14 @@ export default function Footer() {
 
         {/* 2. Customer Support */}
         <div className="font-secondary">
-          <h4 className="font-primary text-2xl uppercase mb-6 tracking-wider">Customer Support:</h4>
+          <h4 className="font-primary text-2xl uppercase mb-6 tracking-wider">Customer care</h4>
           <p className="text-xl font-bold mb-4">+91 987654323</p>
           <div className="text-gray-300 text-sm leading-relaxed mb-4 flex gap-3">
             <MapPin size={18} className="shrink-0" />
             <div>
-              <p>4517 Washington Ave.</p>
-              <p>Manchester, Kentucky 39495</p>
+              <p>No. 5, Thoppampatti</p>
+              <p>Coimbatore</p>
+              <p>641 017.</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -72,7 +73,7 @@ export default function Footer() {
 
         {/* 5. Social Media */}
         <div className="font-secondary">
-          <h4 className="font-primary text-3xl uppercase mb-6 tracking-wider">Social Media</h4>
+          <h4 className="font-primary text-2xl uppercase mb-6 tracking-wider">Social Media</h4>
           <div className="flex flex-col gap-4">
             <SocialPill label="LinkedIn" href="https://linkedin.com" icon={<FaLinkedin size={18} />} />
             <SocialPill label="Instagram" href="https://instagram.com" icon={<FaInstagram size={18} />} />

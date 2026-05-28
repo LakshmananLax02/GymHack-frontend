@@ -159,7 +159,7 @@ export default function LoginPage() {
             <p className="text-sm text-gray-500">
               New to GymHack?{' '}
               <Link href="/signup" className="text-[#c23d6a] font-black hover:underline">
-                Create an account
+                Create new account
               </Link>
             </p>
           </div>

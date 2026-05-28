@@ -678,7 +678,7 @@ export default function Navbar() {
                   <span className="text-base font-black text-gray-900">Total</span>
                   <span className="text-xl font-black text-[#c23d6a]">₹ {totalPrice.toFixed(2)}</span>
                 </div>
-                <Link href="/checkout" onClick={() => setIsCartOpen(false)} className="block w-full bg-[#c23d6a] text-white text-center text-sm font-bold py-4 rounded-2xl hover:bg-[#a8305a] transition-colors active:scale-95 transform">
+                <Link href="/checkout" onClick={() => setIsCartOpen(false)} className="block w-full bg-[#c23d6a] text-white text-center text-sm font-bold py-4 rounded-full hover:bg-[#a8305a] transition-colors active:scale-95 transform">
                   Proceed to Checkout
                 </Link>
                 <button onClick={() => setIsCartOpen(false)} className="block w-full text-center text-sm font-semibold text-gray-400 mt-3 hover:text-gray-600 transition-colors">

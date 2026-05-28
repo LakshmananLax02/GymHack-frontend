@@ -147,11 +147,11 @@ export default function HomeProducts() {
             onClick={() => setActiveCatId(cat.id)}
             className={`
               flex items-center gap-3 px-6 py-2.5 rounded-full border-2 
-              font-secondary font-black text-[10px] md:text-xs uppercase tracking-widest
+              font-secondary font-black text-[10px] md:text-xs uppercase
               whitespace-nowrap transition-all shrink-0
               ${isActive 
-                ? 'bg-black border-black text-white shadow-lg' 
-                : 'bg-[#f0ece2] border-zinc-200 text-black hover:border-zinc-300'}
+               ? 'bg-[#ede9df] border-zinc-300 text-black'
+                : 'border-gray-300 bg-gray-50 text-gray-500'}
             `}
           >
             <div className={`
@@ -227,7 +227,7 @@ export default function HomeProducts() {
                     <div
                       key={item.id}
                       className="flex-none px-4 md:px-8 flex flex-col group justify"
-                      style={{ width: `${80 / itemsToShow}%` }}
+                      style={{ width: `${100 / itemsToShow}%` }}
                     >
                       {/* Product Image */}
                       <Link href={`/productsviewpage/${item.id}`}>
@@ -258,7 +258,7 @@ export default function HomeProducts() {
                       {/* Product Info */}
                       <div className="flex justify-between items-start w-full px-2 gap-2 md:gap-4 mb-3">
                         <div className="min-h-[60px] md:min-h-[80px]">
-                          <h3 className="text-lg md:text-xl font-secondary font-bold leading-tight text-black uppercase max-w-[150px] md:max-w-[200px]">
+                          <h3 className="text-lg md:text-lg font-secondary leading-tight text-black  max-w-[150px] md:max-w-[200px]">
                             {item.name}
                           </h3>
                           {Array.isArray(item.variants) && item.variants.length > 1 && (
@@ -267,7 +267,7 @@ export default function HomeProducts() {
                             </p>
                           )}
                         </div>
-                        <span className="text-2xl md:text-4xl font-secondary font-black text-black whitespace-nowrap">
+                        <span className="text-lg md:text-lg font-secondary text-black whitespace-nowrap">
                           {Array.isArray(item.variants) && item.variants.length > 0
                             ? `₹${item.variants[0].price}`
                             : `₹${item.price}`}

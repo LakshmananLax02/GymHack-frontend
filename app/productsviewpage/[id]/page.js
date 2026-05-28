@@ -329,7 +329,7 @@ setTimeout(() => setSubmitted(false), 3000);
               {product.name}
             </h1>
             {product.subtitle && (
-              <p className="text-sm text-[#c23d6a] font-semibold mb-3">{product.subtitle}</p>
+              <p className="text-sm text-gray-900 font-semibold mb-3">{product.subtitle}</p>
             )}
 
             <div className="flex items-center gap-3 mb-4">
@@ -403,14 +403,14 @@ setTimeout(() => setSubmitted(false), 3000);
               <button
                 onClick={handleBuyNow}
                 disabled={product.stock_quantity === 0}
-                className="flex-1 bg-[#c23d6a] text-white rounded-lg py-3 px-5 text-sm font-bold hover:bg-[#a8305a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 bg-[#c23d6a] text-white rounded-full py-3 px-5 text-sm font-bold hover:bg-[#a8305a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Buy Now
               </button>
               <button
                 onClick={handleAddToCart}
                 disabled={product.stock_quantity === 0}
-                className="flex-1 bg-white text-[#c23d6a] border-2 border-[#c23d6a] rounded-lg py-3 px-5 text-sm font-bold hover:bg-[#fff3f7] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 bg-white text-[#c23d6a] border-2 border-[#c23d6a] rounded-full py-3 px-5 text-sm font-bold hover:bg-[#fff3f7] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Add to Cart
               </button>

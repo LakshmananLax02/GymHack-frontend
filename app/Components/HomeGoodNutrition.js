@@ -44,7 +44,7 @@ export default function HomeGoodNutrition() {
       </div>
 
       {/* 2. IMAGE SLIDER */}
-      <div className="relative w-full overflow-hidden bg-white h-[500px] md:flex-1">
+      <div className="relative w-full overflow-hidden flex-1">
         <Swiper
           modules={[Autoplay, Pagination]}
           autoplay={{ delay: 4000, disableOnInteraction: false }}
@@ -56,7 +56,7 @@ export default function HomeGoodNutrition() {
         >
           {slidingImages.map((src, index) => (
             <SwiperSlide key={index} className="h-full">
-              <div className="w-full h-full relative p-2 md:p-0">
+              <div className="w-full h-full relative">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={`${index}-${activeIndex}`}
@@ -71,7 +71,7 @@ export default function HomeGoodNutrition() {
                       fill
                       priority={index === 0}
                       sizes="100vw"
-                      className="object-contain"
+                      className="object-cover"
                     />
                   </motion.div>
                 </AnimatePresence>

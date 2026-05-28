@@ -251,7 +251,7 @@ function Btn({ children, loading, disabled, onClick, variant = 'brand', small = 
 // ─── SECTION CARD ─────────────────────────────────────────────────────────────
 function SectionCard({ title, icon: Icon, children, step }) {
   return (
-    <div className="bg-white border-2 border-gray-200 rounded-2xl overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_16px_rgba(194,61,106,0.08)] transition-shadow">
+    <div className="bg-white border-2 border-gray-200 rounded-xl overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_16px_rgba(194,61,106,0.08)] transition-shadow">
       {/* Card Header */}
       <div className="flex items-center gap-3 px-5 py-4 border-b-2 border-gray-200 bg-gradient-to-r from-pink-50/60 via-pink-50/20 to-white">
         {step && (
@@ -277,7 +277,7 @@ function OrderSummary({ items, startOpen = false }) {
   const [open, setOpen] = useState(startOpen);
   const { subtotal, shipping, total } = calcTotals(items);
   return (
-    <div className="bg-white border-2 border-gray-200 rounded-2xl overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+    <div className="bg-white border-2 border-gray-200 rounded-xl overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
       <button onClick={() => setOpen(v => !v)}
         className="w-full flex items-center justify-between px-5 py-4 cursor-pointer border-b-2 border-transparent data-[open=true]:border-gray-200"
         data-open={open}>
@@ -420,13 +420,18 @@ function DeliveryScreen({ cart, onNext, submitting }) {
       {/* ── Contact Info ── */}
       <SectionCard title="Contact Information" icon={User} step="1">
         <div className="grid grid-cols-2 gap-3">
-          <Field label="First Name" error={E('firstName')}>
-            <TextInput
+<Field
+  label={<span className="text-gray-900">First Name</span>}
+  error={E('firstName')}
+>            <TextInput
               value={f.firstName} onChange={set('firstName')}
               error={E('firstName')} placeholder="First name"
             />
           </Field>
-          <Field label="Last Name" error={E('lastName')}>
+          <Field
+  label={<span className="text-gray-900">Last Name</span>}
+  error={E('lastName')}
+>
             <TextInput
               value={f.lastName} onChange={set('lastName')}
               error={E('lastName')} placeholder="Last name"
@@ -434,7 +439,11 @@ function DeliveryScreen({ cart, onNext, submitting }) {
           </Field>
         </div>
 
-        <Field label="Mobile Number" error={E('phone')} hint="Used for delivery updates">
+       <Field
+  label={<span className="text-gray-900">Mobile Number</span>}
+  error={E('phone')}
+  hint="Used for delivery updates"
+>
           <div className="flex gap-2">
             <div className="flex items-center px-4 py-3.5 bg-gradient-to-b from-gray-50 to-gray-100 border-2 border-gray-200 rounded-xl text-sm font-black text-gray-700 shrink-0 select-none gap-1.5">
               🇮🇳 <span className="text-gray-500">+91</span>
@@ -447,7 +456,12 @@ function DeliveryScreen({ cart, onNext, submitting }) {
           </div>
         </Field>
 
-        <Field label="Email" optional error={E('email')} hint="Order confirmation sent here">
+       <Field
+  label={<span className="text-gray-900">Email</span>}
+  optional
+  error={E('email')}
+  hint="Order confirmation sent here"
+>
           <TextInput
             value={f.email} onChange={set('email')}
             error={E('email')} placeholder="you@example.com" type="email"
@@ -457,7 +471,10 @@ function DeliveryScreen({ cart, onNext, submitting }) {
 
       {/* ── Delivery Address ── */}
       <SectionCard title="Delivery Address" icon={MapPin} step="2">
-        <Field label="Street Address" error={E('address')}>
+        <Field
+  label={<span className="text-gray-900">Street Address</span>}
+  error={E('address')}
+>
           <TextInput
             value={f.address} onChange={set('address')}
             error={E('address')} icon={MapPin}
@@ -465,7 +482,10 @@ function DeliveryScreen({ cart, onNext, submitting }) {
           />
         </Field>
 
-        <Field label="Apartment / Landmark" optional>
+      <Field
+  label={<span className="text-gray-900">Apartment / Landmark</span>}
+  optional
+>
           <TextInput
             value={f.apartment} onChange={set('apartment')}
             placeholder="Floor, Building, Landmark"
@@ -473,18 +493,27 @@ function DeliveryScreen({ cart, onNext, submitting }) {
         </Field>
 
         <div className="grid grid-cols-2 gap-3">
-          <Field label="City" error={E('city')}>
+         <Field
+  label={<span className="text-gray-900">City</span>}
+  error={E('city')}
+>
             <TextInput
               value={f.city} onChange={set('city')}
               error={E('city')} placeholder="City"
             />
           </Field>
-          <Field label="State" error={E('state')}>
+          <Field
+  label={<span className="text-gray-900">State</span>}
+  error={E('state')}
+>
             <StateSelect value={f.state} onChange={set('state')} error={E('state')} />
           </Field>
         </div>
 
-        <Field label="Pincode" error={E('pincode')}>
+       <Field
+  label={<span className="text-gray-900">Pincode</span>}
+  error={E('pincode')}
+>
           <TextInput
             value={f.pincode} onChange={set('pincode')}
             error={E('pincode')} placeholder="6-digit pincode" maxLength={6}
@@ -548,7 +577,7 @@ function DeliveryScreen({ cart, onNext, submitting }) {
       </SectionCard>
 
       {/* ── Submit ── */}
-      <Btn onClick={submit} loading={submitting}>
+      <Btn onClick={submit} loading={submitting} className='rounded-full'>
         {isCOD
           ? <><CheckCircle2 size={17} /> Place Order (Cash on Delivery)</>
           : <><Lock size={17} /> Proceed to Payment</>}
@@ -567,7 +596,7 @@ function PaymentFailureBanner({ errorCode, message, onRetry, onBack }) {
   const msg      = message || friendlyRzpError(errorCode);
   const isCancel = errorCode === 'USER_DISMISSED';
   return (
-    <div className={`rounded-2xl border-2 p-4 space-y-3 ${isCancel ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'}`}>
+    <div className={`rounded-xl border-2 p-4 space-y-3 ${isCancel ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'}`}>
       <div className="flex gap-3 items-start">
         <div className={`w-9 h-9 rounded-xl border-2 flex items-center justify-center shrink-0
           ${isCancel ? 'bg-amber-100 border-amber-200' : 'bg-red-100 border-red-200'}`}>
@@ -736,7 +765,7 @@ const handleRetry = () => {
       </div>
 
       {/* Razorpay branded card */}
-      <div className="bg-white border-2 border-gray-100 rounded-2xl overflow-hidden">
+      <div className="bg-white border-2 border-gray-100 rounded-xl overflow-hidden">
         <div className="bg-gradient-to-br from-[#072654] via-[#1a4a9e] to-[#3395FF] px-5 py-5">
           <div className="flex items-start justify-between mb-4">
             <div>

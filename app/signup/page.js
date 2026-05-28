@@ -132,7 +132,7 @@ export default function SignupPage() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/auth/send-otp', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/send-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: formData.email }),
@@ -180,7 +180,7 @@ export default function SignupPage() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/auth/verify-otp', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: formData.email, otp: formData.otp }),
@@ -199,7 +199,7 @@ export default function SignupPage() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/auth/register', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

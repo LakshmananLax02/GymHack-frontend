@@ -160,7 +160,7 @@
 
 import { create } from 'zustand';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || '${process.env.NEXT_PUBLIC_API_URL}';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
 // Helper — read JWT from localStorage (only on client)
 const getToken = () => {

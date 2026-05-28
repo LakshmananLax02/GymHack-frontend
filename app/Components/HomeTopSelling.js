@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useCartStore } from '../store/useCartStore';
 import { useAuth } from '../context/AuthContext';
 
-const API_ROOT = process.env.NEXT_PUBLIC_API_URL || '${process.env.NEXT_PUBLIC_API_URL}';
+const API_ROOT = process.env.NEXT_PUBLIC_API_URL;
 
 export default function OurTopSelling() {
   const [products, setProducts] = useState([]);

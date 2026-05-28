@@ -9,7 +9,7 @@ import {
   CheckCircle2, Truck, AlertCircle, Eye, EyeOff,
 } from 'lucide-react';
 
-const API = process.env.NEXT_PUBLIC_API_BASE_URL || '${process.env.NEXT_PUBLIC_API_URL}';
+const API = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 function ProfileSkeleton() {

@@ -24,7 +24,7 @@ const bearer = () => {
 // ─── API config ────────────────────────────────────────────────────────
 // If your server mounts routes under `/api/admin/...` instead of `/api/...`,
 // just change API_BASE below.
-const API_ROOT = process.env.NEXT_PUBLIC_API_URL || '${process.env.NEXT_PUBLIC_API_URL}';
+const API_ROOT = process.env.NEXT_PUBLIC_API_URL;
 const API_BASE = `${API_ROOT}/api`;
 const USERS_URL = `${API_ROOT}/api/admin/users`; // adjust if your users endpoint differs
 

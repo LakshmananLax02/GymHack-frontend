@@ -13,7 +13,7 @@ import {
 import { useCartStore } from '../store/useCartStore';
 import { useAuth } from '../context/AuthContext';
 
-const API_ROOT = process.env.NEXT_PUBLIC_API_URL || '${process.env.NEXT_PUBLIC_API_URL}';
+const API_ROOT = process.env.NEXT_PUBLIC_API_URL;
 
 const TICKER_ITEMS = [
   'Free Shipping on orders over ₹500',

@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 
 // ─── ENV CONFIG ───────────────────────────────────────────────────────────────
-const API     = process.env.NEXT_PUBLIC_API_URL         || 'http://localhost:5000';
+const API     = process.env.NEXT_PUBLIC_API_URL         || '${process.env.NEXT_PUBLIC_API_URL}';
 const RZP_KEY = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '';
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────

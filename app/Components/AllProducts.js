@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useCartStore } from '../store/useCartStore';
 import { useAuth } from '../context/AuthContext';
 
-const API_ROOT = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_ROOT = process.env.NEXT_PUBLIC_API_URL || '${process.env.NEXT_PUBLIC_API_URL}';
 
 export default function AllProducts() {
   const [categories, setCategories]     = useState([]);

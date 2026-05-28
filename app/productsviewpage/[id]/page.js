@@ -7,7 +7,7 @@ import { useCartStore } from '../../store/useCartStore';
 import { useAuth } from '../../context/AuthContext';
 import { ChevronDown, AlertCircle, X } from 'lucide-react';
 
-const API_ROOT = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_ROOT = process.env.NEXT_PUBLIC_API_URL || '${process.env.NEXT_PUBLIC_API_URL}';
 
 const tickerItems = [
   { text: "Clean Ingredients", icon: "🌿" },

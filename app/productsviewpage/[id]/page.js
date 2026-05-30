@@ -135,10 +135,13 @@ export default function ProductViewPage() {
   const [submitted, setSubmitted]         = useState(false);
   const [submitting, setSubmitting]       = useState(false);
   const [reviewError, setReviewError]     = useState("");
+  const openCart = useCartStore(s => s.openCart);
 
   const router = useRouter();
   const { user, showToast } = useAuth();
   const addToCartStore = useCartStore((state) => state.addToCart);
+
+  // const { addToCart, openCart } = useCartStore();
 
   // Fetch product
   useEffect(() => {
@@ -194,12 +197,18 @@ export default function ProductViewPage() {
     showToast(`${product.name} added to cart 🛒`, 'success', 2000);
   };
 
-  const handleBuyNow = () => {
-    if (!user) { setShowLoginPopup(true); return; }
-    addToCartStore(getCartItem());
-    showToast('Heading to checkout...', 'info', 1500);
-    router.push('/checkout');
-  };
+  // const handleBuyNow = () => {
+  //   if (!user) { setShowLoginPopup(true); return; }
+  //   addToCartStore(getCartItem());
+  //   showToast('Heading to checkout...', 'info', 1500);
+  //   router.push('/checkout');
+  // };
+
+const handleBuyNow = () => {
+  if (!user) { setShowLoginPopup(true); return; }
+  addToCartStore(getCartItem());
+  openCart(); // ← cart drawer opens automatically
+};
 
   const handleLoginNow = () => {
     setShowLoginPopup(false);

@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, AlertCircle, X, Package, ChevronDown } from 'lucide-react';
+import { ShoppingCart, AlertCircle, X, Package } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCartStore } from '../store/useCartStore';
@@ -9,11 +9,11 @@ import { useAuth } from '../context/AuthContext';
 const API_ROOT = process.env.NEXT_PUBLIC_API_URL;
 
 export default function AllProducts() {
-  const [categories, setCategories]     = useState([]);
-  const [products, setProducts]         = useState([]);
-  const [activeCatId, setActiveCatId]   = useState(null);
-  const [loadingCats, setLoadingCats]   = useState(true);
-  const [loadingProds, setLoadingProds] = useState(false);
+  const [categories, setCategories]         = useState([]);
+  const [products, setProducts]             = useState([]);
+  const [activeCatId, setActiveCatId]       = useState(null);
+  const [loadingCats, setLoadingCats]       = useState(true);
+  const [loadingProds, setLoadingProds]     = useState(false);
   const [showLoginPopup, setShowLoginPopup] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
 
@@ -21,7 +21,7 @@ export default function AllProducts() {
   const { user, showToast } = useAuth();
   const addToCartStore = useCartStore((state) => state.addToCart);
 
-  // Fetch categories on mount — builds tabs
+  // Fetch categories on mount
   useEffect(() => {
     fetch(`${API_ROOT}/api/categories`)
       .then((r) => r.json())
@@ -50,9 +50,6 @@ export default function AllProducts() {
     document.body.style.overflow = (showLoginPopup || showCategoryModal) ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [showLoginPopup, showCategoryModal]);
-
-  const activeCategory = categories.find((c) => c.id === activeCatId);
-  const isFewProducts  = products.length > 0 && products.length <= 2;
 
   const handleTabChange = (catId) => setActiveCatId(catId);
 
@@ -97,52 +94,52 @@ export default function AllProducts() {
           </p>
         </div>
 
-       {/* ── Category Selector ── */}
-<div className="w-full mb-10">
-  {loadingCats ? (
-    <div className="flex gap-3 px-4 overflow-hidden">
-      {[1, 2, 3].map((i) => (
-        <div key={i} className="h-12 w-40 rounded-2xl bg-gray-100 animate-pulse shrink-0" />
-      ))}
-    </div>
-  ) : (
-    <div className="flex items-center gap-3 overflow-x-auto visible-scrollbar px-4 md:justify-center md:flex-wrap">
-      {categories.map((cat) => {
-        const isActive = activeCatId === cat.id;
-        return (
-          <button
-            key={cat.id}
-            onClick={() => setActiveCatId(cat.id)}
-            className={`
-              flex items-center gap-3 px-6 py-1.5 rounded-full border-2
-              font-secondary font-black text-xs uppercase tracking-widest
-              whitespace-nowrap transition-all shrink-0 active:scale-[0.98]
-              ${isActive
-                 ? 'bg-[#ede9df] border-zinc-300 text-black'
-                          : 'border-gray-300 bg-gray-50 text-gray-400'}
-            `}
-          >
-            <div className={`
-              w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden shrink-0
-              ${isActive ? 'bg-white/20' : 'bg-white shadow-sm'}
-            `}>
-              {cat.image_url ? (
-                <img
-                  src={cat.image_url}
-                  alt={cat.name}
-                  className="w-full h-full object-contain p-1"
-                />
-              ) : (
-                <Package size={18} className={isActive ? 'text-white' : 'text-gray-300'} />
-              )}
+        {/* ── Category Selector ── */}
+        <div className="w-full mb-10">
+          {loadingCats ? (
+            <div className="flex gap-3 px-4 overflow-hidden">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-12 w-40 rounded-2xl bg-gray-100 animate-pulse shrink-0" />
+              ))}
             </div>
-            <span>{cat.name}</span>
-          </button>
-        );
-      })}
-    </div>
-  )}
-</div>
+          ) : (
+            <div className="flex items-center gap-3 overflow-x-auto visible-scrollbar px-4 md:justify-center md:flex-wrap">
+              {categories.map((cat) => {
+                const isActive = activeCatId === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => setActiveCatId(cat.id)}
+                    className={`
+                      flex items-center gap-3 px-6 py-1.5 rounded-full border-2
+                      font-secondary font-black text-xs uppercase tracking-widest
+                      whitespace-nowrap transition-all shrink-0 active:scale-[0.98]
+                      ${isActive
+                        ? 'bg-[#ede9df] border-zinc-300 text-black'
+                        : 'border-gray-300 bg-gray-50 text-gray-400'}
+                    `}
+                  >
+                    <div className={`
+                      w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden shrink-0
+                      ${isActive ? 'bg-white/20' : 'bg-white shadow-sm'}
+                    `}>
+                      {cat.image_url ? (
+                        <img
+                          src={cat.image_url}
+                          alt={cat.name}
+                          className="w-full h-full object-contain p-1"
+                        />
+                      ) : (
+                        <Package size={18} className={isActive ? 'text-white' : 'text-gray-300'} />
+                      )}
+                    </div>
+                    <span>{cat.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
         {/* ── Product Count ── */}
         {!loadingProds && (
@@ -153,7 +150,6 @@ export default function AllProducts() {
 
         {/* ── Product Grid ── */}
         {loadingProds ? (
-          /* loading skeleton grid */
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {Array.from({ length: 8 }).map((_, i) => (
               <div key={i} className="animate-pulse flex flex-col">
@@ -164,7 +160,6 @@ export default function AllProducts() {
             ))}
           </div>
         ) : products.length === 0 ? (
-          /* empty state */
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="w-16 h-16 rounded-2xl bg-[#fff0f5] flex items-center justify-center mb-4">
               <Package size={28} className="text-[#c23d6a]" />
@@ -174,9 +169,7 @@ export default function AllProducts() {
             </p>
           </div>
         ) : (
-          <div className={isFewProducts
-            ? "flex flex-wrap justify-center gap-4 md:gap-6"
-            : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6"}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 items-stretch">
             {products.map((item) => {
               const imgSrc =
                 Array.isArray(item.images) && item.images.length > 0
@@ -184,12 +177,12 @@ export default function AllProducts() {
                   : '/images/oatsimg.jpg';
 
               return (
-                <div key={item.id} className={`group flex flex-col ${isFewProducts ? 'w-full max-w-[280px] sm:w-[280px]' : ''}`}>
+                // ── Card: full height flex column so button always sticks to bottom ──
+                <div key={item.id} className="group flex flex-col h-full">
 
-                  {/* Image card */}
+                  {/* Image */}
                   <Link href={`/productsviewpage/${item.id}`}>
                     <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-[#f8f8f8] border border-black/5 mb-3 cursor-pointer">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={imgSrc}
                         alt={item.name}
@@ -212,30 +205,36 @@ export default function AllProducts() {
                     </div>
                   </Link>
 
-                  {/* Name + Price */}
-                  <div className="flex items-start justify-between gap-2 px-1 mb-3">
-                    <h3 className="font-secondary text-xs sm:text-sm font-semibold text-black leading-snug flex-1">
-                      {item.name}
-                    </h3>
-                    <span className="font-secondary text-base sm:text-lg font-black text-black whitespace-nowrap">
-                      {Array.isArray(item.variants) && item.variants.length > 0
-                        ? `₹${item.variants[0].price}`
-                        : `₹${item.price}`}
-                    </span>
-                  </div>
-                  {Array.isArray(item.variants) && item.variants.length > 1 && (
-                    <p className="text-[10px] text-gray-400 font-secondary px-1 -mt-1 mb-2">
-                      {item.variants.map(v => v.label).join(' / ')}
-                    </p>
-                  )}
+                  {/* Name + Price — flex-1 so this section fills remaining space */}
+                  <div className="flex flex-col flex-1 px-1">
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <h3 className="font-secondary text-xs sm:text-sm font-semibold text-black leading-snug flex-1">
+                        {item.name}
+                      </h3>
+                      <span className="font-secondary text-base sm:text-lg font-black text-black whitespace-nowrap">
+                        {Array.isArray(item.variants) && item.variants.length > 0
+                          ? `₹${item.variants[0].price}`
+                          : `₹${item.price}`}
+                      </span>
+                    </div>
 
-                  {/* Add to Cart — mobile only */}
-                  <button
-                    onClick={() => handleAddToCart(item)}
-                    className="flex md:hidden w-full items-center justify-center gap-2 py-2.5 rounded-full font-bold text-xs bg-[#c23d6a] text-white font-secondary transition-all active:scale-95"
-                  >
-                    Add to Cart <ShoppingCart className="w-4 h-4" />
-                  </button>
+                    {Array.isArray(item.variants) && item.variants.length > 1 && (
+                      <p className="text-[10px] text-gray-400 font-secondary mb-2">
+                        {item.variants.map(v => v.label).join(' / ')}
+                      </p>
+                    )}
+
+                    {/* Spacer — pushes button to bottom */}
+                    <div className="flex-1" />
+
+                    {/* Add to Cart — mobile only, always at bottom */}
+                    <button
+                      onClick={() => handleAddToCart(item)}
+                      className="flex md:hidden w-full items-center justify-center gap-2 py-2.5 mt-3 rounded-full font-bold text-xs bg-[#c23d6a] text-white font-secondary transition-all active:scale-95"
+                    >
+                      Add to Cart <ShoppingCart className="w-4 h-4" />
+                    </button>
+                  </div>
 
                 </div>
               );
@@ -245,7 +244,7 @@ export default function AllProducts() {
 
       </div>
 
-      {/* ── Login Required Popup ──────────────────────────────────────── */}
+      {/* ── Login Required Popup ── */}
       {showLoginPopup && (
         <div
           className="fixed inset-0 z-[999999] flex items-center justify-center p-4"
@@ -308,7 +307,7 @@ export default function AllProducts() {
         </div>
       )}
 
-      {/* ── Category Modal ─────────────────────────────────────────────── */}
+      {/* ── Category Modal ── */}
       {showCategoryModal && (
         <div
           className="fixed inset-0 z-[999999] flex items-center justify-center p-4"
@@ -357,7 +356,6 @@ export default function AllProducts() {
                   >
                     <div className="w-16 h-16 rounded-xl bg-white shadow-sm flex items-center justify-center overflow-hidden">
                       {cat.image_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={cat.image_url}
                           alt={cat.name}

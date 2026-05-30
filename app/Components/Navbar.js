@@ -106,7 +106,10 @@ export default function Navbar() {
   const [isSidebarOpen,     setIsSidebarOpen]     = useState(false);
   const [isShopOpen,        setIsShopOpen]        = useState(false);
   const [isMoreOpen,        setIsMoreOpen]        = useState(false);
-  const [isCartOpen,        setIsCartOpen]        = useState(false);
+  // const [isCartOpen,        setIsCartOpen]        = useState(false);
+  const isCartOpen  = useCartStore(s => s.isOpen);
+const openCart    = useCartStore(s => s.openCart);
+const closeCart   = useCartStore(s => s.closeCart);
   const [isAddProductsOpen, setIsAddProductsOpen] = useState(false);
   const [isSearchOpen,      setIsSearchOpen]      = useState(false);
   const [isBulkOpen,        setIsBulkOpen]        = useState(false);
@@ -223,7 +226,7 @@ export default function Navbar() {
       openLoginPopup('Please login to view your cart');
       return;
     }
-    setIsCartOpen(true);
+   openCart()
   };
 
   // ✅ Profile click — popup if not logged in, otherwise navigate to /profile
@@ -499,11 +502,14 @@ export default function Navbar() {
                     </button>
 
                     <div className="py-1">
-                      <Link href="/terms" onClick={() => setIsMoreOpen(false)} className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors">
+                      <Link href="/terms-conditions" onClick={() => setIsMoreOpen(false)} className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors">
                         <span className="text-sm font-semibold text-gray-800">Terms and conditions</span>
                       </Link>
-                      <Link href="/privacy" onClick={() => setIsMoreOpen(false)} className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors">
+                      <Link href="/privacy-policy" onClick={() => setIsMoreOpen(false)} className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors">
                         <span className="text-sm font-semibold text-gray-800">Privacy policy</span>
+                      </Link>
+                         <Link href="/refund-policy" onClick={() => setIsMoreOpen(false)} className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors">
+                        <span className="text-sm font-semibold text-gray-800">Refund policy</span>
                       </Link>
                     </div>
                   </div>
@@ -587,7 +593,7 @@ export default function Navbar() {
       {/* ── Cart Off-canvas ────────────────────────────────────────────────── */}
       {isCartOpen && (
         <div className="fixed inset-0 z-[99999] flex justify-end">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsCartOpen(false)} />
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => closeCart()} />
           <div className="relative w-full max-w-sm md:max-w-lg bg-white h-full shadow-2xl flex flex-col" style={{ animation: 'slideInRight 0.3s ease forwards' }}>
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 shrink-0">
               <div className="flex items-center gap-2">
@@ -596,7 +602,7 @@ export default function Navbar() {
                   Your Cart {mounted && totalItems > 0 && <span className="text-[#c23d6a]">({totalItems})</span>}
                 </span>
               </div>
-              <button onClick={() => setIsCartOpen(false)} className="p-2 hover:bg-gray-100 rounded-full"><X size={20} /></button>
+              <button onClick={() => closeCart()} className="p-2 hover:bg-gray-100 rounded-full"><X size={20} /></button>
             </div>
 
             <div className="flex-1 overflow-y-auto">
@@ -605,7 +611,7 @@ export default function Navbar() {
                   <ShoppingCart size={56} className="text-gray-200 mb-4" />
                   <p className="text-base font-bold text-gray-400">Your cart is empty</p>
                   <p className="text-sm text-gray-300 mt-1 mb-6">Add some products to get started</p>
-                  <button onClick={() => { setIsCartOpen(false); setIsAddProductsOpen(true); }} className="bg-[#c23d6a] text-white px-8 py-3 rounded-full text-sm font-bold hover:bg-[#a8305a] transition-colors">
+                  <button onClick={() => { closeCart(); setIsAddProductsOpen(true); }} className="bg-[#c23d6a] text-white px-8 py-3 rounded-full text-sm font-bold hover:bg-[#a8305a] transition-colors">
                     Browse Products
                   </button>
                 </div>
@@ -678,10 +684,10 @@ export default function Navbar() {
                   <span className="text-base font-black text-gray-900">Total</span>
                   <span className="text-xl font-black text-[#c23d6a]">₹ {totalPrice.toFixed(2)}</span>
                 </div>
-                <Link href="/checkout" onClick={() => setIsCartOpen(false)} className="block w-full bg-[#c23d6a] text-white text-center text-sm font-bold py-4 rounded-full hover:bg-[#a8305a] transition-colors active:scale-95 transform">
+                <Link href="/checkout" onClick={() => closeCart()} className="block w-full bg-[#c23d6a] text-white text-center text-sm font-bold py-4 rounded-full hover:bg-[#a8305a] transition-colors active:scale-95 transform">
                   Proceed to Checkout
                 </Link>
-                <button onClick={() => setIsCartOpen(false)} className="block w-full text-center text-sm font-semibold text-gray-400 mt-3 hover:text-gray-600 transition-colors">
+                <button onClick={() => closeCart()} className="block w-full text-center text-sm font-semibold text-gray-400 mt-3 hover:text-gray-600 transition-colors">
                   Continue Shopping
                 </button>
               </div>
@@ -871,11 +877,14 @@ export default function Navbar() {
 
                 <div className="border-t border-gray-200 my-2" />
 
-                <Link href="/terms" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-4 py-3">
+                <Link href="/terms-conditions" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-4 py-3">
                   <span className="text-base font-semibold text-gray-900">Terms and conditions</span>
                 </Link>
-                <Link href="/privacy" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-4 py-3">
+                <Link href="/privacy-policy" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-4 py-3">
                   <span className="text-base font-semibold text-gray-900">Privacy policy</span>
+                </Link>
+                 <Link href="/refund-policy" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-4 py-3">
+                  <span className="text-base font-semibold text-gray-900">Refund policy</span>
                 </Link>
               </div>
             </nav>

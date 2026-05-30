@@ -211,6 +211,9 @@ const sameLine = (a, b) =>
 export const useCartStore = create((set, get) => ({
   cart:    [],
   loading: false,
+   isOpen: false,             
+  openCart: () => set({ isOpen: true }),   
+  closeCart: () => set({ isOpen: false }), 
 
   // ─── 1. ADD / INCREMENT ─────────────────────────────────────────────────────
   addToCart: async (product) => {

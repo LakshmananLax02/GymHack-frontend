@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, ArrowRight, ShoppingCart, AlertCircle, X, Package, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -19,11 +19,29 @@ export default function HomeProducts() {
   const [showLoginPopup, setShowLoginPopup] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
 
+  // ── Scroll animation refs ──────────────────────────────────────────────
+  const sectionRef  = useRef(null);
+  const headerRef   = useRef(null);
+  const catsRef     = useRef(null);
+  const sliderRef   = useRef(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect(); } },
+      { threshold: 0.08 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   const router = useRouter();
   const { user } = useAuth();
   const addToCartStore = useCartStore((state) => state.addToCart);
 
-  // Fetch categories on mount — builds the tab list
+  // Fetch categories on mount
   useEffect(() => {
     fetch(`${API_ROOT}/api/categories`)
       .then((r) => r.json())
@@ -64,8 +82,6 @@ export default function HomeProducts() {
     document.body.style.overflow = (showLoginPopup || showCategoryModal) ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [showLoginPopup, showCategoryModal]);
-
-  const activeCategory = categories.find((c) => c.id === activeCatId);
 
   const canSlide = products.length > itemsToShow;
 
@@ -113,12 +129,36 @@ export default function HomeProducts() {
     router.push('/login');
   };
 
+  // ── Shared animation style helper ─────────────────────────────────────
+  const fadeUp = (delay = 0) => ({
+    opacity:    visible ? 1 : 0,
+    transform:  visible ? 'translateY(0)' : 'translateY(32px)',
+    transition: `opacity 0.65s ease ${delay}s, transform 0.65s ease ${delay}s`,
+  });
+
   return (
-    <section className="py-3 md:py-14 bg-white overflow-hidden font-sans">
+    <section
+      ref={sectionRef}
+      className="py-3 md:py-14 bg-white overflow-hidden font-sans"
+    >
+      <style>{`
+        @keyframes fadeIn    { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes popIn     { from { opacity: 0; transform: scale(0.92) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        @keyframes pulseRing { 0%,100% { box-shadow: 0 0 0 0 rgba(194,61,106,0.35); } 50% { box-shadow: 0 0 0 14px rgba(194,61,106,0); } }
+        @keyframes cardFadeUp {
+          from { opacity: 0; transform: translateY(28px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .card-animate {
+          opacity: 0;
+          animation: cardFadeUp 0.55s ease forwards;
+        }
+      `}</style>
+
       <div className="max-w-[1440px] mx-auto px-4 md:px-6">
 
         {/* HEADER */}
-        <div className="text-center mb-8 md:mb-12">
+        <div className="text-center mb-8 md:mb-12" style={fadeUp(0)}>
           <div className="flex items-center justify-center gap-2 md:gap-3 mb-2 md:mb-3">
             <div className="w-3 h-3 md:w-5 md:h-5 bg-[#c23d6a] rounded-full" />
             <h2 className="text-3xl md:text-5xl font-bold font-primary text-black">
@@ -130,53 +170,58 @@ export default function HomeProducts() {
           </p>
         </div>
 
-       {/* CATEGORY SELECTOR - CENTERED ON DESKTOP, SCROLLABLE ON MOBILE */}
-<div className="w-full mb-8">
-  {loadingCats ? (
-    <div className="flex gap-3 px-4 overflow-hidden">
-      {[1, 2, 3].map((i) => (
-        <div key={i} className="h-10 w-32 rounded-full bg-gray-100 animate-pulse shrink-0" />
-      ))}
-    </div>
-  ) : (
-<div className="flex items-center gap-3 overflow-x-auto visible-scrollbar px-4 md:justify-center md:flex-wrap">      {categories.map((cat) => {
-        const isActive = activeCatId === cat.id;
-        return (
-          <button
-            key={cat.id}
-            onClick={() => setActiveCatId(cat.id)}
-            className={`
-              flex items-center gap-3 px-6 py-2.5 rounded-full border-2 
-              font-secondary font-black text-[10px] md:text-xs uppercase
-              whitespace-nowrap transition-all shrink-0
-              ${isActive 
-               ? 'bg-[#ede9df] border-zinc-300 text-black'
-                : 'border-gray-300 bg-gray-50 text-gray-500'}
-            `}
-          >
-            <div className={`
-              w-7 h-7 rounded-full flex items-center justify-center overflow-hidden shrink-0
-              ${isActive ? 'bg-white/20' : 'bg-white shadow-sm'}
-            `}>
-              {cat.image_url ? (
-                <img
-                  src={cat.image_url}
-                  alt={cat.name}
-                  className="w-full h-full object-contain p-0.5"
-                />
-              ) : (
-                <Package size={12} className={isActive ? 'text-white' : 'text-gray-300'} />
-              )}
+        {/* CATEGORY SELECTOR */}
+        <div className="w-full mb-8" style={fadeUp(0.15)}>
+          {loadingCats ? (
+            <div className="flex gap-3 px-4 overflow-hidden">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-10 w-32 rounded-full bg-gray-100 animate-pulse shrink-0" />
+              ))}
             </div>
-            <span>{cat.name}</span>
-          </button>
-        );
-      })}
-    </div>
-  )}
-</div>
-        {/* SLIDER */}
-        <div className="relative flex items-center justify-center min-h-[500px] md:min-h-[650px]">
+          ) : (
+            <div className="flex items-center gap-3 overflow-x-auto visible-scrollbar px-4 md:justify-center md:flex-wrap">
+              {categories.map((cat) => {
+                const isActive = activeCatId === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => setActiveCatId(cat.id)}
+                    className={`
+                      flex items-center gap-3 px-6 py-2.5 rounded-full border-2 
+                      font-secondary font-black text-[10px] md:text-xs uppercase
+                      whitespace-nowrap transition-all shrink-0
+                      ${isActive
+                        ? 'bg-[#ede9df] border-zinc-300 text-black'
+                        : 'border-gray-300 bg-gray-50 text-gray-500'}
+                    `}
+                  >
+                    <div className={`
+                      w-7 h-7 rounded-full flex items-center justify-center overflow-hidden shrink-0
+                      ${isActive ? 'bg-white/20' : 'bg-white shadow-sm'}
+                    `}>
+                      {cat.image_url ? (
+                        <img
+                          src={cat.image_url}
+                          alt={cat.name}
+                          className="w-full h-full object-contain p-0.5"
+                        />
+                      ) : (
+                        <Package size={12} className={isActive ? 'text-white' : 'text-gray-300'} />
+                      )}
+                    </div>
+                    <span>{cat.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* SLIDER — reduced min-height to match smaller cards */}
+        <div
+          className="relative flex items-center justify-center min-h-[380px] md:min-h-[500px]"
+          style={fadeUp(0.28)}
+        >
           {canSlide && (
             <button
               onClick={prevSlide}
@@ -188,7 +233,6 @@ export default function HomeProducts() {
 
           <div className="w-full overflow-hidden px-2">
             {loadingProds ? (
-              /* Loading skeletons */
               <div className="flex gap-4 md:gap-8 px-4">
                 {Array.from({ length: itemsToShow }).map((_, i) => (
                   <div
@@ -196,14 +240,14 @@ export default function HomeProducts() {
                     className="flex-none animate-pulse"
                     style={{ width: `${100 / itemsToShow}%` }}
                   >
-                    <div className="aspect-[3/4] rounded-[15px] bg-gray-100 mb-4" />
+                    {/* ↓ smaller skeleton to match reduced aspect ratio */}
+                    <div className="aspect-[3/3.5] rounded-[15px] bg-gray-100 mb-4" />
                     <div className="h-5 bg-gray-100 rounded-lg mb-3 w-3/4" />
                     <div className="h-10 bg-gray-100 rounded-full" />
                   </div>
                 ))}
               </div>
             ) : products.length === 0 ? (
-              /* Empty state */
               <div className="flex flex-col items-center justify-center py-16 text-center w-full">
                 <div className="w-16 h-16 rounded-2xl bg-[#fff0f5] flex items-center justify-center mb-4">
                   <ShoppingCart size={28} className="text-[#c23d6a]" />
@@ -217,21 +261,26 @@ export default function HomeProducts() {
                 className={`flex transition-transform duration-700 ease-in-out ${!canSlide ? 'justify-center' : ''}`}
                 style={{ transform: `translateX(-${currentIndex * (100 / itemsToShow)}%)` }}
               >
-                {products.map((item) => {
+                {products.map((item, idx) => {
                   const imgSrc =
                     Array.isArray(item.images) && item.images.length > 0
                       ? item.images[0]
                       : '/images/oatsimg.jpg';
 
+                  // Stagger each card's entrance when section becomes visible
+                  const cardStyle = visible
+                    ? { animationDelay: `${0.3 + idx * 0.1}s` }
+                    : { opacity: 0 };
+
                   return (
                     <div
                       key={item.id}
-                      className="flex-none px-4 md:px-8 flex flex-col group justify"
-                      style={{ width: `${100 / itemsToShow}%` }}
+                      className={`flex-none px-4 md:px-8 flex flex-col group justify ${visible ? 'card-animate' : ''}`}
+                      style={{ width: `${100 / itemsToShow}%`, ...cardStyle }}
                     >
-                      {/* Product Image */}
+                      {/* Product Image — reduced from aspect-[3/4] to aspect-[3/3.5] */}
                       <Link href={`/productsviewpage/${item.id}`}>
-                        <div className="relative w-full aspect-[3/4] mb-4 md:mb-8 cursor-pointer rounded-[15px] overflow-hidden bg-[#f8f8f8] border border-black/5">
+                        <div className="relative w-full aspect-[3/3.5] mb-4 md:mb-6 cursor-pointer rounded-[15px] overflow-hidden bg-[#f8f8f8] border border-black/5">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={imgSrc}
@@ -258,7 +307,7 @@ export default function HomeProducts() {
                       {/* Product Info */}
                       <div className="flex justify-between items-start w-full px-2 gap-2 md:gap-4 mb-3">
                         <div className="min-h-[60px] md:min-h-[80px]">
-                          <h3 className="text-lg md:text-lg font-secondary leading-tight text-black  max-w-[150px] md:max-w-[200px]">
+                          <h3 className="text-lg md:text-lg font-secondary leading-tight text-black max-w-[150px] md:max-w-[200px]">
                             {item.name}
                           </h3>
                           {Array.isArray(item.variants) && item.variants.length > 1 && (
@@ -299,7 +348,7 @@ export default function HomeProducts() {
         </div>
 
         {/* SHOP ALL BUTTON */}
-        <div className="hidden md:flex justify-center">
+        <div className="hidden md:flex justify-center" style={fadeUp(0.4)}>
           <Link href="/productsviewpage">
             <button className="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-xs shadow-lg bg-[#c23d6a] text-white hover:bg-[#f2eadf] hover:text-black border border-transparent hover:border-black transition-all duration-300 font-secondary">
               Shop all <ShoppingCart className="w-5 h-5 md:w-6 md:h-6" />
@@ -315,12 +364,6 @@ export default function HomeProducts() {
           className="fixed inset-0 z-[999999] flex items-center justify-center p-4"
           style={{ animation: 'fadeIn 0.2s ease forwards' }}
         >
-          <style>{`
-            @keyframes fadeIn    { from { opacity: 0; } to { opacity: 1; } }
-            @keyframes popIn     { from { opacity: 0; transform: scale(0.92) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-            @keyframes pulseRing { 0%,100% { box-shadow: 0 0 0 0 rgba(194,61,106,0.35); } 50% { box-shadow: 0 0 0 14px rgba(194,61,106,0); } }
-          `}</style>
-
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setShowLoginPopup(false)}
@@ -378,11 +421,6 @@ export default function HomeProducts() {
           className="fixed inset-0 z-[999999] flex items-center justify-center p-4"
           style={{ animation: 'fadeIn 0.2s ease forwards' }}
         >
-          <style>{`
-            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-            @keyframes popIn  { from { opacity: 0; transform: scale(0.92) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-          `}</style>
-
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setShowCategoryModal(false)}

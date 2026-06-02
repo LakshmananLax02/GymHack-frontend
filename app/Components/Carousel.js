@@ -32,7 +32,7 @@ export default function Hero() {
           </h1>
 
           <p className="text-lg md:text-xl font-secondary font-medium mb-10 max-w-[600px] mx-auto text-gray-200">
-            Refuel your body with clean, powerful nutrition after every workout.
+            Nutritious snacks make with clean, nutrient-dense ingredients using raw food techniques for optional health
           </p>
 
           <Link 

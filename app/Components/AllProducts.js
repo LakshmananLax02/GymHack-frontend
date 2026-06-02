@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ShoppingCart, AlertCircle, X, Package } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -7,6 +7,101 @@ import { useCartStore } from '../store/useCartStore';
 import { useAuth } from '../context/AuthContext';
 
 const API_ROOT = process.env.NEXT_PUBLIC_API_URL;
+
+// Scroll reveal hook — works whether element is already visible or scrolled into view
+function useScrollReveal(threshold = 0.1) {
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    // Already in viewport on mount → show immediately
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight && rect.bottom > 0) {
+      setVisible(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect(); } },
+      { threshold }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [threshold]);
+  return [ref, visible];
+}
+
+// Single product card with its own staggered scroll reveal
+function ProductCard({ item, index, onAddToCart }) {
+  const [ref, visible] = useScrollReveal(0.08);
+
+  const imgSrc =
+    Array.isArray(item.images) && item.images.length > 0
+      ? item.images[0]
+      : '/images/oatsimg.jpg';
+
+  return (
+    <div
+      ref={ref}
+      className="group flex flex-col h-full"
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateY(0px)' : 'translateY(32px)',
+        transition: `opacity 0.5s ease ${(index % 4) * 0.08}s, transform 0.5s ease ${(index % 4) * 0.08}s`,
+      }}
+    >
+      {/* Image */}
+      <Link href={`/productsviewpage/${item.id}`}>
+        <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-[#f8f8f8] border border-black/5 mb-3 cursor-pointer">
+          <img
+            src={imgSrc}
+            alt={item.name}
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+          {/* Hover overlay — desktop only */}
+          <div className="hidden md:flex absolute inset-0 z-10 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/40 backdrop-blur-[2px]">
+            <button
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAddToCart(item); }}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-xs shadow-lg bg-[#c23d6a] text-white hover:bg-[#f2eadf] hover:text-black border border-transparent hover:border-black transition-all duration-300 font-secondary"
+            >
+              Add to cart <ShoppingCart className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </Link>
+
+      {/* Name + Price */}
+      <div className="flex flex-col flex-1 px-1">
+        <div className="flex items-start justify-between gap-2 mb-1">
+          <h3 className="font-secondary text-xs sm:text-sm font-semibold text-black leading-snug flex-1">
+            {item.name}
+          </h3>
+          <span className="font-secondary text-base sm:text-lg font-black text-black whitespace-nowrap">
+            {Array.isArray(item.variants) && item.variants.length > 0
+              ? `₹${item.variants[0].price}`
+              : `₹${item.price}`}
+          </span>
+        </div>
+
+        {Array.isArray(item.variants) && item.variants.length > 1 && (
+          <p className="text-[10px] text-gray-400 font-secondary mb-2">
+            {item.variants.map(v => v.label).join(' / ')}
+          </p>
+        )}
+
+        <div className="flex-1" />
+
+        {/* Add to Cart — mobile only */}
+        <button
+          onClick={() => onAddToCart(item)}
+          className="flex md:hidden w-full items-center justify-center gap-2 py-2.5 mt-3 rounded-full font-bold text-xs bg-[#c23d6a] text-white font-secondary transition-all active:scale-95"
+        >
+          Add to Cart <ShoppingCart className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function AllProducts() {
   const [categories, setCategories]         = useState([]);
@@ -17,11 +112,15 @@ export default function AllProducts() {
   const [showLoginPopup, setShowLoginPopup] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
 
+  // Scroll reveal refs
+  const [headerRef, headerVisible]   = useScrollReveal(0.1);
+  const [catsRef, catsVisible]       = useScrollReveal(0.1);
+  const [countRef, countVisible]     = useScrollReveal(0.1);
+
   const router = useRouter();
   const { user, showToast } = useAuth();
   const addToCartStore = useCartStore((state) => state.addToCart);
 
-  // Fetch categories on mount
   useEffect(() => {
     fetch(`${API_ROOT}/api/categories`)
       .then((r) => r.json())
@@ -34,7 +133,6 @@ export default function AllProducts() {
       .finally(() => setLoadingCats(false));
   }, []);
 
-  // Fetch products whenever active category changes
   useEffect(() => {
     if (!activeCatId) return;
     setLoadingProds(true);
@@ -45,7 +143,6 @@ export default function AllProducts() {
       .finally(() => setLoadingProds(false));
   }, [activeCatId]);
 
-  // Lock body scroll when any popup is open
   useEffect(() => {
     document.body.style.overflow = (showLoginPopup || showCategoryModal) ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
@@ -82,7 +179,15 @@ export default function AllProducts() {
       <div className="max-w-[1200px] mx-auto px-4 md:px-6">
 
         {/* ── Header ── */}
-        <div className="text-center mb-8">
+        <div
+          ref={headerRef}
+          className="text-center mb-8"
+          style={{
+            opacity: headerVisible ? 1 : 0,
+            transform: headerVisible ? 'translateY(0)' : 'translateY(24px)',
+            transition: 'opacity 0.55s ease, transform 0.55s ease',
+          }}
+        >
           <div className="flex items-center justify-center gap-2 mb-2">
             <div className="w-4 h-4 bg-[#c23d6a] rounded-full" />
             <h2 className="font-primary text-3xl md:text-5xl font-bold text-black">
@@ -95,7 +200,15 @@ export default function AllProducts() {
         </div>
 
         {/* ── Category Selector ── */}
-        <div className="w-full mb-10">
+        <div
+          ref={catsRef}
+          className="w-full mb-10"
+          style={{
+            opacity: catsVisible ? 1 : 0,
+            transform: catsVisible ? 'translateY(0)' : 'translateY(20px)',
+            transition: 'opacity 0.5s ease 0.1s, transform 0.5s ease 0.1s',
+          }}
+        >
           {loadingCats ? (
             <div className="flex gap-3 px-4 overflow-hidden">
               {[1, 2, 3].map((i) => (
@@ -124,11 +237,7 @@ export default function AllProducts() {
                       ${isActive ? 'bg-white/20' : 'bg-white shadow-sm'}
                     `}>
                       {cat.image_url ? (
-                        <img
-                          src={cat.image_url}
-                          alt={cat.name}
-                          className="w-full h-full object-contain p-1"
-                        />
+                        <img src={cat.image_url} alt={cat.name} className="w-full h-full object-contain p-1" />
                       ) : (
                         <Package size={18} className={isActive ? 'text-white' : 'text-gray-300'} />
                       )}
@@ -143,7 +252,14 @@ export default function AllProducts() {
 
         {/* ── Product Count ── */}
         {!loadingProds && (
-          <p className="text-center text-gray-400 font-secondary text-sm mb-8">
+          <p
+            ref={countRef}
+            className="text-center text-gray-400 font-secondary text-sm mb-8"
+            style={{
+              opacity: countVisible ? 1 : 0,
+              transition: 'opacity 0.4s ease 0.15s',
+            }}
+          >
             ({products.length} product{products.length !== 1 ? 's' : ''})
           </p>
         )}
@@ -170,75 +286,14 @@ export default function AllProducts() {
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 items-stretch">
-            {products.map((item) => {
-              const imgSrc =
-                Array.isArray(item.images) && item.images.length > 0
-                  ? item.images[0]
-                  : '/images/oatsimg.jpg';
-
-              return (
-                // ── Card: full height flex column so button always sticks to bottom ──
-                <div key={item.id} className="group flex flex-col h-full">
-
-                  {/* Image */}
-                  <Link href={`/productsviewpage/${item.id}`}>
-                    <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-[#f8f8f8] border border-black/5 mb-3 cursor-pointer">
-                      <img
-                        src={imgSrc}
-                        alt={item.name}
-                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-
-                      {/* Hover overlay — desktop only */}
-                      <div className="hidden md:flex absolute inset-0 z-10 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/40 backdrop-blur-[2px]">
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleAddToCart(item);
-                          }}
-                          className="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-xs shadow-lg bg-[#c23d6a] text-white hover:bg-[#f2eadf] hover:text-black border border-transparent hover:border-black transition-all duration-300 font-secondary"
-                        >
-                          Add to cart <ShoppingCart className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  </Link>
-
-                  {/* Name + Price — flex-1 so this section fills remaining space */}
-                  <div className="flex flex-col flex-1 px-1">
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <h3 className="font-secondary text-xs sm:text-sm font-semibold text-black leading-snug flex-1">
-                        {item.name}
-                      </h3>
-                      <span className="font-secondary text-base sm:text-lg font-black text-black whitespace-nowrap">
-                        {Array.isArray(item.variants) && item.variants.length > 0
-                          ? `₹${item.variants[0].price}`
-                          : `₹${item.price}`}
-                      </span>
-                    </div>
-
-                    {Array.isArray(item.variants) && item.variants.length > 1 && (
-                      <p className="text-[10px] text-gray-400 font-secondary mb-2">
-                        {item.variants.map(v => v.label).join(' / ')}
-                      </p>
-                    )}
-
-                    {/* Spacer — pushes button to bottom */}
-                    <div className="flex-1" />
-
-                    {/* Add to Cart — mobile only, always at bottom */}
-                    <button
-                      onClick={() => handleAddToCart(item)}
-                      className="flex md:hidden w-full items-center justify-center gap-2 py-2.5 mt-3 rounded-full font-bold text-xs bg-[#c23d6a] text-white font-secondary transition-all active:scale-95"
-                    >
-                      Add to Cart <ShoppingCart className="w-4 h-4" />
-                    </button>
-                  </div>
-
-                </div>
-              );
-            })}
+            {products.map((item, index) => (
+              <ProductCard
+                key={item.id}
+                item={item}
+                index={index}
+                onAddToCart={handleAddToCart}
+              />
+            ))}
           </div>
         )}
 
@@ -256,20 +311,13 @@ export default function AllProducts() {
             @keyframes pulseRing { 0%,100% { box-shadow: 0 0 0 0 rgba(194,61,106,0.35); } 50% { box-shadow: 0 0 0 14px rgba(194,61,106,0); } }
           `}</style>
 
-          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setShowLoginPopup(false)}
-          />
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowLoginPopup(false)} />
 
           <div
             className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 md:p-10 text-center"
             style={{ animation: 'popIn 0.3s cubic-bezier(.22,1,.36,1) forwards' }}
           >
-            <button
-              onClick={() => setShowLoginPopup(false)}
-              className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
-              aria-label="Close"
-            >
+            <button onClick={() => setShowLoginPopup(false)} className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors" aria-label="Close">
               <X size={20} className="text-gray-400" />
             </button>
 
@@ -282,24 +330,16 @@ export default function AllProducts() {
               </div>
             </div>
 
-            <h3 className="text-2xl md:text-3xl font-bold font-primary text-black mb-2">
-              Login Required
-            </h3>
+            <h3 className="text-2xl md:text-3xl font-bold font-primary text-black mb-2">Login Required</h3>
             <p className="text-gray-500 font-secondary text-sm md:text-base mb-7 leading-relaxed">
               Please login to add items to your cart
             </p>
 
             <div className="flex gap-3 justify-center">
-              <button
-                onClick={handleLoginNow}
-                className="flex-1 max-w-[160px] bg-[#c23d6a] text-white font-bold text-sm py-3 rounded-full font-secondary hover:bg-[#a8305a] active:scale-95 transition-all shadow-md"
-              >
+              <button onClick={handleLoginNow} className="flex-1 max-w-[160px] bg-[#c23d6a] text-white font-bold text-sm py-3 rounded-full font-secondary hover:bg-[#a8305a] active:scale-95 transition-all shadow-md">
                 Login Now
               </button>
-              <button
-                onClick={() => setShowLoginPopup(false)}
-                className="flex-1 max-w-[160px] bg-gray-100 text-gray-700 font-bold text-sm py-3 rounded-full font-secondary hover:bg-gray-200 active:scale-95 transition-all"
-              >
+              <button onClick={() => setShowLoginPopup(false)} className="flex-1 max-w-[160px] bg-gray-100 text-gray-700 font-bold text-sm py-3 rounded-full font-secondary hover:bg-gray-200 active:scale-95 transition-all">
                 Maybe later
               </button>
             </div>
@@ -318,29 +358,18 @@ export default function AllProducts() {
             @keyframes popIn  { from { opacity: 0; transform: scale(0.92) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
           `}</style>
 
-          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setShowCategoryModal(false)}
-          />
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowCategoryModal(false)} />
 
           <div
             className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-6 md:p-8"
             style={{ animation: 'popIn 0.3s cubic-bezier(.22,1,.36,1) forwards' }}
           >
-            <button
-              onClick={() => setShowCategoryModal(false)}
-              className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
-              aria-label="Close"
-            >
+            <button onClick={() => setShowCategoryModal(false)} className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors" aria-label="Close">
               <X size={20} className="text-gray-400" />
             </button>
 
-            <h3 className="text-xl md:text-2xl font-bold font-primary text-black mb-1">
-              Select a Category
-            </h3>
-            <p className="text-gray-500 font-secondary text-sm mb-6">
-              Pick a category to view its products
-            </p>
+            <h3 className="text-xl md:text-2xl font-bold font-primary text-black mb-1">Select a Category</h3>
+            <p className="text-gray-500 font-secondary text-sm mb-6">Pick a category to view its products</p>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[60vh] overflow-y-auto pr-1">
               {categories.map((cat) => {
@@ -350,24 +379,16 @@ export default function AllProducts() {
                     key={cat.id}
                     onClick={() => { handleTabChange(cat.id); setShowCategoryModal(false); }}
                     className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all
-                      ${isActive
-                        ? 'bg-[#ede9df] border-zinc-400'
-                        : 'border-gray-100 bg-gray-50 hover:bg-gray-100'}`}
+                      ${isActive ? 'bg-[#ede9df] border-zinc-400' : 'border-gray-100 bg-gray-50 hover:bg-gray-100'}`}
                   >
                     <div className="w-16 h-16 rounded-xl bg-white shadow-sm flex items-center justify-center overflow-hidden">
                       {cat.image_url ? (
-                        <img
-                          src={cat.image_url}
-                          alt={cat.name}
-                          className="w-full h-full object-contain p-1"
-                        />
+                        <img src={cat.image_url} alt={cat.name} className="w-full h-full object-contain p-1" />
                       ) : (
                         <Package size={24} className="text-gray-300" />
                       )}
                     </div>
-                    <span className="text-xs font-black uppercase tracking-wider text-center">
-                      {cat.name}
-                    </span>
+                    <span className="text-xs font-black uppercase tracking-wider text-center">{cat.name}</span>
                   </button>
                 );
               })}

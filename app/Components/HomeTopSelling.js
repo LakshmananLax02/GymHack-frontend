@@ -1,6 +1,6 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import { ArrowLeft, ArrowRight, ShoppingCart, AlertCircle, X, Star } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { ShoppingCart, AlertCircle, X, Star } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCartStore } from '../store/useCartStore';
@@ -8,18 +8,104 @@ import { useAuth } from '../context/AuthContext';
 
 const API_ROOT = process.env.NEXT_PUBLIC_API_URL;
 
+// Hook: fires when element enters viewport; also triggers if already visible on mount
+function useScrollReveal(threshold = 0.15) {
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    // Already in viewport on mount? Show immediately.
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight && rect.bottom > 0) {
+      setVisible(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect(); } },
+      { threshold }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [threshold]);
+  return [ref, visible];
+}
+
+// Individual card with its own scroll reveal
+function ProductCard({ product, index, onAddToCart }) {
+  const [ref, visible] = useScrollReveal(0.1);
+
+  const imgSrc =
+    Array.isArray(product.images) && product.images.length > 0
+      ? product.images[0]
+      : '/images/oatsimg.jpg';
+
+  const displayPrice =
+    Array.isArray(product.variants) && product.variants.length > 0
+      ? `₹${product.variants[0].price}`
+      : `₹${product.price}`;
+
+  return (
+    <div
+      ref={ref}
+      className="flex flex-col items-center text-center"
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateY(0)' : 'translateY(36px)',
+        transition: `opacity 0.55s ease ${index * 0.1}s, transform 0.55s ease ${index * 0.1}s`,
+      }}
+    >
+      {/* Image */}
+      <Link href={`/productsviewpage/${product.id}`} className="w-full">
+        <div className="w-full aspect-[4/5] rounded-2xl overflow-hidden bg-[#f5f0eb] mb-4 cursor-pointer relative group/img">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={imgSrc}
+            alt={product.name}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-105"
+          />
+        </div>
+      </Link>
+
+      {/* Name */}
+      <p className="font-secondary text-[14px] font-semibold text-gray-800 leading-snug mb-1 px-1">
+        {product.name}
+      </p>
+
+      {/* Variant labels */}
+      {Array.isArray(product.variants) && product.variants.length > 1 && (
+        <p className="text-[11px] text-gray-400 mb-1">
+          {product.variants.map((v) => v.label).join(' / ')}
+        </p>
+      )}
+
+      {/* Price */}
+      <p className="font-secondary text-[15px] font-bold text-gray-700 mb-3">
+        {displayPrice}
+      </p>
+
+      {/* Add to Cart */}
+      <button
+        onClick={() => onAddToCart(product)}
+        className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-full font-bold text-xs shadow-md bg-[#c23d6a] text-white hover:bg-[#f2eadf] hover:text-black border border-transparent hover:border-black transition-all duration-300 font-secondary w-full max-w-[280px]"
+      >
+        Add to Cart <ShoppingCart size={14} />
+      </button>
+    </div>
+  );
+}
+
 export default function OurTopSelling() {
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [itemsToShow, setItemsToShow] = useState(4);
   const [showLoginPopup, setShowLoginPopup] = useState(false);
+
+
 
   const router = useRouter();
   const { user, showToast } = useAuth();
   const addToCartStore = useCartStore((state) => state.addToCart);
 
-  // Fetch highlighted products from backend
   useEffect(() => {
     fetch(`${API_ROOT}/api/products?is_highlighted=true`)
       .then((r) => r.json())
@@ -29,40 +115,16 @@ export default function OurTopSelling() {
   }, []);
 
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 640) setItemsToShow(1);
-      else if (window.innerWidth < 1024) setItemsToShow(2);
-      else setItemsToShow(4);
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // Lock body scroll when popup is open
-  useEffect(() => {
     document.body.style.overflow = showLoginPopup ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [showLoginPopup]);
 
-  const canSlide = products.length > itemsToShow;
-  const nextSlide = () => {
-    if (!canSlide) return;
-    setCurrentIndex((prev) => (prev >= products.length - itemsToShow ? 0 : prev + 1));
-  };
-  const prevSlide = () => {
-    if (!canSlide) return;
-    setCurrentIndex((prev) => (prev <= 0 ? products.length - itemsToShow : prev - 1));
-  };
-
   const handleAddToCart = (product) => {
-    if (!user) {
-      setShowLoginPopup(true);
-      return;
-    }
-    const image = Array.isArray(product.images) && product.images.length > 0
-      ? product.images[0]
-      : '/images/oatsimg.jpg';
+    if (!user) { setShowLoginPopup(true); return; }
+    const image =
+      Array.isArray(product.images) && product.images.length > 0
+        ? product.images[0]
+        : '/images/oatsimg.jpg';
     const variants = Array.isArray(product.variants) ? product.variants : [];
     const firstVariant = variants[0] || null;
     addToCartStore({
@@ -84,7 +146,7 @@ export default function OurTopSelling() {
   // ── Loading skeletons ──────────────────────────────────────────────
   if (loadingProducts) {
     return (
-      <section className="py-6 bg-white overflow-hidden">
+      <section className="py-10 bg-white overflow-hidden">
         <div className="max-w-[1200px] mx-auto px-7">
           <div className="flex flex-row items-center justify-center gap-3 mb-12 w-full px-4">
             <div className="w-4 h-4 md:w-5 md:h-5 bg-[#c23d6a] rounded-full shrink-0" />
@@ -92,12 +154,13 @@ export default function OurTopSelling() {
               Our top selling products
             </h2>
           </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="animate-pulse">
-                <div className="bg-gray-100 rounded-[15px] aspect-[4/5] mb-4" />
+              <div key={i} className="animate-pulse flex flex-col items-center">
+                <div className="bg-gray-100 rounded-2xl aspect-[4/5] w-full mb-4" />
                 <div className="h-4 bg-gray-100 rounded-lg mb-2 w-3/4" />
-                <div className="h-8 bg-gray-100 rounded-full" />
+                <div className="h-4 bg-gray-100 rounded-lg mb-3 w-1/3" />
+                <div className="h-9 bg-gray-100 rounded-full w-[140px]" />
               </div>
             ))}
           </div>
@@ -106,10 +169,10 @@ export default function OurTopSelling() {
     );
   }
 
-  // ── Empty state (no highlighted products) ─────────────────────────
+  // ── Empty state ────────────────────────────────────────────────────
   if (products.length === 0) {
     return (
-      <section className="py-6 bg-white overflow-hidden">
+      <section className="py-10 bg-white overflow-hidden">
         <div className="max-w-[1200px] mx-auto px-7 flex flex-col items-center py-12">
           <div className="w-16 h-16 rounded-2xl bg-[#fff0f5] flex items-center justify-center mb-4">
             <Star size={28} className="text-[#c23d6a]" />
@@ -124,7 +187,7 @@ export default function OurTopSelling() {
   }
 
   return (
-    <section className="py-6 bg-white overflow-hidden">
+    <section className="py-10 bg-white overflow-hidden">
       <div className="max-w-[1200px] mx-auto px-7">
 
         {/* Header */}
@@ -135,99 +198,23 @@ export default function OurTopSelling() {
           </h2>
         </div>
 
-        <div className="relative group">
-          {/* Previous arrow */}
-          {canSlide && (
-            <button
-              onClick={prevSlide}
-              className="absolute -left-6 top-[35%] z-20 w-12 h-12 bg-[#c23d6a] text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
-            >
-              <ArrowLeft size={24} strokeWidth={3} />
-            </button>
-          )}
-
-          {/* Card container */}
-          <div className="overflow-hidden">
-            <div
-              className={`flex transition-transform duration-500 ease-out ${!canSlide ? 'justify-center' : ''}`}
-              style={{ transform: `translateX(-${currentIndex * (100 / itemsToShow)}%)` }}
-            >
-              {products.map((product) => {
-                const imgSrc = Array.isArray(product.images) && product.images.length > 0
-                  ? product.images[0]
-                  : '/images/oatsimg.jpg';
-
-                return (
-                  <div
-                    key={product.id}
-                    className="flex-none px-2"
-                    style={{ width: `${100 / itemsToShow}%` }}
-                  >
-                    {/* ── Single card wrapping image + details + button ── */}
-                    <div className="group bg-white border-2 border-gray-100 rounded-xl p-3 md:p-4 transition-all duration-300 hover:shadow-[0_12px_32px_rgba(194,61,106,0.16)] hover:border-[#c23d6a]/30">
-                      {/* Image — links to product page */}
-                      <Link href={`/productsviewpage/${product.id}`}>
-                        <div className="bg-[#f2eadf]/30 rounded-[15px]  mb-4 aspect-[4/5] relative overflow-hidden cursor-pointer">
-                          <div className="relative w-full h-full bg-white rounded-[10px] overflow-hidden">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={imgSrc}
-                              alt={product.name}
-                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                            />
-                          </div>
-                        </div>
-                      </Link>
-
-                      {/* Text details */}
-                      <div className="flex justify-between items-start mb-4 px-1">
-                        <div>
-                          <p className="font-secondary text-[13px] font-bold text-gray-800 leading-tight max-w-[70%]">
-                            {product.name}
-                          </p>
-                          {Array.isArray(product.variants) && product.variants.length > 1 && (
-                            <p className="text-[10px] text-gray-400 mt-0.5">
-                              {product.variants.map(v => v.label).join(' / ')}
-                            </p>
-                          )}
-                        </div>
-                        <span className="font-secondary text-xl font-black text-black whitespace-nowrap">
-                          {Array.isArray(product.variants) && product.variants.length > 0
-                            ? `₹${product.variants[0].price}`
-                            : `₹${product.price}`}
-                        </span>
-                      </div>
-
-                      {/* Add to cart (gated on login) */}
-                      <button
-                        onClick={() => handleAddToCart(product)}
-                        className="flex items-center justify-center w-full gap-2 px-5 py-2.5 rounded-full font-bold text-xs shadow-lg bg-[#c23d6a] text-white hover:bg-[#f2eadf] hover:text-black border border-transparent hover:border-black transition-all duration-300 font-secondary"
-                      >
-                        Add to Cart <ShoppingCart size={16} />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Next arrow */}
-          {canSlide && (
-            <button
-              onClick={nextSlide}
-              className="absolute -right-6 top-[35%] z-20 w-12 h-12 bg-[#c23d6a] text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
-            >
-              <ArrowRight size={24} strokeWidth={3} />
-            </button>
-          )}
+        {/* Grid — 2 cols mobile, 4 cols desktop */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
+          {products.map((product, index) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              index={index}
+              onAddToCart={handleAddToCart}
+            />
+          ))}
         </div>
 
         {/* Shop All button */}
-        <div className="hidden md:flex justify-center mt-8 md:mt-10">
+        <div className="hidden md:flex justify-center mt-12">
           <Link href="/products">
-            <button className="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-xs shadow-lg bg-[#c23d6a] text-white hover:bg-[#f2eadf] hover:text-black border border-transparent hover:border-black transition-all duration-300 font-secondary">
-              Shop all <ShoppingCart className="w-5 h-5 md:w-6 md:h-6" />
+            <button className="flex items-center gap-2 px-6 py-3 rounded-full font-bold text-xs shadow-lg bg-[#c23d6a] text-white hover:bg-[#f2eadf] hover:text-black border border-transparent hover:border-black transition-all duration-300 font-secondary">
+              Shop all <ShoppingCart className="w-4 h-4" />
             </button>
           </Link>
         </div>

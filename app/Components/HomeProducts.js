@@ -1,10 +1,11 @@
 'use client';
-import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, ArrowRight, ShoppingCart, AlertCircle, X, Package, ChevronDown } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ArrowLeft, ArrowRight, ShoppingCart, AlertCircle, X, Package } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCartStore } from '../store/useCartStore';
 import { useAuth } from '../context/AuthContext';
+import { Reveal, RevealGroup } from './scroll/Reveal';
 
 const API_ROOT = process.env.NEXT_PUBLIC_API_URL;
 
@@ -18,24 +19,6 @@ export default function HomeProducts() {
   const [itemsToShow, setItemsToShow]   = useState(3);
   const [showLoginPopup, setShowLoginPopup] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
-
-  // ── Scroll animation refs ──────────────────────────────────────────────
-  const sectionRef  = useRef(null);
-  const headerRef   = useRef(null);
-  const catsRef     = useRef(null);
-  const sliderRef   = useRef(null);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const el = sectionRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect(); } },
-      { threshold: 0.08 }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
 
   const router = useRouter();
   const { user } = useAuth();
@@ -129,36 +112,18 @@ export default function HomeProducts() {
     router.push('/login');
   };
 
-  // ── Shared animation style helper ─────────────────────────────────────
-  const fadeUp = (delay = 0) => ({
-    opacity:    visible ? 1 : 0,
-    transform:  visible ? 'translateY(0)' : 'translateY(32px)',
-    transition: `opacity 0.65s ease ${delay}s, transform 0.65s ease ${delay}s`,
-  });
-
   return (
-    <section
-      ref={sectionRef}
-      className="py-3 md:py-14 bg-white overflow-hidden font-sans"
-    >
+    <section className="py-3 md:py-14 bg-white overflow-hidden font-sans">
       <style>{`
         @keyframes fadeIn    { from { opacity: 0; } to { opacity: 1; } }
         @keyframes popIn     { from { opacity: 0; transform: scale(0.92) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         @keyframes pulseRing { 0%,100% { box-shadow: 0 0 0 0 rgba(194,61,106,0.35); } 50% { box-shadow: 0 0 0 14px rgba(194,61,106,0); } }
-        @keyframes cardFadeUp {
-          from { opacity: 0; transform: translateY(28px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .card-animate {
-          opacity: 0;
-          animation: cardFadeUp 0.55s ease forwards;
-        }
       `}</style>
 
       <div className="max-w-[1440px] mx-auto px-4 md:px-6">
 
         {/* HEADER */}
-        <div className="text-center mb-8 md:mb-12" style={fadeUp(0)}>
+        <Reveal variant="up" amount={0.2} className="text-center mb-8 md:mb-12">
           <div className="flex items-center justify-center gap-2 md:gap-3 mb-2 md:mb-3">
             <div className="w-3 h-3 md:w-5 md:h-5 bg-[#c23d6a] rounded-full" />
             <h2 className="text-3xl md:text-5xl font-bold font-primary text-black">
@@ -168,10 +133,10 @@ export default function HomeProducts() {
           <p className="text-gray-500 font-secondary text-sm md:text-xl font-medium tracking-tight px-4">
             Fuel your body with the right choice for your routine
           </p>
-        </div>
+        </Reveal>
 
         {/* CATEGORY SELECTOR */}
-        <div className="w-full mb-8" style={fadeUp(0.15)}>
+        <Reveal variant="up" delay={0.1} amount={0.15} className="w-full mb-8">
           {loadingCats ? (
             <div className="flex gap-3 px-4 overflow-hidden">
               {[1, 2, 3].map((i) => (
@@ -215,12 +180,14 @@ export default function HomeProducts() {
               })}
             </div>
           )}
-        </div>
+        </Reveal>
 
         {/* SLIDER — reduced min-height to match smaller cards */}
-        <div
+        <Reveal
+          variant="up"
+          delay={0.2}
+          amount={0.1}
           className="relative flex items-center justify-center min-h-[380px] md:min-h-[500px]"
-          style={fadeUp(0.28)}
         >
           {canSlide && (
             <button
@@ -267,16 +234,11 @@ export default function HomeProducts() {
                       ? item.images[0]
                       : '/images/oatsimg.jpg';
 
-                  // Stagger each card's entrance when section becomes visible
-                  const cardStyle = visible
-                    ? { animationDelay: `${0.3 + idx * 0.1}s` }
-                    : { opacity: 0 };
-
                   return (
                     <div
                       key={item.id}
-                      className={`flex-none px-4 md:px-8 flex flex-col group justify ${visible ? 'card-animate' : ''}`}
-                      style={{ width: `${100 / itemsToShow}%`, ...cardStyle }}
+                      className="flex-none px-4 md:px-8 flex flex-col group justify"
+                      style={{ width: `${100 / itemsToShow}%` }}
                     >
                       {/* Product Image — reduced from aspect-[3/4] to aspect-[3/3.5] */}
                       <Link href={`/productsviewpage/${item.id}`}>
@@ -345,16 +307,16 @@ export default function HomeProducts() {
               <ArrowRight className="w-5 h-5 md:w-8 md:h-8" strokeWidth={3} />
             </button>
           )}
-        </div>
+        </Reveal>
 
         {/* SHOP ALL BUTTON */}
-        <div className="hidden md:flex justify-center" style={fadeUp(0.4)}>
+        <Reveal variant="scale" delay={0.1} className="hidden md:flex justify-center">
           <Link href="/productsviewpage">
             <button className="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-xs shadow-lg bg-[#c23d6a] text-white hover:bg-[#f2eadf] hover:text-black border border-transparent hover:border-black transition-all duration-300 font-secondary">
               Shop all <ShoppingCart className="w-5 h-5 md:w-6 md:h-6" />
             </button>
           </Link>
-        </div>
+        </Reveal>
 
       </div>
 

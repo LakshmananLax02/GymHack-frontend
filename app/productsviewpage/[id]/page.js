@@ -6,6 +6,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useCartStore } from '../../store/useCartStore';
 import { useAuth } from '../../context/AuthContext';
 import { ChevronDown, AlertCircle, X } from 'lucide-react';
+import { Reveal, RevealGroup } from '../../Components/scroll/Reveal';
 
 const API_ROOT = process.env.NEXT_PUBLIC_API_URL;
 
@@ -301,7 +302,7 @@ setTimeout(() => setSubmitted(false), 3000);
         <div className="flex flex-col md:flex-row gap-6">
 
           {/* IMAGE GALLERY */}
-          <div className="w-full md:w-[380px] shrink-0">
+          <Reveal variant="left" duration={0.8} amount={0.1} className="w-full md:w-[380px] shrink-0">
             <div
               className="border border-gray-100 rounded-xl overflow-hidden bg-[#f9f9f9] mb-3 mx-auto"
               style={{ width: "100%", maxWidth: 360, aspectRatio: "1/1" }}
@@ -330,10 +331,10 @@ setTimeout(() => setSubmitted(false), 3000);
                 </div>
               ))}
             </div>
-          </div>
+          </Reveal>
 
           {/* PRODUCT INFO */}
-          <div className="flex-1">
+          <Reveal variant="right" duration={0.8} delay={0.1} amount={0.1} className="flex-1">
             <h1 className="text-xl md:text-2xl font-extrabold text-gray-900 mb-1">
               {product.name}
             </h1>
@@ -438,7 +439,7 @@ setTimeout(() => setSubmitted(false), 3000);
                 </Accordion>
               )}
             </div>
-          </div>
+          </Reveal>
         </div>
       </div>
 
@@ -461,7 +462,7 @@ setTimeout(() => setSubmitted(false), 3000);
 
       {/* ── REVIEWS SECTION ── */}
       <div className="bg-white px-5 py-6 mb-3">
-        <div className="text-center mb-5">
+        <Reveal variant="up" amount={0.2} className="text-center mb-5">
           <span className="inline-block w-2.5 h-2.5 bg-[#c23d6a] rounded-full mr-1.5" />
           <span className="text-xl font-extrabold text-gray-900">Customer Reviews</span>
           <p className="text-sm text-gray-400 mt-1">Fuel your body with the right choice for your routine.</p>
@@ -474,7 +475,7 @@ setTimeout(() => setSubmitted(false), 3000);
               <span className="text-xs text-gray-400">({reviews.length} reviews)</span>
             </div>
           )}
-        </div>
+        </Reveal>
 
         <div className="text-center mb-6">
           {submitted && (
@@ -512,9 +513,9 @@ setTimeout(() => setSubmitted(false), 3000);
             No reviews yet — be the first to review this product!
           </p>
         ) : (
-          <div className="flex flex-col gap-4">
+          <RevealGroup stagger={0.08} amount={0.05} className="flex flex-col gap-4">
             {reviews.map(r => (
-              <div key={r.id} className="border border-gray-100 rounded-xl p-4">
+              <RevealGroup.Item key={r.id} variant="up" className="border border-gray-100 rounded-xl p-4 transition-shadow hover:shadow-md">
                 <div className="flex items-center gap-2.5 mb-2">
                   <div className="w-9 h-9 bg-[#c23d6a] rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0">
                     {(r.user_name || 'A')[0].toUpperCase()}
@@ -534,9 +535,9 @@ setTimeout(() => setSubmitted(false), 3000);
                 <StarRating rating={r.rating} size={14} />
                 <div className="font-bold text-sm text-gray-900 mt-1.5 mb-1">{r.title}</div>
                 <p className="text-sm text-gray-500 leading-relaxed">{r.body}</p>
-              </div>
+              </RevealGroup.Item>
             ))}
-          </div>
+          </RevealGroup>
         )}
       </div>
 

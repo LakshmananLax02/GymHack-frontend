@@ -1,6 +1,7 @@
-"use client"
-import React, { useEffect, useRef, useState } from 'react';
+"use client";
+import React from 'react';
 import Image from 'next/image';
+import { RevealGroup } from './scroll/Reveal';
 
 const products = [
   {
@@ -27,41 +28,22 @@ const products = [
 ];
 
 export default function ProductShowcase() {
-  const sectionRef = useRef(null);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const el = sectionRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect(); } },
-      { threshold: 0.1 }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  const cardStyle = (idx) => ({
-    opacity:    visible ? 1 : 0,
-    transform:  visible ? 'translateY(0)' : 'translateY(40px)',
-    transition: `opacity 0.65s ease ${0.1 + idx * 0.15}s, transform 0.65s ease ${0.1 + idx * 0.15}s`,
-  });
-
   return (
-    <section ref={sectionRef} className="py-16 px-4 sm:px-6 bg-white">
+    <section className="py-16 px-4 sm:px-6 bg-white">
       <div className="max-w-[1200px] mx-auto">
 
         {/* ── Desktop: expanding flex cards ── */}
-        <div className="hidden md:flex gap-4 h-[400px] items-end">
-          {products.map((product, idx) => (
-            <div
+        <RevealGroup stagger={0.15} amount={0.15} className="hidden md:flex gap-4 h-[400px] items-end">
+          {products.map((product) => (
+            <RevealGroup.Item
               key={product.id}
-              style={cardStyle(idx)}
+              variant="up"
+              duration={0.75}
               className="
                 group relative overflow-hidden rounded-xl cursor-pointer
                 flex-[1] hover:flex-[2.2]
                 h-full hover:h-[400px]
-                transition-[flex,opacity,transform] duration-[2900ms] ease-in-out
+                transition-[flex,opacity,transform] duration-[900ms] ease-in-out
                 bg-gray-100
               "
             >
@@ -92,19 +74,19 @@ export default function ProductShowcase() {
                   </p>
                 </div>
               </div>
-            </div>
+            </RevealGroup.Item>
           ))}
-        </div>
+        </RevealGroup>
 
         {/* ── Mobile / Tablet: stacked cards ── */}
-        <div className="flex flex-col gap-5 md:hidden">
-          {products.map((product, idx) => (
-            <div
+        <RevealGroup stagger={0.12} amount={0.1} className="flex flex-col gap-5 md:hidden">
+          {products.map((product) => (
+            <RevealGroup.Item
               key={product.id}
-              style={cardStyle(idx)}
+              variant="up"
+              duration={0.7}
               className="relative overflow-hidden rounded-xl cursor-pointer h-[320px] sm:h-[400px] bg-gray-100"
             >
-              {/* Image */}
               <div className="absolute inset-0 w-full h-full overflow-hidden">
                 <Image
                   src={product.image}
@@ -113,11 +95,7 @@ export default function ProductShowcase() {
                   className="object-cover"
                 />
               </div>
-
-              {/* Always-visible dark overlay on mobile */}
               <div className="absolute inset-0 bg-black/40" />
-
-              {/* Text always visible on mobile */}
               <div className="absolute inset-0 flex flex-col justify-end p-6">
                 <h3 className="font-primary text-4xl text-white leading-none mb-2">
                   {product.title}
@@ -129,9 +107,9 @@ export default function ProductShowcase() {
                   {product.benefit}
                 </p>
               </div>
-            </div>
+            </RevealGroup.Item>
           ))}
-        </div>
+        </RevealGroup>
 
       </div>
     </section>

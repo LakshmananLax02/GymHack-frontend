@@ -137,6 +137,15 @@ const closeCart   = useCartStore(s => s.closeCart);
   const sidebarRef = useRef(null);
   const moreRef    = useRef(null);
 
+  // Scroll-shrink for the header
+  const [isScrolled, setIsScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setIsScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   const cart           = useCartStore(s => s.cart);
   const removeFromCart = useCartStore(s => s.removeFromCart);
   const updateQuantity = useCartStore(s => s.updateQuantity);
@@ -358,8 +367,18 @@ const closeCart   = useCartStore(s => s.closeCart);
       </div>
 
       {/* ── Navbar ─────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm overflow-visible">
-        <div className="max-w-[1440px] mx-auto px-2 md:px-10 h-20 flex items-center justify-between gap-4">
+      <header
+        className={`sticky top-0 z-50 border-b overflow-visible transition-all duration-300 ease-out ${
+          isScrolled
+            ? 'bg-white/85 backdrop-blur-md border-gray-200 shadow-md'
+            : 'bg-white border-gray-100 shadow-sm'
+        }`}
+      >
+        <div
+          className={`max-w-[1440px] mx-auto px-2 md:px-10 flex items-center justify-between gap-4 transition-all duration-300 ease-out ${
+            isScrolled ? 'h-16' : 'h-20'
+          }`}
+        >
 
           <div className="flex items-center justify-between w-full md:w-auto md:flex-none">
             <Link href="/" className="flex items-center gap-2">

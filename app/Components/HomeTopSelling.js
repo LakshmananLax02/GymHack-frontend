@@ -1,40 +1,16 @@
 'use client';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShoppingCart, AlertCircle, X, Star } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCartStore } from '../store/useCartStore';
 import { useAuth } from '../context/AuthContext';
+import { Reveal, RevealGroup } from './scroll/Reveal';
 
 const API_ROOT = process.env.NEXT_PUBLIC_API_URL;
 
-// Hook: fires when element enters viewport; also triggers if already visible on mount
-function useScrollReveal(threshold = 0.15) {
-  const ref = useRef(null);
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    // Already in viewport on mount? Show immediately.
-    const rect = el.getBoundingClientRect();
-    if (rect.top < window.innerHeight && rect.bottom > 0) {
-      setVisible(true);
-      return;
-    }
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect(); } },
-      { threshold }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [threshold]);
-  return [ref, visible];
-}
-
-// Individual card with its own scroll reveal
-function ProductCard({ product, index, onAddToCart }) {
-  const [ref, visible] = useScrollReveal(0.1);
-
+// Individual product card — animation handled by parent RevealGroup
+function ProductCard({ product, onAddToCart }) {
   const imgSrc =
     Array.isArray(product.images) && product.images.length > 0
       ? product.images[0]
@@ -46,15 +22,7 @@ function ProductCard({ product, index, onAddToCart }) {
       : `₹${product.price}`;
 
   return (
-    <div
-      ref={ref}
-      className="flex flex-col items-center text-center"
-      style={{
-        opacity: visible ? 1 : 0,
-        transform: visible ? 'translateY(0)' : 'translateY(36px)',
-        transition: `opacity 0.55s ease ${index * 0.1}s, transform 0.55s ease ${index * 0.1}s`,
-      }}
-    >
+    <RevealGroup.Item variant="up" duration={0.6} className="flex flex-col items-center text-center">
       {/* Image */}
       <Link href={`/productsviewpage/${product.id}`} className="w-full">
         <div className="w-full aspect-[4/5] rounded-2xl overflow-hidden bg-[#f5f0eb] mb-4 cursor-pointer relative group/img">
@@ -62,7 +30,7 @@ function ProductCard({ product, index, onAddToCart }) {
           <img
             src={imgSrc}
             alt={product.name}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-105"
+            className="w-full h-full object-cover transition-transform duration-[700ms] ease-out group-hover/img:scale-105"
           />
         </div>
       </Link>
@@ -91,7 +59,7 @@ function ProductCard({ product, index, onAddToCart }) {
       >
         Add to Cart <ShoppingCart size={14} />
       </button>
-    </div>
+    </RevealGroup.Item>
   );
 }
 
@@ -99,8 +67,6 @@ export default function OurTopSelling() {
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [showLoginPopup, setShowLoginPopup] = useState(false);
-
-
 
   const router = useRouter();
   const { user, showToast } = useAuth();
@@ -191,33 +157,32 @@ export default function OurTopSelling() {
       <div className="max-w-[1200px] mx-auto px-7">
 
         {/* Header */}
-        <div className="flex flex-row items-center justify-center gap-3 mb-12 w-full px-4">
+        <Reveal variant="up" amount={0.3} className="flex flex-row items-center justify-center gap-3 mb-12 w-full px-4">
           <div className="w-4 h-4 md:w-5 md:h-5 bg-[#c23d6a] rounded-full shrink-0" />
           <h2 className="text-3xl md:text-4xl font-primary font-bold text-black text-center leading-tight">
             Our top selling products
           </h2>
-        </div>
+        </Reveal>
 
-        {/* Grid — 2 cols mobile, 4 cols desktop */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
-          {products.map((product, index) => (
+        {/* Grid — 2 cols mobile, 4 cols desktop, staggered reveal */}
+        <RevealGroup stagger={0.1} delay={0.1} amount={0.1} className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
+          {products.map((product) => (
             <ProductCard
               key={product.id}
               product={product}
-              index={index}
               onAddToCart={handleAddToCart}
             />
           ))}
-        </div>
+        </RevealGroup>
 
         {/* Shop All button */}
-        <div className="hidden md:flex justify-center mt-12">
+        <Reveal variant="scale" delay={0.15} className="hidden md:flex justify-center mt-12">
           <Link href="/products">
             <button className="flex items-center gap-2 px-6 py-3 rounded-full font-bold text-xs shadow-lg bg-[#c23d6a] text-white hover:bg-[#f2eadf] hover:text-black border border-transparent hover:border-black transition-all duration-300 font-secondary">
               Shop all <ShoppingCart className="w-4 h-4" />
             </button>
           </Link>
-        </div>
+        </Reveal>
       </div>
 
       {/* ── Login Required Popup ──────────────────────────────────────── */}
@@ -232,13 +197,11 @@ export default function OurTopSelling() {
             @keyframes pulseRing { 0%,100% { box-shadow: 0 0 0 0 rgba(194,61,106,0.35); } 50% { box-shadow: 0 0 0 14px rgba(194,61,106,0); } }
           `}</style>
 
-          {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setShowLoginPopup(false)}
           />
 
-          {/* Modal */}
           <div
             className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 md:p-10 text-center"
             style={{ animation: 'popIn 0.3s cubic-bezier(.22,1,.36,1) forwards' }}

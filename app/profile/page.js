@@ -8,6 +8,7 @@ import {
   ChevronRight, ArrowLeft, X, Clock,
   CheckCircle2, Truck, AlertCircle, Eye, EyeOff,
 } from 'lucide-react';
+import { Reveal, RevealGroup } from '../Components/scroll/Reveal';
 
 const API = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -385,7 +386,7 @@ export default function ProfilePage() {
           <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-white/5 pointer-events-none" />
           <div className="absolute -bottom-16 -left-6  w-56 h-56 rounded-full bg-white/[0.03] pointer-events-none" />
 
-          <div className="max-w-[480px] mx-auto px-5 relative">
+          <Reveal variant="up" duration={0.7} amount={0} className="max-w-[480px] mx-auto px-5 relative">
             <button
               onClick={() => router.back()}
               className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-all px-3 py-1.5 rounded-full text-xs font-semibold mb-6"
@@ -402,46 +403,52 @@ export default function ProfilePage() {
                 <p className="text-white/55 text-[11px] font-semibold tracking-widest mt-0.5 truncate">{email}</p>
               </div>
             </div>
-          </div>
+          </Reveal>
         </div>
 
         {/* ── Cards ── */}
-        <div className="max-w-[480px] mx-auto px-5 -mt-10 space-y-3">
+        <RevealGroup stagger={0.1} delay={0.1} amount={0.05} className="max-w-[480px] mx-auto px-5 -mt-10 space-y-3">
 
           {/* Account details */}
-          <Card label="Account Details">
-            <div className="px-3 pb-1">
-              <InfoRow icon={User}  label="Full Name" value={fullName} />
-              <InfoRow icon={Mail}  label="Email"     value={email}    />
-              <InfoRow icon={Phone} label="Mobile"    value={phone ? `+91 ${phone}` : ''} />
-            </div>
-          </Card>
+          <RevealGroup.Item variant="up">
+            <Card label="Account Details">
+              <div className="px-3 pb-1">
+                <InfoRow icon={User}  label="Full Name" value={fullName} />
+                <InfoRow icon={Mail}  label="Email"     value={email}    />
+                <InfoRow icon={Phone} label="Mobile"    value={phone ? `+91 ${phone}` : ''} />
+              </div>
+            </Card>
+          </RevealGroup.Item>
 
           {/* Management */}
-          <Card label="Management">
-            <ActionRow
-              icon={Package} label="My Orders" sublabel="View your order history"
-              onClick={() => setModal('orders')}
-              iconBg="bg-[#fff0f5]" iconColor="text-[#c23d6a]"
-            />
-            <ActionRow
-              icon={Lock} label="Change Password" sublabel="Keep your account secure"
-              onClick={() => setModal('password')}
-              iconBg="bg-amber-50" iconColor="text-amber-600"
-            />
-          </Card>
+          <RevealGroup.Item variant="up">
+            <Card label="Management">
+              <ActionRow
+                icon={Package} label="My Orders" sublabel="View your order history"
+                onClick={() => setModal('orders')}
+                iconBg="bg-[#fff0f5]" iconColor="text-[#c23d6a]"
+              />
+              <ActionRow
+                icon={Lock} label="Change Password" sublabel="Keep your account secure"
+                onClick={() => setModal('password')}
+                iconBg="bg-amber-50" iconColor="text-amber-600"
+              />
+            </Card>
+          </RevealGroup.Item>
 
           {/* Log out */}
-          <Card danger>
-            <ActionRow
-              icon={LogOut} label="Log Out" sublabel="Sign out safely"
-              onClick={() => setModal('logout')}
-              iconBg="bg-red-50" iconColor="text-red-500"
-              danger
-            />
-          </Card>
+          <RevealGroup.Item variant="up">
+            <Card danger>
+              <ActionRow
+                icon={LogOut} label="Log Out" sublabel="Sign out safely"
+                onClick={() => setModal('logout')}
+                iconBg="bg-red-50" iconColor="text-red-500"
+                danger
+              />
+            </Card>
+          </RevealGroup.Item>
 
-        </div>
+        </RevealGroup>
       </div>
 
       {/* ── Modals ── */}

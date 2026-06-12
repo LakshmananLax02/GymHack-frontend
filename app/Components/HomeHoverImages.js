@@ -61,7 +61,7 @@ export default function ProductShowcase() {
                 group relative overflow-hidden rounded-xl cursor-pointer
                 flex-[1] hover:flex-[2.2]
                 h-full hover:h-[400px]
-                transition-[flex,opacity,transform] duration-[900ms] ease-in-out
+                transition-[flex,opacity,transform] duration-[2900ms] ease-in-out
                 bg-gray-100
               "
             >
@@ -71,7 +71,7 @@ export default function ProductShowcase() {
                   src={product.image}
                   alt={product.title}
                   fill
-                  className="object-cover transition-transform hover:duration-[1900ms] ease-out group-hover:scale-105"
+                  className="object-cover transition-transform hover:duration-[900ms] ease-out group-hover:scale-105"
                 />
               </div>
 
@@ -80,7 +80,7 @@ export default function ProductShowcase() {
 
               {/* Text — slides up on hover */}
               <div className="absolute inset-0 flex flex-col justify-end p-8">
-                <div className="translate-y-6 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-[900ms] ease-out">
+                <div className="translate-y-6 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-[1300ms] ease-out">
                   <h3 className="font-primary text-5xl text-white leading-none mb-2">
                     {product.title}
                   </h3>

@@ -9,6 +9,7 @@ import {
   ArrowRight, ArrowLeft, ShieldCheck,
   CheckCircle2, AlertCircle, RefreshCw,
 } from 'lucide-react';
+import { Reveal } from '../Components/scroll/Reveal';
 
 // ── Shared input class — matches LoginPage exactly ───────────────────────────
 const inputClass = [
@@ -252,7 +253,7 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12"
       style={{ background: 'linear-gradient(135deg, #fdf4f7 0%, #f8f4f0 50%, #f0f4fd 100%)' }}>
-      <div className="w-full max-w-[460px]">
+      <Reveal variant="up" duration={0.7} amount={0} className="w-full max-w-[460px]">
 
         {/* ── Browser-top Toast Alert ── */}
         {toast && (
@@ -596,7 +597,7 @@ export default function SignupPage() {
           <Link href="/privacy" className="underline hover:text-gray-600 font-semibold">Privacy policy</Link>
         </p>
 
-      </div>
+      </Reveal>
     </div>
   );
 }

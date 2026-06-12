@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation } from 'swiper/modules';
+import { Reveal } from './scroll/Reveal';
 
 // Import Swiper styles
 import 'swiper/css';
@@ -58,9 +59,9 @@ export default function Testimonials() {
   return (
     <section className="bg-[#f2ead3] py-16 px-6 overflow-hidden">
       <div className="max-w-[1200px] mx-auto">
-        
+
         {/* Section Header */}
-        <div className="text-center mb-12">
+        <Reveal variant="up" amount={0.3} className="text-center mb-12">
           <div className="flex items-center justify-center gap-3 mb-2">
             <span className="w-4 h-4 bg-[#c23d6a] rounded-full"></span>
             <h2 className="font-primary text-3xl font-bold md:text-4xl tracking-tight ">
@@ -70,20 +71,19 @@ export default function Testimonials() {
           <p className="font-secondary text-gray-500 lowercase tracking-widest text-lg">
             testimonials
           </p>
-        </div>
+        </Reveal>
 
         {/* Swiper Slider */}
-        <div className="relative group">
+        <Reveal variant="up" delay={0.1} amount={0.15} className="relative group">
           <Swiper
             modules={[Navigation]}
             spaceBetween={30}
             slidesPerView={1}
             navigation={{
-              prevEl: '.prev-btn', // MUST match the class in the button below
-              nextEl: '.next-btn', // MUST match the class in the button below
+              prevEl: '.prev-btn',
+              nextEl: '.next-btn',
             }}
             onSlideChange={(swiper) => {
-              // Sync state if user swipes instead of clicking
               if (swiper.activeIndex > swiper.previousIndex) setActiveDir('next');
               else if (swiper.activeIndex < swiper.previousIndex) setActiveDir('prev');
             }}
@@ -95,7 +95,7 @@ export default function Testimonials() {
           >
             {testimonialData.map((item) => (
               <SwiperSlide key={item.id}>
-                <div className="bg-white p-10 rounded-xl shadow-sm border border-gray-100 flex flex-col h-full min-h-[320px]">
+                <div className="bg-white p-10 rounded-xl shadow-sm border border-gray-100 flex flex-col h-full min-h-[320px] transition-transform duration-500 hover:-translate-y-1 hover:shadow-md">
                   {/* Stars */}
                   <div className="flex gap-1 mb-6">
                     {[...Array(item.rating)].map((_, i) => (
@@ -124,31 +124,29 @@ export default function Testimonials() {
 
           {/* Navigation Controls */}
           <div className="flex justify-center items-center gap-0 mt-8">
-            {/* Previous Button */}
-            <button 
+            <button
               onClick={() => setActiveDir('prev')}
               className={`prev-btn w-14 h-12 flex items-center justify-center border border-gray-200 rounded-l-lg transition-all duration-300 ${
-                activeDir === 'prev' 
-                  ? 'bg-[#2b2b2b] text-white border-[#2b2b2b] z-10' 
+                activeDir === 'prev'
+                  ? 'bg-[#2b2b2b] text-white border-[#2b2b2b] z-10'
                   : 'bg-white text-gray-400 hover:bg-gray-50'
               }`}
             >
               <MoveLeft size={20} />
             </button>
 
-            {/* Next Button */}
-            <button 
+            <button
               onClick={() => setActiveDir('next')}
               className={`next-btn w-14 h-12 flex items-center justify-center border border-gray-200 rounded-r-lg transition-all duration-300 ${
-                activeDir === 'next' 
-                  ? 'bg-[#2b2b2b] text-white border-[#2b2b2b] z-10' 
+                activeDir === 'next'
+                  ? 'bg-[#2b2b2b] text-white border-[#2b2b2b] z-10'
                   : 'bg-white text-gray-400 hover:bg-gray-50'
               }`}
             >
               <MoveRight size={20} />
             </button>
           </div>
-        </div>
+        </Reveal>
       </div>
     </section>
   );

@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import Link from 'next/link';
 import { Mail, Lock, Eye, EyeOff, Dumbbell, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
+import { Reveal } from '../Components/scroll/Reveal';
 
 export default function LoginPage() {
   const [email,    setEmail]    = useState('');
@@ -52,7 +53,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12"
       style={{ background: 'linear-gradient(135deg, #fdf4f7 0%, #f8f4f0 50%, #f0f4fd 100%)' }}>
-      <div className="w-full max-w-[440px]">
+      <Reveal variant="up" duration={0.7} amount={0} className="w-full max-w-[440px]">
 
         {/* Header */}
         <div className="text-center mb-8">
@@ -173,7 +174,7 @@ export default function LoginPage() {
           <Link href="/privacy" className="underline hover:text-gray-600 font-semibold">Privacy policy</Link>
         </p>
 
-      </div>
+      </Reveal>
     </div>
   );
 }

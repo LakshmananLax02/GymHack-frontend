@@ -1,62 +1,31 @@
 'use client';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShoppingCart, AlertCircle, X, Package } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCartStore } from '../store/useCartStore';
 import { useAuth } from '../context/AuthContext';
+import { Reveal, RevealGroup } from './scroll/Reveal';
 
 const API_ROOT = process.env.NEXT_PUBLIC_API_URL;
 
-// Scroll reveal hook — works whether element is already visible or scrolled into view
-function useScrollReveal(threshold = 0.1) {
-  const ref = useRef(null);
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    // Already in viewport on mount → show immediately
-    const rect = el.getBoundingClientRect();
-    if (rect.top < window.innerHeight && rect.bottom > 0) {
-      setVisible(true);
-      return;
-    }
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect(); } },
-      { threshold }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [threshold]);
-  return [ref, visible];
-}
-
-// Single product card with its own staggered scroll reveal
-function ProductCard({ item, index, onAddToCart }) {
-  const [ref, visible] = useScrollReveal(0.08);
-
+// Single product card — animation handled by parent RevealGroup
+function ProductCard({ item, onAddToCart }) {
   const imgSrc =
     Array.isArray(item.images) && item.images.length > 0
       ? item.images[0]
       : '/images/oatsimg.jpg';
 
   return (
-    <div
-      ref={ref}
-      className="group flex flex-col h-full"
-      style={{
-        opacity: visible ? 1 : 0,
-        transform: visible ? 'translateY(0px)' : 'translateY(32px)',
-        transition: `opacity 0.5s ease ${(index % 4) * 0.08}s, transform 0.5s ease ${(index % 4) * 0.08}s`,
-      }}
-    >
+    <RevealGroup.Item variant="up" duration={0.55} className="group flex flex-col h-full">
       {/* Image */}
       <Link href={`/productsviewpage/${item.id}`}>
         <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-[#f8f8f8] border border-black/5 mb-3 cursor-pointer">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={imgSrc}
             alt={item.name}
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-[700ms] ease-out group-hover:scale-105"
           />
           {/* Hover overlay — desktop only */}
           <div className="hidden md:flex absolute inset-0 z-10 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/40 backdrop-blur-[2px]">
@@ -91,7 +60,6 @@ function ProductCard({ item, index, onAddToCart }) {
 
         <div className="flex-1" />
 
-        {/* Add to Cart — mobile only */}
         <button
           onClick={() => onAddToCart(item)}
           className="flex md:hidden w-full items-center justify-center gap-2 py-2.5 mt-3 rounded-full font-bold text-xs bg-[#c23d6a] text-white font-secondary transition-all active:scale-95"
@@ -99,7 +67,7 @@ function ProductCard({ item, index, onAddToCart }) {
           Add to Cart <ShoppingCart className="w-4 h-4" />
         </button>
       </div>
-    </div>
+    </RevealGroup.Item>
   );
 }
 
@@ -111,11 +79,6 @@ export default function AllProducts() {
   const [loadingProds, setLoadingProds]     = useState(false);
   const [showLoginPopup, setShowLoginPopup] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
-
-  // Scroll reveal refs
-  const [headerRef, headerVisible]   = useScrollReveal(0.1);
-  const [catsRef, catsVisible]       = useScrollReveal(0.1);
-  const [countRef, countVisible]     = useScrollReveal(0.1);
 
   const router = useRouter();
   const { user, showToast } = useAuth();
@@ -179,15 +142,7 @@ export default function AllProducts() {
       <div className="max-w-[1200px] mx-auto px-4 md:px-6">
 
         {/* ── Header ── */}
-        <div
-          ref={headerRef}
-          className="text-center mb-8"
-          style={{
-            opacity: headerVisible ? 1 : 0,
-            transform: headerVisible ? 'translateY(0)' : 'translateY(24px)',
-            transition: 'opacity 0.55s ease, transform 0.55s ease',
-          }}
-        >
+        <Reveal variant="up" amount={0.2} className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-2">
             <div className="w-4 h-4 bg-[#c23d6a] rounded-full" />
             <h2 className="font-primary text-3xl md:text-5xl font-bold text-black">
@@ -197,18 +152,10 @@ export default function AllProducts() {
           <p className="text-gray-500 font-secondary text-sm md:text-base mt-1">
             Fuel your body with the right choice for your routine
           </p>
-        </div>
+        </Reveal>
 
         {/* ── Category Selector ── */}
-        <div
-          ref={catsRef}
-          className="w-full mb-10"
-          style={{
-            opacity: catsVisible ? 1 : 0,
-            transform: catsVisible ? 'translateY(0)' : 'translateY(20px)',
-            transition: 'opacity 0.5s ease 0.1s, transform 0.5s ease 0.1s',
-          }}
-        >
+        <Reveal variant="up" delay={0.1} amount={0.15} className="w-full mb-10">
           {loadingCats ? (
             <div className="flex gap-3 px-4 overflow-hidden">
               {[1, 2, 3].map((i) => (
@@ -237,6 +184,7 @@ export default function AllProducts() {
                       ${isActive ? 'bg-white/20' : 'bg-white shadow-sm'}
                     `}>
                       {cat.image_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img src={cat.image_url} alt={cat.name} className="w-full h-full object-contain p-1" />
                       ) : (
                         <Package size={18} className={isActive ? 'text-white' : 'text-gray-300'} />
@@ -248,20 +196,13 @@ export default function AllProducts() {
               })}
             </div>
           )}
-        </div>
+        </Reveal>
 
         {/* ── Product Count ── */}
         {!loadingProds && (
-          <p
-            ref={countRef}
-            className="text-center text-gray-400 font-secondary text-sm mb-8"
-            style={{
-              opacity: countVisible ? 1 : 0,
-              transition: 'opacity 0.4s ease 0.15s',
-            }}
-          >
-            ({products.length} product{products.length !== 1 ? 's' : ''})
-          </p>
+          <Reveal variant="fade" delay={0.15} className="text-center text-gray-400 font-secondary text-sm mb-8">
+            <p>({products.length} product{products.length !== 1 ? 's' : ''})</p>
+          </Reveal>
         )}
 
         {/* ── Product Grid ── */}
@@ -285,16 +226,20 @@ export default function AllProducts() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 items-stretch">
-            {products.map((item, index) => (
+          <RevealGroup
+            key={activeCatId}
+            stagger={0.06}
+            amount={0.05}
+            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 items-stretch"
+          >
+            {products.map((item) => (
               <ProductCard
                 key={item.id}
                 item={item}
-                index={index}
                 onAddToCart={handleAddToCart}
               />
             ))}
-          </div>
+          </RevealGroup>
         )}
 
       </div>
@@ -383,6 +328,7 @@ export default function AllProducts() {
                   >
                     <div className="w-16 h-16 rounded-xl bg-white shadow-sm flex items-center justify-center overflow-hidden">
                       {cat.image_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img src={cat.image_url} alt={cat.name} className="w-full h-full object-contain p-1" />
                       ) : (
                         <Package size={24} className="text-gray-300" />

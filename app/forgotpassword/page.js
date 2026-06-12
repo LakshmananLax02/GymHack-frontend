@@ -9,6 +9,7 @@ import {
   ArrowRight, ArrowLeft, ShieldCheck,
   CheckCircle2, AlertCircle, RefreshCw,
 } from 'lucide-react';
+import { Reveal } from '../Components/scroll/Reveal';
 
 // ── Shared input class — matches SignupPage exactly ──────────────────────────
 const inputClass = [
@@ -238,7 +239,7 @@ export default function ForgotPassword() {
         className="min-h-screen flex items-center justify-center px-4 py-12"
         style={{ background: 'linear-gradient(135deg, #fdf4f7 0%, #f8f4f0 50%, #f0f4fd 100%)' }}
       >
-        <div className="w-full max-w-[440px]">
+        <Reveal variant="scale" duration={0.6} amount={0} className="w-full max-w-[440px]">
           <div className="bg-white rounded-xl p-12 shadow-xl border-2 border-gray-100 text-center space-y-4">
             <div className="w-20 h-20 bg-green-50 border-4 border-green-400 rounded-full flex items-center justify-center mx-auto">
               <CheckCircle2 size={40} className="text-green-500" strokeWidth={2} />
@@ -254,7 +255,7 @@ export default function ForgotPassword() {
               ))}
             </div>
           </div>
-        </div>
+        </Reveal>
         {/* Auto redirect */}
         {setTimeout(() => router.push('/login'), 2500) && null}
       </div>
@@ -266,7 +267,7 @@ export default function ForgotPassword() {
       className="min-h-screen flex items-center justify-center px-4 py-12"
       style={{ background: 'linear-gradient(135deg, #fdf4f7 0%, #f8f4f0 50%, #f0f4fd 100%)' }}
     >
-      <div className="w-full max-w-[460px]">
+      <Reveal variant="up" duration={0.7} amount={0} className="w-full max-w-[460px]">
 
         {/* ── Toast — identical to SignupPage ── */}
         {toast && (
@@ -561,7 +562,7 @@ export default function ForgotPassword() {
           <Link href="/privacy" className="underline hover:text-gray-600 font-semibold">Privacy policy</Link>
         </p>
 
-      </div>
+      </Reveal>
     </div>
   );
 }

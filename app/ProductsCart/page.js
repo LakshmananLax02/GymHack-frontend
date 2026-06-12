@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useCartStore } from '../store/useCartStore';
 import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { Reveal, RevealGroup } from '../Components/scroll/Reveal';
 
 export default function CartPage() {
   const { cart, removeFromCart, updateQuantity } = useCartStore();
@@ -22,7 +23,7 @@ export default function CartPage() {
       <div className="max-w-4xl mx-auto">
 
         {/* Header */}
-        <div className="mb-8">
+        <Reveal variant="up" duration={0.7} amount={0.2} className="mb-8">
 
           {/* Back button */}
           <Link
@@ -38,7 +39,7 @@ export default function CartPage() {
             <h1 className="font-primary text-4xl uppercase font-black">Your Cart</h1>
           </div>
 
-        </div>
+        </Reveal>
 
         {/* ── Fixed 320px Order Summary column ── */}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8">
@@ -46,7 +47,7 @@ export default function CartPage() {
           {/* Product List */}
           <div className="space-y-4">
             {cart.length === 0 ? (
-              <div className="bg-white p-12 rounded-3xl text-center shadow-sm">
+              <Reveal variant="scale" className="bg-white p-12 rounded-3xl text-center shadow-sm">
                 <p className="font-secondary text-gray-500 mb-6">Your fuel tank is empty.</p>
                 <Link
                   href="/products"
@@ -54,12 +55,14 @@ export default function CartPage() {
                 >
                   Start Shopping
                 </Link>
-              </div>
+              </Reveal>
             ) : (
-              cart.map((item) => (
-                <div
+              <RevealGroup stagger={0.08} amount={0.05} className="space-y-4">
+              {cart.map((item) => (
+                <RevealGroup.Item
                   key={`${item.id}-${item.variant_label || ''}`}
-                  className="flex flex-wrap sm:flex-nowrap gap-4 bg-white p-5 rounded-3xl shadow-sm items-center transition-all"
+                  variant="up"
+                  className="flex flex-wrap sm:flex-nowrap gap-4 bg-white p-5 rounded-3xl shadow-sm items-center transition-all hover:shadow-md"
                 >
                   <div className="w-24 h-24 bg-[#f8f8f8] rounded-2xl flex-shrink-0">
                     <img
@@ -122,13 +125,14 @@ export default function CartPage() {
                   >
                     <Trash2 size={20} />
                   </button>
-                </div>
-              ))
+                </RevealGroup.Item>
+              ))}
+              </RevealGroup>
             )}
           </div>
 
           {/* Order Summary — fixed 320px */}
-          <div className="w-full lg:w-[320px]">
+          <Reveal variant="right" duration={0.7} delay={0.15} amount={0.1} className="w-full lg:w-[320px]">
             <div className="bg-white p-4 rounded-[1rem] shadow-sm sticky top-28">
               <h3 className="font-primary text-xl uppercase mb-6 border-b pb-4">Order Summary</h3>
 
@@ -157,7 +161,7 @@ export default function CartPage() {
                 Proceed to Checkout
               </Link>
             </div>
-          </div>
+          </Reveal>
 
         </div>
       </div>

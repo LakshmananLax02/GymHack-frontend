@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { ArrowLeft, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react';
+import { Reveal } from '../Components/scroll/Reveal';
 
 export default function RefundPolicy() {
   return (
@@ -8,7 +9,7 @@ export default function RefundPolicy() {
 
       {/* Header */}
       <div className="bg-[#111] text-white py-14 px-4">
-        <div className="max-w-3xl mx-auto">
+        <Reveal variant="up" duration={0.8} amount={0} className="max-w-3xl mx-auto">
           <Link href="/" className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors mb-8">
             <ArrowLeft size={16} /> Back to Home
           </Link>
@@ -18,7 +19,7 @@ export default function RefundPolicy() {
           </div>
           <h1 className="text-4xl md:text-5xl font-black text-white mb-3">Refund Policy</h1>
           <p className="text-gray-400 text-sm">Last updated: June 1, 2025 &nbsp;·&nbsp; Effective immediately</p>
-        </div>
+        </Reveal>
       </div>
 
       {/* Quick Summary Cards */}
@@ -165,10 +166,10 @@ function SummaryCard({ icon, title, desc, bg }) {
 
 function Section({ title, children }) {
   return (
-    <div>
+    <Reveal variant="up" amount={0.15}>
       <h2 className="text-lg font-black text-black mb-3 pb-2 border-b border-gray-100">{title}</h2>
       <div className="space-y-3">{children}</div>
-    </div>
+    </Reveal>
   );
 }
 

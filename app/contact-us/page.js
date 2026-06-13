@@ -24,7 +24,7 @@ const INQUIRY_REASONS = [
 // ── Business details — REPLACE these with your real info ──────────────────────
 const BUSINESS = {
   name: 'Gym Hack Nutrition',
-  address: ['123 Fitness Street', 'Chennai, Tamil Nadu 600001', 'India'],
+  address: ['No 5 Lakshmi nagar, Thoppampatti', 'Coimbatore, Tamil Nadu 641 017', 'India'],
   phoneDisplay: '+91 98765 43210',
   phoneHref: '+919876543210',
   email: 'support@gymhack.in',

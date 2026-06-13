@@ -445,8 +445,12 @@ const closeCart   = useCartStore(s => s.closeCart);
 )}
             </div>
 
-            <Link href="/about" className="text-xl font-bold tracking-tight hover:text-[#c23d6a] transition-colors">
+            <Link href="/about-us" className="text-xl font-bold tracking-tight hover:text-[#c23d6a] transition-colors">
               About
+            </Link>
+
+            <Link href="/contact-us" className="text-xl font-bold tracking-tight hover:text-[#c23d6a] transition-colors">
+              Contact
             </Link>
           </nav>
 
@@ -855,8 +859,14 @@ const closeCart   = useCartStore(s => s.closeCart);
 
             <nav className="flex-1 overflow-y-auto">
               <div className="p-6 space-y-5 border-b border-gray-100">
-                <Link href="/about" onClick={() => setIsSidebarOpen(false)} className="block text-lg font-bold">
+                <Link href="/about-us" onClick={() => setIsSidebarOpen(false)} className="block text-lg font-bold">
                   About Us
+                </Link>
+              </div>
+
+              <div className="p-6 space-y-5 border-b border-gray-100">
+                <Link href="/contact-us" onClick={() => setIsSidebarOpen(false)} className="block text-lg font-bold">
+                  Contact Us
                 </Link>
               </div>
 

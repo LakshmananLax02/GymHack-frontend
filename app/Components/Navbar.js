@@ -408,7 +408,7 @@ const closeCart   = useCartStore(s => s.closeCart);
               </button>
          {isShopOpen && (
   <div className="absolute top-full left-1/2 -translate-x-1/2 pt-4 z-50">
-    <div className="bg-white shadow-2xl rounded-3xl border border-gray-100 p-6
+    <div className="bg-white shadow-2xl rounded-xl border border-gray-100 p-6
                     w-[90vw] max-w-[600px] max-h-[80vh] overflow-y-auto">
       {apiCategories.length === 0 ? (
         <p className="text-sm text-gray-400 text-center py-4">Loading categories…</p>
@@ -419,7 +419,7 @@ const closeCart   = useCartStore(s => s.closeCart);
               key={cat.id}
               href="/products"
               onClick={() => setIsShopOpen(false)}
-              className="flex flex-col items-center gap-3 p-3 hover:bg-gray-50 rounded-2xl transition-all group"
+              className="flex flex-col items-center gap-3 p-3 hover:bg-gray-50 rounded-xl transition-all group"
             >
               <div className="relative w-full aspect-square bg-gray-100 rounded-xl overflow-hidden shadow-sm">
                 {cat.image_url ? (

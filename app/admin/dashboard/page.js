@@ -1424,12 +1424,12 @@ export default function AdminDashboard() {
               <RefreshCw size={13} className={refreshing ? 'animate-spin' : ''} />
               <span className="hidden sm:inline">Refresh</span>
             </button>
-            <button onClick={handleLogout}
+            {/* <button onClick={handleLogout}
               className="flex items-center gap-2 bg-[#c23d6a] hover:bg-[#a8305a] text-white px-4 py-2 rounded-full text-xs font-black transition-colors shadow-md shadow-[#c23d6a]/25">
               <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px] font-black">A</div>
               Admin
               <LogOut size={11} className="opacity-70" />
-            </button>
+            </button> */}
           </div>
         </header>
 

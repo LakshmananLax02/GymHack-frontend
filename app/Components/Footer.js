@@ -51,8 +51,8 @@ export default function Footer() {
         <RevealGroup.Item variant="up" className="font-secondary">
           <h4 className="font-primary text-2xl uppercase mb-6 tracking-wider">Top Category</h4>
           <ul className="space-y-4 text-gray-400 text-sm">
-            <li><Link href="/category/oats" className="hover:text-white transition-colors">Oats</Link></li>
-            <li><Link href="/category/muesli" className="hover:text-white transition-colors">Muesli</Link></li>
+            <li><Link href="/products" className="hover:text-white transition-colors">Oats</Link></li>
+            <li><Link href="/products" className="hover:text-white transition-colors">Muesli</Link></li>
           </ul>
           <Link href="/products" className="mt-8 inline-flex items-center gap-2 bg-[#c23d6a] px-5 py-2.5 rounded-full text-xs font-bold transition-all hover:bg-[#f0ece2] hover:text-black hover:scale-105">
             Browse All Product <ArrowRight size={14} />
@@ -64,10 +64,13 @@ export default function Footer() {
           <h4 className="font-primary text-2xl uppercase mb-6 tracking-wider">Quick Links</h4>
           <ul className="space-y-3 text-gray-400 text-sm">
             <li><Link href="/products" className="hover:text-white transition-colors">Shop Product</Link></li>
-            <li><Link href="/cart" className="hover:text-white transition-colors">Shopping Cart</Link></li>
-            <li><Link href="/about" className="hover:text-white transition-colors">About us</Link></li>
-            <li><Link href="/contact" className="hover:text-white transition-colors">Contact us</Link></li>
-            <li><Link href="/help" className="hover:text-white transition-colors">Customer Help</Link></li>
+            <li><Link href="/about-us" className="hover:text-white transition-colors">About us</Link></li>
+            <li><Link href="/contact-us" className="hover:text-white transition-colors">Contact us</Link></li>
+                        <li><Link href="/terms-conditions" className="hover:text-white transition-colors">Terms and Conditions</Link></li>
+
+            <li><Link href="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+
+            
           </ul>
         </RevealGroup.Item>
 

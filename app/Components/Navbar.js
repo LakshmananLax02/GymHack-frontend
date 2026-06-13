@@ -406,15 +406,14 @@ const closeCart   = useCartStore(s => s.closeCart);
                 Shop
                 <ChevronDown size={14} strokeWidth={3} className={`transition-transform duration-200 ${isShopOpen ? 'rotate-180' : ''}`} />
               </button>
-        {isShopOpen && (
- 
-  <div className="fixed top-[70px] left-0 right-0 w-full pt-10 z-40 px-4 sm:px-8">
-    <div className="bg-white shadow-2xl rounded-xl border border-gray-100 p-8
-                    w-full max-h-[80vh] overflow-y-auto">
+         {isShopOpen && (
+  <div className="absolute top-full left-1/2 -translate-x-1/2 pt-4 z-50">
+    <div className="bg-white shadow-2xl rounded-3xl border border-gray-100 p-6
+                    w-[90vw] max-w-[600px] max-h-[80vh] overflow-y-auto">
       {apiCategories.length === 0 ? (
         <p className="text-sm text-gray-400 text-center py-4">Loading categories…</p>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-6 max-w-7xl mx-auto">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
           {apiCategories.map((cat) => (
             <Link
               key={cat.id}

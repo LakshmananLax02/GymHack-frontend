@@ -30,19 +30,19 @@ export default function Footer() {
         {/* 2. Customer Support */}
         <RevealGroup.Item variant="up" className="font-secondary">
           <h4 className="font-primary text-2xl uppercase mb-6 tracking-wider">Customer care</h4>
-          <p className="text-xl font-bold mb-4">+91 987654323</p>
+          <p className="text-xl font-bold mb-4">+91 6379123952</p>
           <div className="text-gray-300 text-sm leading-relaxed mb-4 flex gap-3">
             <MapPin size={18} className="shrink-0" />
             <div>
-              <p>No. 5, Thoppampatti</p>
-              <p>Coimbatore</p>
-              <p>641 017.</p>
+              <p>8/1, 1st Floor, Mega City</p>
+              <p>Madukkarai, Coimbatore</p>
+              <p>Tamil Nadu – 641 105.</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <Mail size={18} className="text-gray-400" />
             <Link href="mailto:shop@gymhack.com" className="font-bold hover:text-[#c23d6a] transition-colors">
-              shop@gymhack.com
+              gymhackwork@gmail.com
             </Link>
           </div>
         </RevealGroup.Item>

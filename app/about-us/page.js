@@ -13,32 +13,35 @@ const SECTIONS = [
   {
     eyebrow: 'Who We Are',
     title: 'Our Story',
-    image: '/images/homephilosophyimg.png',
+    image: '/images/aboutourstoryimg.png',
     alt: 'The Gym Hack story',
     reverse: false,
     body: [
-      'Gym Hack was born from a simple frustration — finding everyday food that actually supports an active life shouldn’t be this hard. So we built it ourselves.',
-      'We craft clean, high-protein oats and muesli with real ingredients you can pronounce. No fillers, no junk, no shortcuts — just honest nutrition made for real routines.',
+      'Gym Hack began with a simple idea — healthy eating should be easy, honest, and accessible to everyone.',
+      'What started as a passion for fitness grew into a mission to create wholesome oat-based foods made with real ingredients and no unnecessary additives. From Rolled Oats and Steel Cut Oats to Muesli, every product is crafted to support healthier lifestyles and everyday wellness.',
+      'We believe that small, consistent choices lead to lasting results, and great nutrition should be something every family can enjoy.'
     ],
-    highlight: 'Real food. Real results. Made in India.',
+    highlight: 'Real Ingredients. Real Nutrition. Real Progress.',
   },
   {
     eyebrow: 'What Drives Us',
     title: 'Our Mission',
-    image: '/images/homenutritionimg.png',
+    image: '/images/aboutourvisionimg.png',
     alt: 'Gym Hack mission',
     reverse: true,
     icon: Target,
     body: [
-      'To make clean, high-protein nutrition simple, affordable and accessible for every Indian household — whether you’re chasing a PR at the gym or just a better breakfast.',
-      'We believe what you eat every single day matters more than any crash diet. Our mission is to fuel those everyday choices.',
+      'To make clean and wholesome nutrition accessible to everyone. We are committed to creating high-quality oat-based foods made with simple, honest ingredients.',
+      'Our products are designed to support healthier lifestyles, active routines, and everyday wellness.',
+      'We believe good nutrition should be easy, affordable, and enjoyable.',
+      'Every product we make is driven by our passion for health, fitness, and better living.'
     ],
     highlight: 'Clean nutrition, made effortless.',
   },
   {
     eyebrow: 'Where We’re Headed',
     title: 'Our Vision',
-    image: '/images/homeslideimg1.png',
+    image: '/images/aboutourmissionimg.png',
     alt: 'Gym Hack vision',
     reverse: false,
     icon: Eye,
@@ -67,11 +70,11 @@ export default function AboutUs() {
       {/* ───────────────────────── HERO ───────────────────────── */}
        <section
         className="relative px-4 sm:px-6 pt-16 pb-20 lg:pt-24 lg:pb-28 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url('/images/productsheroimg.png')" }}
+        style={{ backgroundImage: "url('/images/aboutheroimg.png')" }}
       >
         {/* Cream overlay — keeps the dark heading/text readable over the image.
             Lower opacity (/70) to show more image, raise (/90) for less. */}
-        <div className="absolute inset-0 bg-[#fdf5e6]/30" />
+        <div className="absolute inset-0 bg-black/35" />
 
         <div className="relative z-10 max-w-[1100px] mx-auto text-center">
           <Reveal variant="up" amount={0}>
@@ -84,16 +87,14 @@ export default function AboutUs() {
           </Reveal>
 
           <Reveal variant="up" delay={0.05} amount={0}>
-            <h1 className="font-primary text-4xl sm:text-5xl lg:text-6xl uppercase tracking-tight text-black leading-[1.05]">
-              Fuel Your Body,<br />
-              <span className="text-[#c23d6a]">The Honest Way</span>
+            <h1 className="font-primary text-4xl sm:text-5xl lg:text-6xl uppercase tracking-tight text-white font-black leading-[1.05]">
+              Nutrition You Can Trust<br />
             </h1>
           </Reveal>
 
           <Reveal variant="up" delay={0.12} amount={0}>
             <p className="font-secondary text-white text-base sm:text-lg max-w-2xl mx-auto mt-6 leading-relaxed">
-              Gym Hack is a homegrown nutrition brand built on one belief — that everyday
-              fitness deserves everyday-clean food. Simple ingredients, serious quality.
+              At Gym Hack, we believe great health starts with honest ingredients. Our products are crafted to deliver wholesome nutrition, exceptional quality, and the fuel you need for everyday life.
             </p>
           </Reveal>
         </div>
@@ -182,7 +183,7 @@ export default function AboutUs() {
 // ── Reusable alternating image/content row ───────────────────────────────────
 function FeatureRow({ eyebrow, title, body, highlight, image, alt, reverse, icon: Icon }) {
   return (
-    <section className="px-4 sm:px-6 py-15 lg:py-15 bg-white">
+    <section className="px-4 sm:px-6 py-8 lg:py-8 bg-white">
       <div className="max-w-[1200px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
 
         {/* ── Content ── */}

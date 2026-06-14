@@ -15,7 +15,7 @@ export default function Products() {
         {/* Background Image with parallax drift */}
         <Parallax amount={40} direction="down" className="absolute inset-0 z-0">
           <Image
-            src="/images/productsheroimg.png"
+            src="/images/shopallheroimg.png"
             alt="Shop All"
             fill
             className="object-cover object-center scale-110"
@@ -29,7 +29,7 @@ export default function Products() {
           <Reveal variant="left" duration={0.9} amount={0}>
             <h1
               style={{ lineHeight: 1, letterSpacing: '-0.02em' }}
-              className="text-white text-5xl sm:text-6xl md:text-7xl font-black uppercase"
+              className="font-primary text-white text-5xl sm:text-6xl md:text-7xl font-black uppercase"
             >
               Shop All
             </h1>

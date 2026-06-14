@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination } from 'swiper/modules';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Reveal, RevealGroup } from './scroll/Reveal';
 
 import 'swiper/css';
@@ -15,12 +14,20 @@ const Sprout = dynamic(() => import('lucide-react').then((mod) => mod.Sprout), {
 const Zap = dynamic(() => import('lucide-react').then((mod) => mod.Zap), { ssr: false });
 
 export default function HomeGoodNutrition() {
-  const [activeIndex, setActiveIndex] = useState(0);
 
   const slidingImages = [
-    "/images/homeslideimg1.png",
-    "/images/homeslideimg2.png",
-    "/images/homeslideimg3.png",
+    {
+      desktop: "/images/nutwebimg1.png",
+      mobile: "/images/nutmobileimg1.png",
+    },
+    {
+      desktop: "/images/nutwebimg2.png",
+      mobile: "/images/nutmobileimg2.png",
+    },
+    {
+      desktop: "/images/nutwebimg3.png",
+      mobile: "/images/nutmobileimg3.png",
+    },
   ];
 
   return (
@@ -60,31 +67,37 @@ export default function HomeGoodNutrition() {
           autoplay={{ delay: 4000, disableOnInteraction: false }}
           pagination={{ clickable: true, dynamicBullets: true }}
           loop={true}
-          speed={600}
-          onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
+          speed={800}
           className="w-full h-full mySwiper"
         >
-          {slidingImages.map((src, index) => (
+          {slidingImages.map((img, index) => (
             <SwiperSlide key={index} className="h-full">
-              <div className="w-full h-full relative">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={`${index}-${activeIndex}`}
-                    initial={{ opacity: 0, scale: 1.05 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                    className="relative w-full h-full"
-                  >
-                    <Image
-                      src={src}
-                      alt={`Nutrition slide ${index + 1}`}
-                      fill
-                      priority={index === 0}
-                      sizes="100vw"
-                      className="object-cover"
-                    />
-                  </motion.div>
-                </AnimatePresence>
+              <div className="relative w-full h-full overflow-hidden">
+
+                {/* Desktop Image (lg and up) */}
+                <div className="hidden lg:block absolute inset-0">
+                  <Image
+                    src={img.desktop}
+                    alt={`Nutrition slide ${index + 1}`}
+                    fill
+                    priority={index === 0}
+                    sizes="100vw"
+                    className="object-top"
+                  />
+                </div>
+
+                {/* Mobile / Tablet Image (below lg) */}
+                <div className="block lg:hidden absolute inset-0 bg-white">
+                  <Image
+                    src={img.mobile}
+                    alt={`Nutrition slide ${index + 1}`}
+                    fill
+                    priority={index === 0}
+                    sizes="100vw"
+                    className="object-contain"
+                  />
+                </div>
+
               </div>
             </SwiperSlide>
           ))}
@@ -92,6 +105,7 @@ export default function HomeGoodNutrition() {
 
         <style jsx global>{`
           .mySwiper { height: 100% !important; }
+
           .mySwiper .swiper-pagination {
             bottom: 15px !important;
             z-index: 30;

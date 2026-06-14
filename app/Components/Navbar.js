@@ -382,8 +382,8 @@ const closeCart   = useCartStore(s => s.closeCart);
 
           <div className="flex items-center justify-between w-full md:w-auto md:flex-none">
             <Link href="/" className="flex items-center gap-2">
-              <div className="w-15 h-15 bg-[#c23d6a] rounded-full flex items-center justify-center p-1 relative">
-                <Image src="/images/logoimg.png" alt="Logo" fill className="object-contain p-1" />
+              <div className="w-17 h-17 rounded-full flex items-center justify-center p-1 relative">
+                <Image src="/images/logoimg.png" alt="Logo" fill className="object-contain p-1 rounded-full" />
               </div>
             </Link>
             <div className="flex items-center gap-1 md:hidden ml-auto">
@@ -402,10 +402,12 @@ const closeCart   = useCartStore(s => s.closeCart);
             </Link>
 
             <div className="relative" onMouseEnter={() => setIsShopOpen(true)} onMouseLeave={() => setIsShopOpen(false)}>
+              <Link href='/products' className={`${pathname === '/products' ? 'text-[#c23d6a]' : ''}`}>
               <button className="text-xl font-bold tracking-tight flex items-center gap-1 hover:text-[#c23d6a] transition-colors">
                 Shop
                 <ChevronDown size={14} strokeWidth={3} className={`transition-transform duration-200 ${isShopOpen ? 'rotate-180' : ''}`} />
               </button>
+              </Link>
          {isShopOpen && (
   <div className="absolute top-full left-1/2 -translate-x-1/2 pt-4 z-50">
     <div className="bg-white shadow-2xl rounded-xl border border-gray-100 p-6
@@ -445,11 +447,11 @@ const closeCart   = useCartStore(s => s.closeCart);
 )}
             </div>
 
-            <Link href="/about-us" className="text-xl font-bold tracking-tight hover:text-[#c23d6a] transition-colors">
+            <Link href="/about-us" className={`text-xl font-bold tracking-tight hover:text-[#c23d6a] transition-colors ${pathname === '/about-us' ? 'text-[#c23d6a]' : ''}`}>
               About
             </Link>
 
-            <Link href="/contact-us" className="text-xl font-bold tracking-tight hover:text-[#c23d6a] transition-colors">
+            <Link href="/contact-us" className={`text-xl font-bold tracking-tight hover:text-[#c23d6a] transition-colors ${pathname === '/contact-us' ? 'text-[#c23d6a]' : ''}`}>
               Contact
             </Link>
           </nav>
@@ -948,13 +950,20 @@ const closeCart   = useCartStore(s => s.closeCart);
       <span className="text-[10px] font-semibold mt-1">Home</span>
     </Link>
 
-    {/* Shop */}
-    <Link href="/products" className="flex flex-col items-center justify-center flex-1 py-2 text-gray-500 transition-colors">
-      <div className="flex items-center justify-center w-[22px] h-[22px]">
-        <Store size={22} strokeWidth={2} />
-      </div>
-      <span className="text-[10px] font-semibold mt-1">Shop</span>
-    </Link>
+  {/* Shop */}
+<Link 
+  href="/products" 
+  className={`flex flex-col items-center justify-center flex-1 py-2 transition-colors ${
+    pathname && pathname.startsWith('/products') 
+      ? 'text-[#c23d6a]' 
+      : 'text-gray-500 hover:text-gray-700'
+  }`}
+>
+  <div className="flex items-center justify-center w-[22px] h-[22px]">
+    <Store size={22} strokeWidth={2} />
+  </div>
+  <span className="text-[10px] font-semibold mt-1">Shop</span>
+</Link>
 
     {/* Cart */}
     <button onClick={handleOpenCart} className="flex flex-col items-center justify-center flex-1 py-2 text-gray-500 transition-colors">

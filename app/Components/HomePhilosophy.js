@@ -134,7 +134,7 @@ export default function Philosophy() {
           <Parallax amount={30} direction="up" className="relative z-10 rounded-xl overflow-hidden shadow-lg">
             <Reveal variant="scale" duration={0.9} amount={0.15}>
               <Image
-                src="/images/homephilosophyimg.png"
+                src="/images/homephilosophyimg2.png"
                 alt="Gym Hack Philosophy"
                 width={600}
                 height={480}

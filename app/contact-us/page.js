@@ -24,13 +24,13 @@ const INQUIRY_REASONS = [
 // ── Business details — REPLACE these with your real info ──────────────────────
 const BUSINESS = {
   name: 'Gym Hack Nutrition',
-  address: ['No 5 Lakshmi nagar, Thoppampatti', 'Coimbatore, Tamil Nadu 641 017', 'India'],
-  phoneDisplay: '+91 98765 43210',
-  phoneHref: '+919876543210',
-  email: 'support@gymhack.in',
-  hours: 'Mon – Sat · 9:00 AM – 7:00 PM',
+  address: ['8/1, 1st Floor, Mega City', 'Madukkarai, Coimbatore, Tamil Nadu – 641 105.', 'India'],
+  phoneDisplay: '+91 6379123952',
+  phoneHref: '+916379123952',
+  email: 'gymhackwork@gmail.com',
+  hours: 'Mon – Sat · 9:00 AM – 9:00 PM',
   // Google Maps → Share → "Embed a map" → copy the src URL and paste it here.
-  mapSrc: 'https://www.google.com/maps?q=Chennai,Tamil%20Nadu,India&z=12&output=embed',
+  mapSrc: 'https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d3917.6041992706296!2d76.96827317504392!3d10.917654989239832!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMTDCsDU1JzAzLjYiTiA3NsKwNTgnMTUuMSJF!5e0!3m2!1sen!2sin!4v1781434321866!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade',
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -103,10 +103,10 @@ export default function ContactUs() {
           {/* ───────────────────────── HEADER ───────────────────────── */}
       <section
         className="relative px-4 sm:px-6 pt-16 pb-16 lg:pt-20 lg:pb-20 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url('/images/productsheroimg.png')" }}
+        style={{ backgroundImage: "url('/images/contactheroimg.png')" }}
       >
         {/* Cream overlay — keeps the dark heading/text readable over the image. */}
-        <div className="absolute inset-0 bg-[#fdf5e6]/25" />
+        <div className="absolute inset-0 bg-black/35" />
 
         <div className="relative z-10 max-w-[1100px] mx-auto text-center">
           <Reveal variant="up" amount={0}>
@@ -118,8 +118,8 @@ export default function ContactUs() {
             </div>
           </Reveal>
           <Reveal variant="up" delay={0.05} amount={0}>
-            <h1 className="font-primary text-4xl sm:text-5xl lg:text-6xl uppercase tracking-tight text-black leading-[1.05]">
-              Get In <span className="text-[#c23d6a]">Touch</span>
+            <h1 className="font-primary text-4xl sm:text-5xl lg:text-6xl uppercase tracking-tight text-white font-black leading-[1.05]">
+              Get In <span className="text-white font-black">Touch</span>
             </h1>
           </Reveal>
           <Reveal variant="up" delay={0.12} amount={0}>
@@ -132,10 +132,10 @@ export default function ContactUs() {
       </section>
 
       {/* ───────────────────────── FORM ───────────────────────── */}
-      <section className="px-4 sm:px-6 py-16 lg:py-20 bg-white">
+      <section className="px-4 sm:px-6 py-10 lg:py-10 bg-white">
         <div className="max-w-[640px] mx-auto">
           <Reveal variant="up" amount={0.1}>
-            <div className="bg-white border-2 border-gray-100 rounded-xl p-6 sm:p-9 shadow-xl shadow-gray-200/70">
+            <div className="bg-white border-2 border-gray-300 rounded-xl p-6 sm:p-9 shadow-3xl shadow-gray-200/70">
 
               {status === 'success' ? (
                 <div className="text-center py-10">

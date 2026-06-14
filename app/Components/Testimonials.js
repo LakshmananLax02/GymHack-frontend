@@ -18,37 +18,44 @@ const Star = dynamic(() => import('lucide-react').then((mod) => mod.Star), { ssr
 const testimonialData = [
   {
     id: 1,
-    name: "Sabo Masties",
-    role: "Founder @ Rolex",
-    text: "Yet preference connection unpleasant yet melancholy but end appearance. And excellence partiality estimating terminated day everything.",
+    name: "Arjun Kumar",
+    role: "Chennai, Tamil Nadu",
+    text: "Gym Hack Rolled Oats have become a part of my daily breakfast. They keep me energized throughout the morning and fit perfectly into my fitness routine.",
     rating: 5
   },
   {
     id: 2,
-    name: "Sabo Masties",
-    role: "Founder @ Migelko",
-    text: "Yet preference connection unpleasant yet melancholy but end appearance. And excellence partiality estimating terminated day everything.",
+    name: "Priya Sharma",
+    role: "Bengaluru, Karnataka",
+    text: "The Muesli is fresh, delicious, and packed with quality ingredients. It's the perfect combination of taste and nutrition.",
     rating: 5
   },
   {
     id: 3,
-    name: "Sabo Masties",
-    role: "Founder @ Google",
-    text: "Yet preference connection unpleasant yet melancholy but end appearance. And excellence partiality estimating terminated day everything.",
+    name: "Rahul Verma",
+    role: "Hyderabad, Telangana",
+    text: "Steel Cut Oats from Gym Hack are excellent. They keep me full for longer and help me stay consistent with my health goals.",
     rating: 5
   },
   {
     id: 4,
-    name: "Sabo Masties",
-    role: "Founder @ Apple",
-    text: "Yet preference connection unpleasant yet melancholy but end appearance. And excellence partiality estimating terminated day everything.",
+    name: "Meena Ramesh",
+    role: "Coimbatore, Tamil Nadu",
+    text: "I love that the products are made with simple, clean ingredients. My entire family enjoys them every day.",
     rating: 5
   },
   {
     id: 5,
-    name: "Sabo Masties",
-    role: "Founder @ Apple",
-    text: "Yet preference connection unpleasant yet melancholy but end appearance. And excellence partiality estimating terminated day everything.",
+    name: "Vikram Kumar",
+    role: "Chennai, Tamil Nadu",
+    text: "Great quality, premium packaging, and fast delivery. Gym Hack has quickly become one of my favorite nutrition brands.",
+    rating: 5
+  },
+  {
+    id: 6,
+    name: "Sneha Patel",
+    role: "Ahmedabad, Gujarat",
+    text: "The Rolled Oats and Muesli are both fantastic. Healthy eating feels easy and enjoyable with Gym Hack products.",
     rating: 5
   }
 ];

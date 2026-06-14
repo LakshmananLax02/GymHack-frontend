@@ -7,16 +7,17 @@ import { Reveal, RevealGroup, Parallax } from './scroll/Reveal';
 
 export default function Hero() {
   const statsItems = [
-  { src: "/images/homeheroicons1.png", alt: "Plant Based" },
-  { src: "/images/homeheroicons2.png", alt: "Certified Vegan" },
-  { src: "/images/homeheroicons3.png", alt: "Gluten Free" },
-  { src: "/images/homeheroicon4.png", alt: "Nutrient Dense" },
-  { src: "/images/homeheroicon5.png", alt: "Nutrient Dense" },
-  { src: "/images/homeheroicon6.png", alt: "Nutrient Dense" },
-  { src: "/images/homeheroicon7.png", alt: "Nutrient Dense" },
-  { src: "/images/homeheroicon8.png", alt: "Nutrient Dense" },
-  { src: "/images/homeheroicon9.png", alt: "Nutrient Dense" },
-  { src: "/images/homeheroicon10.png", alt: "Nutrient Dense" },
+  { src: "/images/1.png", alt: "Plant Based" },
+  { src: "/images/2.png", alt: "Certified Vegan" },
+  { src: "/images/3.png", alt: "Gluten Free" },
+  { src: "/images/4.png", alt: "Nutrient Dense" },
+  { src: "/images/5.png", alt: "Nutrient Dense" },
+  { src: "/images/6.png", alt: "Nutrient Dense" },
+  { src: "/images/7.png", alt: "Nutrient Dense" },
+  { src: "/images/8.png", alt: "Nutrient Dense" },
+  { src: "/images/9.png", alt: "Nutrient Dense" },
+    { src: "/images/5.png", alt: "Nutrient Dense" },
+
 ];
 
   return (
@@ -78,12 +79,13 @@ export default function Hero() {
       </div>
 
       {/* --- Static Stats Bar Section --- */}
-      
+{/* --- Static Stats Bar Section --- */}
+
 <Reveal variant="up" amount={0.3}>
   <div className="bg-[#f0ece2] py-5 md:py-6 border-t border-b border-black/10">
     <RevealGroup
       stagger={0.1}
-      className="statsbar max-w-[1440px] mx-auto px-4 md:px-10 lg:px-20 flex md:flex-wrap lg:grid lg:grid-cols-10 items-center md:justify-center overflow-x-auto md:overflow-visible gap-6 md:gap-8 lg:gap-4"
+      className="statsbar max-w-[1440px] mx-auto md:px-10 lg:px-15 flex md:flex-wrap lg:grid lg:grid-cols-10 items-center md:justify-center overflow-x-auto md:overflow-visible gap-6 md:gap-8 lg:gap-4"
     >
       {statsItems.map((item, index) => (
         <RevealGroup.Item
@@ -91,7 +93,7 @@ export default function Hero() {
           variant="up"
           className="shrink-0 flex items-center justify-center"
         >
-          <div className="relative w-14 h-14 md:w-20 md:h-20">
+          <div className="relative w-16 h-16 md:w-20 md:h-20">
             <Image src={item.src} alt={item.alt} fill className="object-contain" />
           </div>
         </RevealGroup.Item>
@@ -104,6 +106,18 @@ export default function Hero() {
       }
       .statsbar {
         scrollbar-width: none;
+      }
+      .statsbar > :first-child {
+        margin-left: 1rem;
+      }
+      .statsbar > :last-child {
+        margin-right: 1rem;
+      }
+      @media (min-width: 768px) {
+        .statsbar > :first-child,
+        .statsbar > :last-child {
+          margin: 0;
+        }
       }
     `}</style>
   </div>

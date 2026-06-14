@@ -72,7 +72,7 @@ export default function HomeGoodNutrition() {
         >
           {slidingImages.map((img, index) => (
             <SwiperSlide key={index} className="h-full">
-              <div className="relative w-full h-full overflow-hidden">
+              <div className="relative w-full h-[500px] overflow-hidden">
 
                 {/* Desktop Image (lg and up) */}
                 <div className="hidden lg:block absolute inset-0">

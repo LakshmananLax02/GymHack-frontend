@@ -70,12 +70,12 @@ export default function HomeGoodNutrition() {
           speed={800}
           className="w-full h-full mySwiper"
         >
-          {slidingImages.map((img, index) => (
+          {/* {slidingImages.map((img, index) => (
             <SwiperSlide key={index} className="h-full">
-              <div className="relative w-full h-[500px] overflow-hidden">
+              <div className="relative w-full h-[500px] overflow-hidden"> */}
 
                 {/* Desktop Image (lg and up) */}
-                <div className="hidden lg:block absolute inset-0">
+                {/* <div className="hidden lg:block absolute inset-0 ">
                   <Image
                     src={img.desktop}
                     alt={`Nutrition slide ${index + 1}`}
@@ -83,7 +83,25 @@ export default function HomeGoodNutrition() {
                     priority={index === 0}
                     sizes="100vw"
                     className="object-top"
-                  />
+                  /> */}
+                  {slidingImages.map((img, index) => (
+  <SwiperSlide key={index} className="h-[400px] md:h-[550px] lg:h-[650px] bg-[#fdfdfd]">
+    <div className="relative w-full h-full overflow-hidden flex items-center justify-center">
+
+      {/* Processed Infographic Banner Asset */}
+      <div className="absolute inset-0 w-full h-full p-2 md:p-6 lg:p-8">
+        <Image
+          src={img.desktop} // Make sure these link to: '/images/nutwebimg1.png', etc.
+          alt={`Gym Hack Product Infographic Slide ${index + 1}`}
+          fill
+          priority={index === 0}
+          sizes="100vw"
+          /* CRITICAL FIX: 
+            Changed object-cover to object-contain so that text like "CLEAN INGREDIENTS" 
+            and "DAIRY FREE" never gets cropped out on narrow laptop or tablet layouts.
+          */
+          className="object-contain object-center transition-transform duration-700 ease-out"
+        />
                 </div>
 
                 {/* Mobile / Tablet Image (below lg) */}

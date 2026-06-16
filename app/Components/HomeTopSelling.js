@@ -25,7 +25,7 @@ function ProductCard({ product, onAddToCart }) {
     <RevealGroup.Item variant="up" duration={0.6} className="flex flex-col items-center text-center">
       {/* Image */}
       <Link href={`/productsviewpage/${product.id}`} className="w-full">
-        <div className="w-full aspect-[4/5] rounded-2xl overflow-hidden bg-[#f5f0eb] mb-4 cursor-pointer relative group/img">
+        <div className="w-full aspect-[4/5] rounded-xl overflow-hidden bg-[#f5f0eb] mb-4 cursor-pointer relative group/img">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={imgSrc}

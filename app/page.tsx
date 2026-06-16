@@ -18,6 +18,8 @@ import Philosophy from './Components/HomePhilosophy'
 
 import Testimonials from './Components/Testimonials'
 
+import Scroll from './Components/Scroll'
+
 
 
 export default function Home() {
@@ -41,6 +43,8 @@ export default function Home() {
      <Philosophy/>
 
      <Testimonials/>
+
+     <Scroll/>
 
   
 

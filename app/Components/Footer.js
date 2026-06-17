@@ -11,7 +11,7 @@ import { Reveal, RevealGroup } from './scroll/Reveal';
 export default function Footer() {
   return (
     <footer className="bg-[#333a3d] text-white">
-      <RevealGroup stagger={0.1} amount={0.15} className="max-w-[1200px] mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-12 items-start">
+      <RevealGroup stagger={0.1} amount={0.15} className="max-w-[1200px] mx-auto px-6 py-16 md:px-18 grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-12 items-start">
 
         {/* 1. Logo Section */}
         <RevealGroup.Item variant="up" className="lg:col-span-1 flex justify-center lg:justify-start">

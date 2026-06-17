@@ -247,7 +247,7 @@ export default function ContactUs() {
       </section>
 
       {/* ─────────────────── MAP (left) + ADDRESS (right) ─────────────────── */}
-      <section className="px-4 sm:px-6 pb-20 lg:pb-28 bg-white">
+      <section className="px-4 sm:px-6 md:px-27 pb-20 lg:pb-28 bg-white">
         <div className="max-w-[1200px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-stretch">
 
           {/* Left — Google Map iframe */}

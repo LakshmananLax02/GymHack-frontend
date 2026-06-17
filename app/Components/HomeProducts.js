@@ -113,7 +113,7 @@ export default function HomeProducts() {
   };
 
   return (
-    <section className="py-3 md:py-14 bg-white overflow-hidden font-sans">
+    <section className="py-3 md:px-19 px-1 md:py-14 bg-white overflow-hidden font-sans">
       <style>{`
         @keyframes fadeIn    { from { opacity: 0; } to { opacity: 1; } }
         @keyframes popIn     { from { opacity: 0; transform: scale(0.92) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }

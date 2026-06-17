@@ -7,17 +7,13 @@ import { Reveal, RevealGroup, Parallax } from './scroll/Reveal';
 
 export default function Hero() {
   const statsItems = [
-  { src: "/images/1.png", alt: "Plant Based" },
+  { src: "/images/9.png", alt: "Plant Based" },
   { src: "/images/2.png", alt: "Certified Vegan" },
-  { src: "/images/3.png", alt: "Gluten Free" },
-  { src: "/images/4.png", alt: "Nutrient Dense" },
-  { src: "/images/5.png", alt: "Nutrient Dense" },
-  { src: "/images/6.png", alt: "Nutrient Dense" },
+  { src: "/images/5.png", alt: "Gluten Free" },
   { src: "/images/7.png", alt: "Nutrient Dense" },
   { src: "/images/8.png", alt: "Nutrient Dense" },
-  { src: "/images/9.png", alt: "Nutrient Dense" },
-    { src: "/images/5.png", alt: "Nutrient Dense" },
-
+  { src: "/images/6.png", alt: "Nutrient Dense" },
+  { src: "/images/3.png", alt: "Nutrient Dense" },
 ];
 
   return (
@@ -51,9 +47,11 @@ export default function Hero() {
   >
     {/* Heading Element */}
     <RevealGroup.Item variant="up" duration={0.85}>
-      <h1 className="text-4xl md:text-6xl lg:text-7xl font-primary font-bold mb-4 md:mb-6 text-white leading-[1.15] tracking-tight">
-        Nothing Added <br className="hidden md:block" /> Nothing Hidden
-      </h1>
+     <h1 className="text-5xl sm:text-4xl md:text-6xl lg:text-7xl font-primary font-bold mb-4 md:mb-6 text-white leading-[1.2] md:leading-[1.15] tracking-tight text-center">
+  Nothing Added 
+  <br />
+  Nothing Hidden
+</h1>
     </RevealGroup.Item>
 
     {/* Paragraph Element */}
@@ -82,10 +80,10 @@ export default function Hero() {
 {/* --- Static Stats Bar Section --- */}
 
 <Reveal variant="up" amount={0.3}>
-  <div className="bg-[#f0ece2] py-5 md:py-6 border-t border-b border-black/10">
+  <div className="bg-[#f0ece2] px-2 py-5 md:py-6 border-t border-b border-black/10">
     <RevealGroup
       stagger={0.1}
-      className="statsbar max-w-[1440px] mx-auto md:px-10 lg:px-15 flex md:flex-wrap lg:grid lg:grid-cols-10 items-center md:justify-center overflow-x-auto md:overflow-visible gap-6 md:gap-8 lg:gap-4"
+      className="statsbar max-w-[1440px] mx-auto md:px-10 lg:px-15 flex md:flex-wrap lg:grid lg:grid-cols-7 items-center md:justify-center overflow-x-auto md:overflow-visible gap-6 md:gap-8 lg:gap-4"
     >
       {statsItems.map((item, index) => (
         <RevealGroup.Item

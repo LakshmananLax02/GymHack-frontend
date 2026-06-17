@@ -1313,13 +1313,13 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const t = localStorage.getItem('adminToken');
-    if (!t) router.replace('/admin/gymhack-admin-2026');
+    if (!t) router.replace('/admin/gymhackadmin2026');
     else setAuth(true);
   }, [router]);
 
   const handleLogout = () => {
     localStorage.removeItem('adminToken');
-    router.push('/admin/gymhack-admin-2026');
+    router.push('/admin/gymhackadmin2026');
   };
 
   const handleRefresh = () => {

@@ -35,7 +35,7 @@ export default function HomeGoodNutrition() {
 
       {/* 1. HEADER */}
       <Reveal variant="fade" amount={0.2}>
-        <div className="bg-[#414b56] text-white py-4 px-6 md:px-12 flex flex-col md:flex-row items-center justify-between gap-4 z-20 shrink-0">
+        <div className="bg-[#414b56] text-white py-4 px-1 md:px-25 flex flex-col md:flex-row items-center justify-between gap-4 z-20 shrink-0">
           <RevealGroup stagger={0.12} className="flex items-center gap-4">
             <RevealGroup.Item variant="scale">
               <Sprout size={48} strokeWidth={1.5} className="text-[#f0ece2]" />

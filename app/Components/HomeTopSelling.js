@@ -154,7 +154,7 @@ export default function OurTopSelling() {
 
   return (
     <section className="py-10 bg-white overflow-hidden">
-      <div className="max-w-[1200px] mx-auto px-7">
+      <div className="max-w-[1200px] mx-auto px-4 md:px-20">
 
         {/* Header */}
         <Reveal variant="up" amount={0.3} className="flex flex-row items-center justify-center gap-3 mb-12 w-full px-4">

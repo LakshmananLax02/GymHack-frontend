@@ -375,7 +375,7 @@ const closeCart   = useCartStore(s => s.closeCart);
         }`}
       >
         <div
-          className={`max-w-[1440px] mx-auto px-2 md:px-10 flex items-center justify-between gap-4 transition-all duration-300 ease-out ${
+          className={`max-w-[1440px] mx-auto px-2 md:px-25 flex items-center justify-between gap-4 transition-all duration-300 ease-out ${
             isScrolled ? 'h-16' : 'h-20'
           }`}
         >
@@ -396,7 +396,7 @@ const closeCart   = useCartStore(s => s.closeCart);
             </div>
           </div>
 
-          <nav className="hidden md:flex items-center gap-8 flex-1 justify-center ml-40">
+          <nav className="hidden md:flex items-center gap-8 flex-1 justify-center ml-40 ">
             <Link href="/" className={`text-xl font-bold tracking-tight hover:text-[#c23d6a] transition-colors ${pathname === '/' ? 'text-[#c23d6a]' : ''}`}>
               Home
             </Link>

@@ -29,7 +29,7 @@ const products = [
 
 export default function ProductShowcase() {
   return (
-    <section className="py-16 px-4 sm:px-6 bg-white">
+    <section className="py-16 px-4 md:px-27 sm:px-6 bg-white">
       <div className="max-w-[1200px] mx-auto">
 
         {/* ── Desktop: expanding flex cards ── */}

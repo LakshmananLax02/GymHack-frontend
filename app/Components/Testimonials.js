@@ -20,14 +20,14 @@ const testimonialData = [
     id: 1,
     name: "Arjun Kumar",
     role: "Chennai, Tamil Nadu",
-    text: "Gym Hack Rolled Oats have become a part of my daily breakfast. They keep me energized throughout the morning and fit perfectly into my fitness routine.",
+    text: "Gym Hack Rolled Oats are part of my daily breakfast. They keep me energized all morning and fit perfectly into my fitness routine.",
     rating: 5
   },
   {
     id: 2,
     name: "Priya Sharma",
     role: "Bengaluru, Karnataka",
-    text: "The Muesli is fresh, delicious, and packed with quality ingredients. It's the perfect combination of taste and nutrition.",
+    text: "The Muesli is fresh, delicious, and packed with quality ingredients. Gym Hack created the absolute perfect combination of taste and morning nutrition.",
     rating: 5
   },
   {
@@ -64,7 +64,7 @@ export default function Testimonials() {
   const [activeDir, setActiveDir] = useState('next');
 
   return (
-    <section className="bg-[#f2ead3] py-16 px-6 overflow-hidden">
+    <section className="bg-[#f2ead3] py-16 px-6 md:px-28 overflow-hidden">
       <div className="max-w-[1200px] mx-auto">
 
         {/* Section Header */}

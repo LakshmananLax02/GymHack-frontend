@@ -17,9 +17,9 @@ function ProductCard({ item, onAddToCart }) {
       : '/images/oatsimg.jpg';
 
   return (
-    <RevealGroup.Item variant="up" duration={0.55} className="group flex flex-col h-full">
+    <RevealGroup.Item variant="up" duration={0.55} className="group flex flex-col h-full ">
       {/* Image */}
-      <Link href={`/productsviewpage/${item.id}`}>
+      <Link href={`/productsviewpage/${item.id}`} >
         <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-[#f8f8f8] border border-black/5 mb-3 cursor-pointer">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -139,7 +139,7 @@ export default function AllProducts() {
 
   return (
     <section className="py-10 md:py-16 bg-white font-sans">
-      <div className="max-w-[1200px] mx-auto px-4 md:px-6">
+      <div className="max-w-[1200px] mx-auto px-4 md:px-6 md:px-20">
 
         {/* ── Header ── */}
         <Reveal variant="up" amount={0.2} className="text-center mb-8">

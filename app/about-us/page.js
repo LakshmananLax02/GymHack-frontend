@@ -106,7 +106,7 @@ export default function AboutUs() {
       ))}
 
       {/* ───────────────────── CERTIFICATIONS ───────────────────── */}
-      <section className="bg-[#fdf5e6] px-4 sm:px-6 py-6 lg:py-5">
+      <section className="bg-[#fdf5e6] px-4 md:px-27 sm:px-6 py-6 lg:py-5">
         <div className="max-w-[1200px] mx-auto">
           <Reveal variant="up" amount={0.2} className="text-center max-w-2xl mx-auto mb-12">
             <div className="flex items-center justify-center gap-3 mb-3">
@@ -128,7 +128,7 @@ export default function AboutUs() {
           >
             {CERTS.map(({ Icon, name, desc }) => (
               <RevealGroup.Item key={name} variant="up">
-                <div className="h-full bg-white border border-gray-100 rounded-2xl p-6 flex items-start gap-4 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                <div className="h-full bg-white border border-gray-100 rounded-xl p-6 flex items-start gap-4 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
                   <span className="flex-shrink-0 w-12 h-12 rounded-xl bg-[#fff0f5] flex items-center justify-center">
                     <Icon size={22} className="text-[#c23d6a]" strokeWidth={1.8} />
                   </span>
@@ -149,8 +149,8 @@ export default function AboutUs() {
 
       {/* ───────────────────── CONTACT / CUSTOMER CARE CTA ───────────────────── */}
       <section className="px-4 sm:px-6 py-5 lg:py-5 bg-white">
-        <Reveal variant="scale" amount={0.2} className="max-w-[1000px] mx-auto">
-          <div className="relative overflow-hidden rounded-3xl bg-[#c23d6a] px-6 py-12 sm:px-12 sm:py-14 text-center">
+        <Reveal variant="scale" amount={0.2} className="max-w-[1040px] mx-auto">
+          <div className="relative overflow-hidden rounded-xl bg-[#c23d6a] px-6 py-12 sm:px-12 sm:py-14 text-center">
             <div className="relative z-10">
               <Headset size={40} className="mx-auto text-white/90 mb-4" strokeWidth={1.6} />
               <h2 className="font-primary text-3xl sm:text-4xl uppercase tracking-tight text-white">
@@ -183,7 +183,7 @@ export default function AboutUs() {
 // ── Reusable alternating image/content row ───────────────────────────────────
 function FeatureRow({ eyebrow, title, body, highlight, image, alt, reverse, icon: Icon }) {
   return (
-    <section className="px-4 sm:px-6 py-8 lg:py-8 bg-white">
+    <section className="px-4 sm:px-6 py-8 md:px-27 lg:py-8 bg-white">
       <div className="max-w-[1200px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
 
         {/* ── Content ── */}

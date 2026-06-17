@@ -32,7 +32,7 @@ const ClockIcon = () => (
 
 export default function Philosophy() {
   return (
-    <section className="relative pt-0 pb-14 lg:pt-0 lg:pb-24 px-4 sm:px-6 bg-white overflow-hidden">
+    <section className="relative pt-0 pb-14 lg:pt-0 lg:pb-24 px-5 md:px-28 sm:px-6 bg-white overflow-hidden">
       <div className="max-w-[1200px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-center">
 
         {/* ── Left Content ── */}
@@ -131,18 +131,23 @@ export default function Philosophy() {
         <div className="order-1 lg:order-2 relative">
           <div className="absolute -bottom-4 -right-4 sm:bottom-0 sm:right-0 w-28 h-28 sm:w-36 sm:h-36 rounded-3xl z-0" />
 
-          <Parallax amount={30} direction="up" className="relative z-10 rounded-xl overflow-hidden shadow-lg">
-            <Reveal variant="scale" duration={0.9} amount={0.15}>
-              <Image
-                src="/images/homephilosophyimg2.png"
-                alt="Gym Hack Philosophy"
-                width={600}
-                height={480}
-                className="object-cover w-full h-auto"
-                priority
-              />
-            </Reveal>
-          </Parallax>
+         {/* Added 'hidden md:block' to hide on mobile and show on desktop */}
+<Parallax 
+  amount={30} 
+  direction="up" 
+  className="hidden md:block relative z-10 rounded-xl overflow-hidden shadow-lg"
+>
+  <Reveal variant="scale" duration={0.9} amount={0.15}>
+    <Image
+      src="/images/homephilosophyimg2.png"
+      alt="Gym Hack Philosophy"
+      width={600}
+      height={480}
+      className="object-cover w-full h-auto"
+      priority
+    />
+  </Reveal>
+</Parallax>
         </div>
 
       </div>

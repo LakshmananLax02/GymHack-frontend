@@ -17,10 +17,9 @@ function ProductCard({ item, onAddToCart }) {
       : '/images/oatsimg.jpg';
 
   return (
-    <RevealGroup.Item variant="up" duration={0.55} className="group flex flex-col h-full ">
-      {/* Image */}
+<RevealGroup.Item variant="up" duration={0.55} className="group flex flex-col h-full w-[calc(50%-8px)] sm:w-[calc(33.333%-11px)] lg:w-[calc(25%-12px)]">      {/* Image */}
       <Link href={`/productsviewpage/${item.id}`} >
-        <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-[#f8f8f8] border border-black/5 mb-3 cursor-pointer">
+        <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-[#f8f8f8] border border-black/5 mb-3 cursor-pointer ">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={imgSrc}
@@ -207,7 +206,7 @@ export default function AllProducts() {
 
         {/* ── Product Grid ── */}
         {loadingProds ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 ">
             {Array.from({ length: 8 }).map((_, i) => (
               <div key={i} className="animate-pulse flex flex-col">
                 <div className="aspect-[3/4] rounded-2xl bg-gray-100 mb-3" />
@@ -226,12 +225,12 @@ export default function AllProducts() {
             </p>
           </div>
         ) : (
-          <RevealGroup
-            key={activeCatId}
-            stagger={0.06}
-            amount={0.05}
-            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 items-stretch"
-          >
+        <RevealGroup
+  key={activeCatId}
+  stagger={0.06}
+  amount={0.05}
+  className="flex flex-wrap justify-center gap-4 md:gap-6 items-stretch"
+>
             {products.map((item) => (
               <ProductCard
                 key={item.id}
